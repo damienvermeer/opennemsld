@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1000" height="1000" viewBox="-500.0 -500.0 1000 1000">
+<defs>
+</defs>
+<g stroke="blue" stroke-width="2" transform="rotate(0)">
+<text x="-20" y="-8" font-size="25" anchor="end">4A</text>
+<path d="M-20,0 L120,0" stroke-width="5" />
+<text x="-20" y="144" font-size="25" anchor="end">1</text>
+<path d="M-20,120 L120,120" stroke-width="5" />
+<path d="M0,0 L0,20" />
+<path d="M0,15 L0,45" stroke-width="2" transform="rotate(45, 0, 30)" />
+<path d="M0,40 L0,80" />
+<rect x="-10" y="80" width="20" height="20" fill="white" />
+<path d="M0,100 L0,120" />
+<path d="M50,0 L50,20" />
+<rect x="40" y="20" width="20" height="20" fill="white" />
+<path d="M50,40 L50,80" />
+<path d="M50,75 L50,105" stroke-width="2" transform="rotate(45, 50, 90)" />
+<path d="M50,100 L50,120" />
+<path d="M100,0 L100,20" />
+<rect x="90" y="20" width="20" height="20" fill="white" />
+<path d="M100,40 L100,80" />
+<path d="M100,75 L100,105" stroke-width="2" transform="rotate(45, 100, 90)" />
+<path d="M100,100 L100,120" />
+<text x="180" y="-8" font-size="25" anchor="end">1</text>
+<path d="M180,0 L170,0" stroke-width="5" />
+</g>
+</svg>
