@@ -32,7 +32,7 @@ special cases:
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-
+import utm
 
 # modifying so bus is included in bay definition
 
@@ -78,7 +78,14 @@ class BusTieBay(BaseBay):
 @dataclass
 class Substation:
     name: str
+    lat: float
+    long: float
     bays: list[BaseBay] = field(default_factory=list)
+    scaled_x: float = 0
+    scaled_y: float = 0
+
+    def __post_init__(self):
+        self.x, self.y, _, _ = utm.from_latlon(self.lat, self.long)
 
     def add_bay(self, bay: BaseBay) -> None:
         self.bays.append(bay)
@@ -90,46 +97,142 @@ class Substation:
 
 
 # testing - single switched sub
-ss_sub = Substation("test")
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.CB))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.ISOL))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.CB))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.DIRECT))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.EMPTY))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.CB))
-ss_sub.add_bay(SingleSwitchedBay("1", element=SwitchType.NOBUS))
-ss_sub.add_bay(SingleSwitchedBay("2", element=SwitchType.CB))
-ss_sub.add_bay(SingleSwitchedBay("2", element=SwitchType.CB))
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.CB, element2=SwitchType.CB, other_bus_name="3"
+arts_220kv = Substation("ARTS", lat=-37.163788, long=143.245555)
+arts_220kv.add_bay(
+    BreakerAndHalfBay(
+        "ARTS",
+        element=SwitchType.ISOL,
+        element2=SwitchType.CB,
+        element3=SwitchType.ISOL,
+        other_bus_name="?",
     )
 )
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.CB, element2=SwitchType.DIRECT, other_bus_name="3"
+arts_220kv.add_bay(
+    BreakerAndHalfBay(
+        "?",
+        element=SwitchType.ISOL,
+        element2=SwitchType.CB,
+        element3=SwitchType.ISOL,
+        other_bus_name="?",
     )
 )
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.NOBUS, element2=SwitchType.ISOL, other_bus_name="3"
+wbts_220kv = Substation("WBTS", lat=-37.355738, long=143.606139)
+wbts_220kv.add_bay(
+    SingleSwitchedBay(
+        "WBTS",
+        element=SwitchType.ISOL,
     )
 )
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.NOBUS, element2=SwitchType.ISOL, other_bus_name="3"
+wbts_220kv.add_bay(
+    SingleSwitchedBay(
+        "?",
+        element=SwitchType.CB,
     )
 )
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.NOBUS, element2=SwitchType.NOBUS, other_bus_name="3"
+wbts_220kv.add_bay(
+    SingleSwitchedBay(
+        "?",
+        element=SwitchType.CB,
     )
 )
-ss_sub.add_bay(
-    DoubleSwitchedBay(
-        "2", element=SwitchType.NOBUS, element2=SwitchType.CB, other_bus_name="4"
+wbts_220kv.add_bay(
+    SingleSwitchedBay(
+        "?",
+        element=SwitchType.ISOL,
     )
 )
+cwts_220kv = Substation("CWTS", lat=-37.120842, long=143.154319)
+cwts_220kv.add_bay(
+    BreakerAndHalfBay(
+        "CWTS",
+        element=SwitchType.CB,
+        element2=SwitchType.CB,
+        element3=SwitchType.CB,
+        other_bus_name="?",
+    )
+)
+cwts_220kv.add_bay(
+    BreakerAndHalfBay(
+        "?",
+        element=SwitchType.CB,
+        element2=SwitchType.DIRECT,
+        element3=SwitchType.CB,
+        other_bus_name="?",
+    )
+)
+bats_220kv = Substation("BATS", lat=-37.567543, long=143.921133)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2 (BATS)",
+        element=SwitchType.CB,
+        element2=SwitchType.ISOL,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.ISOL,
+        element2=SwitchType.CB,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.CB,
+        element2=SwitchType.CB,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.CB,
+        element2=SwitchType.CB,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.CB,
+        element2=SwitchType.EMPTY,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.EMPTY,
+        element2=SwitchType.CB,
+        other_bus_name="1",
+    )
+)
+bats_220kv.add_bay(
+    DoubleSwitchedBay(
+        "2",
+        element=SwitchType.CB,
+        element2=SwitchType.CB,
+        other_bus_name="1",
+    )
+)
+
+# ss_sub.add_bay(
+#     DoubleSwitchedBay(
+#         "2", element=SwitchType.NOBUS, element2=SwitchType.ISOL, other_bus_name="3"
+#     )
+# )
+# ss_sub.add_bay(
+#     DoubleSwitchedBay(
+#         "2", element=SwitchType.NOBUS, element2=SwitchType.NOBUS, other_bus_name="3"
+#     )
+# )
+# ss_sub.add_bay(
+#     DoubleSwitchedBay(
+#         "2", element=SwitchType.NOBUS, element2=SwitchType.CB, other_bus_name="4A"
+#     )
+# )
 
 
 # # create a simple single switched sub
@@ -351,22 +454,92 @@ def draw_double_switched_bay(
 
     return parent_group
 
-    # # Line off bus towards first switch
-    # parent_group.append(draw.Line(xoff, 0, xoff, 20))
 
-    # # Draw first switch
-    # draw_switch(xoff, 30, parent_group, bay.switch, "vertical")
+def draw_cb_and_a_half_bay(
+    xoff: float,
+    parent_group: draw.Group,
+    bay: BreakerAndHalfBay,
+) -> draw.Group:
+    """Draw a breaker-and-a-half bay with three elements (top, middle, bottom).
 
-    # # Line between switches
-    # parent_group.append(draw.Line(xoff, 40, xoff, 80))
+    Args:
+        xoff (float): x offset from the bus
+        parent_group (draw.Group): parent group to add the CB or isolator to
+        bay (BreakerAndHalfBay): bay to draw the breaker-and-a-half bay for
 
-    # # Draw second switch
-    # draw_switch(xoff, 90, parent_group, bay.switch2, "vertical")
+    Returns:
+        draw.Group: parent group with the breaker-and-a-half bay added
+    """
+    # Draw top bus with proper length to support the bay width
+    parent_group.append(draw.Line(-50 + xoff, 0, 50 + xoff, 0, stroke_width=5))
 
-    # # Line towards busbar2
-    # parent_group.append(draw.Line(xoff, 100, xoff, 120))
+    # Add bus identifier for top bus if needed
+    if bay.neighbour is None or not isinstance(bay.neighbour, BreakerAndHalfBay):
+        parent_group.append(
+            draw.Text(bay.bus_name, x=-55 + xoff, y=-8, font_size=25, anchor="end")
+        )
 
-    # return parent_group
+    # TOP ELEMENT
+    if bay.element is not SwitchType.NOBUS and bay.element is not SwitchType.EMPTY:
+        if bay.element is SwitchType.DIRECT:
+            # Direct connection, just a line
+            parent_group.append(draw.Line(xoff, 0, xoff, 40))
+        else:
+            # Draw CB or isolator
+            # Line from top bus to switch
+            parent_group.append(draw.Line(xoff, 0, xoff, 20))
+            # Draw the switch
+            draw_switch(xoff, 30, parent_group, bay.element, "vertical")
+            # Line from switch down
+            parent_group.append(draw.Line(xoff, 40, xoff, 60))
+
+    # MIDDLE ELEMENT
+    if bay.element2 is not SwitchType.NOBUS and bay.element2 is not SwitchType.EMPTY:
+        if bay.element2 is SwitchType.DIRECT:
+            # Direct connection, just a line
+            parent_group.append(draw.Line(xoff, 60, xoff, 120))
+        else:
+            # Draw CB or isolator
+            # Line to switch
+            parent_group.append(draw.Line(xoff, 60, xoff, 80))
+            # Draw the switch
+            draw_switch(xoff, 90, parent_group, bay.element2, "vertical")
+            # Line from switch down
+            parent_group.append(draw.Line(xoff, 100, xoff, 120))
+
+    # BOTTOM ELEMENT
+    if bay.element3 is SwitchType.NOBUS or bay.element3 is SwitchType.EMPTY:
+        # No bottom element or bus
+        return parent_group
+
+    if bay.element3 is SwitchType.DIRECT:
+        # Direct connection, just a line
+        parent_group.append(draw.Line(xoff, 120, xoff, 180))
+    else:
+        # Draw CB or isolator
+        # Line to switch
+        parent_group.append(draw.Line(xoff, 120, xoff, 140))
+        # Draw the switch
+        draw_switch(xoff, 150, parent_group, bay.element3, "vertical")
+        # Line from switch to bottom bus
+        parent_group.append(draw.Line(xoff, 160, xoff, 180))
+
+    # Draw bottom bus with same width as top bus for consistency
+    parent_group.append(draw.Line(-50 + xoff, 180, 50 + xoff, 180, stroke_width=5))
+
+    # Handle bottom bus identifier - only draw if its the first bay on the bus
+    if (
+        bay.neighbour is None
+        or not isinstance(bay.neighbour, BreakerAndHalfBay)
+        or bay.neighbour.element3 is SwitchType.NOBUS
+    ):
+        parent_group.append(
+            draw.Text(
+                bay.other_bus_name, x=-55 + xoff, y=188, font_size=25, anchor="end"
+            )
+        )
+
+    return parent_group
 
 
 def flipline_bustie(
@@ -390,7 +563,7 @@ def flipline_bustie(
 
     # Draw the switch
     switch_x = busend_x + 50  # Center point of the switch
-    draw_switch(switch_x, busend_y, parent_group, bay.switch, "horizontal")
+    draw_switch(switch_x, busend_y, parent_group, bay.element, "horizontal")
 
     # Line from switch towards next bus section
     parent_group.append(
@@ -407,8 +580,11 @@ def get_substation_group(sub: Substation, colour="blue", rotation=0):
         xoff = 50 * i
         if isinstance(bay, SingleSwitchedBay):
             dg = draw_single_switched_bay(xoff, dg, bay)
+        elif isinstance(bay, BreakerAndHalfBay):
+            dg = draw_cb_and_a_half_bay(xoff, dg, bay)
         elif isinstance(bay, DoubleSwitchedBay):
             dg = draw_double_switched_bay(xoff, dg, bay)
+
         # elif isinstance(bay, BusTieBay):
         #     dg = flipline_bustie(xoff, 0, dg, bay)
 
@@ -462,7 +638,219 @@ def get_substation_group(sub: Substation, colour="blue", rotation=0):
     return dg
 
 
+d_arts = get_substation_group(arts_220kv, rotation=0)
+d_wbts = get_substation_group(wbts_220kv, rotation=0)
+d_cwts = get_substation_group(cwts_220kv, rotation=0)
+d_bats = get_substation_group(bats_220kv, rotation=0)
+
+# Scale and position the substations to preserve relative distances
+# with maximum distance of approximately 500 units
+print("-" * 50)
+print("Original UTM coordinates:")
+print("-" * 50)
+for sub in [arts_220kv, wbts_220kv, cwts_220kv, bats_220kv]:
+    print(f"{sub.name:<5}: ({sub.x:.2f}, {sub.y:.2f})")
+
+# Find min/max values for scaling
+min_x = min(arts_220kv.x, wbts_220kv.x, cwts_220kv.x, bats_220kv.x)
+max_x = max(arts_220kv.x, wbts_220kv.x, cwts_220kv.x, bats_220kv.x)
+min_y = min(arts_220kv.y, wbts_220kv.y, cwts_220kv.y, bats_220kv.y)
+max_y = max(arts_220kv.y, wbts_220kv.y, cwts_220kv.y, bats_220kv.y)
+
+# Calculate ranges
+x_range = max_x - min_x
+y_range = max_y - min_y
+
+# Determine scaling factor for max range to be 500 units
+max_range = max(x_range, y_range)
+scale_factor = 500 / max_range
+
+print("\n" + "-" * 50)
+print(f"Scaling Information:")
+print("-" * 50)
+print(f"Scaling factor: {scale_factor:.6f}")
+print(f"X range: {x_range:.2f}, Y range: {y_range:.2f}")
+print(f"Max range: {max_range:.2f}")
+
+# Apply scaling and translation with y-axis flipped (since SVG y increases downward)
+print("\nScaled coordinates:")
+for sub in [arts_220kv, wbts_220kv, cwts_220kv, bats_220kv]:
+    # Scale coordinates and add offset to keep everything visible
+    sub.scaled_x = (sub.x - min_x) * scale_factor + 100
+    # Invert the y-axis to match geographic orientation (north at top)
+    sub.scaled_y = 600 - ((sub.y - min_y) * scale_factor + 100)
+    print(f"{sub.name}: ({sub.scaled_x:.1f}, {sub.scaled_y:.1f})")
+
+
+# Use NetworkX to locate the substations with balanced spacing
+import networkx as nx
+
+# Create a dictionary of our substations with their scaled coordinates
+nodes = [arts_220kv.name, wbts_220kv.name, cwts_220kv.name, bats_220kv.name]
+initial_pos = {
+    arts_220kv.name: (arts_220kv.scaled_x, arts_220kv.scaled_y),
+    wbts_220kv.name: (wbts_220kv.scaled_x, wbts_220kv.scaled_y),
+    cwts_220kv.name: (cwts_220kv.scaled_x, cwts_220kv.scaled_y),
+    bats_220kv.name: (bats_220kv.scaled_x, bats_220kv.scaled_y),
+}
+
+print("\n" + "-" * 50)
+print("Network Layout Calculation")
+print("-" * 50)
+print("Initial positions:")
+for node, pos in initial_pos.items():
+    print(f"{node}: (x={pos[0]:.4f}, y={pos[1]:.4f})")
+
+# Create a graph and add nodes
+G = nx.Graph()
+G.add_nodes_from(nodes)
+
+# Add edges connecting ARTS-CWTS and ARTS-WBTS as specified
+G.add_edges_from(
+    [
+        (arts_220kv.name, cwts_220kv.name),
+        (arts_220kv.name, wbts_220kv.name),
+        (wbts_220kv.name, bats_220kv.name),
+    ]
+)
+
+# Run the physics simulation to balance the layout
+# Use appropriate parameters for 0-500 range positions
+final_pos = nx.kamada_kawai_layout(
+    G,
+    pos=initial_pos,  # Using our original 0-500 range positions
+    scale=0.5,  # No additional scaling needed
+)
+
+print("\nBalanced positions after network simulation:")
+for node, coords in final_pos.items():
+    print(f"{node}: (x={coords[0]:.4f}, y={coords[1]:.4f})")
+
+# Apply the balanced positions back to our substations
+substation_map = {
+    arts_220kv.name: arts_220kv,
+    wbts_220kv.name: wbts_220kv,
+    cwts_220kv.name: cwts_220kv,
+    bats_220kv.name: bats_220kv,
+}
+
+# Scale the positions back to our SVG coordinate space
+for name, coords in final_pos.items():
+    sub = substation_map[name]
+    # Scale from 0-1 range to our SVG size (adding margins)
+    sub.scaled_x = coords[0] * 800 + 100  # Scale to 800 width + 100 margin
+    sub.scaled_y = coords[1] * 600 + 100  # Scale to 600 height + 100 margin
+
+print("\nFinal SVG coordinates after network balancing:")
+for sub in [arts_220kv, wbts_220kv, cwts_220kv, bats_220kv]:
+    print(f"{sub.name}: ({sub.scaled_x:.1f}, {sub.scaled_y:.1f})")
+
+
+# draw at the scaled x and y locations
+d.append(draw.Use(d_arts, arts_220kv.scaled_x, arts_220kv.scaled_y))
+d.append(draw.Use(d_wbts, wbts_220kv.scaled_x, wbts_220kv.scaled_y))
+d.append(draw.Use(d_cwts, cwts_220kv.scaled_x, cwts_220kv.scaled_y))
+d.append(draw.Use(d_bats, bats_220kv.scaled_x, bats_220kv.scaled_y))
+
+
+# Function to connect points between substations
+def connect_substation_points(
+    drawing: draw.Drawing,
+    source_sub,
+    source_bay_idx: int,
+    source_y_offset: float,
+    target_sub,
+    target_bay_idx: int,
+    target_y_offset: float,
+    color: str = "red",
+    stroke_width: float = 1.5,
+    stroke_dasharray: str = "",
+    add_arrow: bool = False,
+):
+    """Draw a line connecting specific points between two substations using right angles."""
+    # Calculate bay x-offset (50 units per bay)
+    source_local_x = 50 * source_bay_idx
+    target_local_x = 50 * target_bay_idx
+
+    # Calculate global coordinates by adding substation position
+    source_x = source_sub.scaled_x + source_local_x
+    source_y = source_sub.scaled_y + source_y_offset
+
+    target_x = target_sub.scaled_x + target_local_x
+    target_y = target_sub.scaled_y + target_y_offset
+
+    # Create a path with right-angle bends
+    path = draw.Path(
+        stroke=color,
+        stroke_width=stroke_width,
+        stroke_dasharray=stroke_dasharray,
+        fill="none",
+    )
+    path.M(source_x, source_y)
+
+    # Decide on V-H-V or H-V-H path to make the connection look balanced.
+    if abs(source_x - target_x) > abs(source_y - target_y):
+        # Horizontal-Vertical-Horizontal path
+        mid_x = (source_x + target_x) / 2
+        path.L(mid_x, source_y).L(mid_x, target_y).L(target_x, target_y)
+    else:
+        # Vertical-Horizontal-Vertical path
+        mid_y = (source_y + target_y) / 2
+        path.L(source_x, mid_y).L(target_x, mid_y).L(target_x, target_y)
+
+    # Create arrow marker if requested
+    if add_arrow:
+        arrow = draw.Marker(-0.1, -0.5, 0.9, 0.5, scale=4, orient="auto")
+        arrow.append(draw.Lines(-0.1, 0.5, -0.1, -0.5, 0.9, 0, fill=color, close=True))
+        path.marker_end = arrow
+
+    # Add the path to the drawing
+    drawing.append(path)
+    return drawing
+
+
+# Example: Connect CWTS bay 1 between element2 and element3 to ARTS bay 0 between element2 and element3
+# For breaker-and-a-half bays:
+# - element2 (middle switch) is at y=90
+# - element3 (bottom switch) is at y=150
+# - so between them is around y=120
+connect_substation_points(
+    d,  # SVG drawing
+    cwts_220kv,  # Source substation
+    1,  # Source bay index (second bay)
+    120,  # Source y (between element2 and element3)
+    arts_220kv,  # Target substation
+    0,  # Target bay index (first bay)
+    120,  # Target y (between element2 and element3)
+    color="green",  # Line color
+    stroke_width=2,  # Line width
+)
+connect_substation_points(
+    d,  # SVG drawing
+    arts_220kv,  # Source substation
+    1,  # Source bay index (second bay)
+    120,  # Source y (between element2 and element3)
+    wbts_220kv,  # Target substation
+    0,  # Target bay index (first bay)
+    60,  # Target y (between element2 and element3)
+    color="green",  # Line color
+    stroke_width=2,  # Line width
+)
+connect_substation_points(
+    d,  # SVG drawing
+    wbts_220kv,  # Source substation
+    3,  # Source bay index (second bay)
+    60,  # Source y (between element2 and element3)
+    bats_220kv,  # Target substation
+    0,  # Target bay index (first bay)
+    60,  # Target y (between element2 and element3)
+    color="green",  # Line color
+    stroke_width=2,  # Line width
+)
+
 # draw bus
 # d.append(get_substation_group(new_sub, rotation=0))
-d.append(get_substation_group(ss_sub, rotation=0))
+# d.append(get_substation_group(arts_220kv, rotation=0))
+# d.append(get_substation_group(wbts_220kv, rotation=0))
+# d.append(dget_substation_group(cwts_220kv, rotation=0))
 d.save_svg("example.svg")
