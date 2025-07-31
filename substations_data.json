@@ -1,0 +1,548 @@
+{
+  "substations": [
+    {
+      "name": "ARTS",
+      "lat": -37.163788,
+      "long": 143.245555,
+      "voltage_kv": 220,
+      "bus_name": "ARTS",
+      "other_bus_name": "?",
+      "tags": ["ARTS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["ISOL", ""],
+          "elementTie": ["CB", "VIC-220-ARTS-CWTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 3,
+          "bus_name": "?",
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementTie": ["ISOL", "VIC-220-ARTS-WBTS-1"],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "WBTS",
+      "lat": -37.355738,
+      "long": 143.606139,
+      "voltage_kv": 220,
+      "bus_name": "1",
+      "tags": ["WBTS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 1,
+          "elementAbove": ["CB", ""],
+          "elementBelow": ["ISOL", "VIC-220-ARTS-WBTS-1"]
+        },
+        {
+          "type": 1,
+          "elementAbove": ["CB", ""],
+          "elementBelow": ["ISOL", "VIC-220-WBTS-BATS-1"]
+        }
+      ]
+    },
+    {
+      "name": "CWTS",
+      "lat": -37.120842,
+      "long": 143.154319,
+      "voltage_kv": 220,
+      "bus_name": "CWTS",
+      "other_bus_name": "?",
+      "tags": ["CWTS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementTie": ["CB", "VIC-220-BGTS-CWTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 3,
+          "bus_name": "?",
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementTie": ["DIRECT", "VIC-220-ARTS-CWTS-1"],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "BATS",
+      "lat": -37.567543,
+      "long": 143.921133,
+      "voltage_kv": 220,
+      "bus_name": "2 bats",
+      "other_bus_name": "1",
+      "tags": ["BATS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "bus_name": "2 (BATS)",
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-WBTS-BATS-1"],
+          "elementOtherBus": ["ISOL", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["ISOL", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BETS-BATS-1"],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "BGTS",
+      "lat": -37.037312,
+      "long": 142.984249,
+      "voltage_kv": 220,
+      "bus_name": "1 bgts",
+      "tags": ["BGTS"],
+      "rotation": 90,
+      "bays": [
+        {
+          "type": 1,
+          "bus_name": "1 BGTS",
+          "elementAbove": ["ISOL", "VIC-220-BGTS-HOTS-1"],
+          "elementBelow": ["CB", ""]
+        },
+        {
+          "type": 1,
+          "elementAbove": ["ISOL", "VIC-220-BGTS-CWTS-1"],
+          "elementBelow": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "MRTS",
+      "lat": -36.432714,
+      "long": 142.319309,
+      "voltage_kv": 220,
+      "bus_name": "1 MRTS",
+      "tags": ["MRTS"],
+      "rotation": 90,
+      "bays": [
+        {
+          "type": 1,
+          "bus_name": "1 MRTS",
+          "elementAbove": ["CB", ""],
+          "elementBelow": ["DIRECT", "VIC-220-MRTS-KMTS-1"]
+        },
+        {
+          "type": 1,
+          "elementAbove": ["ISOL", ""],
+          "elementBelow": ["ISOL", "VIC-220-MRTS-HOTS-1"]
+        }
+      ]
+    },
+    {
+      "name": "HOTS",
+      "lat": -36.722307,
+      "long": 142.247224,
+      "voltage_kv": 220,
+      "bus_name": "1 HOTS",
+      "other_bus_name": "2",
+      "tags": ["HOTS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "bus_name": "1 HOTS",
+          "other_bus_name": "1",
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["NOBUS", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-MRTS-HOTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BGTS-HOTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["NOBUS", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["NOBUS", ""]
+        }
+      ]
+    },
+    {
+      "name": "KMTS",
+      "lat": -35.029758,
+      "long": 142.293822,
+      "voltage_kv": 220,
+      "bus_name": "? KMTS",
+      "other_bus_name": "?",
+      "tags": ["KMTS"],
+      "rotation": -90,
+      "bays": [
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["ISOL", "VIC-220-MRTS-KMTS-1"],
+          "elementTie": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-RCTS-KMTS-1"],
+          "elementTie": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "RCTS",
+      "lat": -34.292682,
+      "long": 142.238698,
+      "voltage_kv": 220,
+      "bus_name": "1 RCTS",
+      "other_bus_name": "2",
+      "tags": ["RCTS"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["DIRECT", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", "VIC-220-RCTS-KMTS-1"]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-RCTS-WETS-1"],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["ISOL", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "WETS",
+      "lat": -34.786893,
+      "long": 142.524842,
+      "voltage_kv": 220,
+      "bus_name": "1 WETS",
+      "other_bus_name": "2",
+      "tags": ["wemen terminal station"],
+      "rotation": 180,
+      "bays": [
+        {
+          "type": 1,
+          "elementAbove": ["ISOL", "VIC-220-WETS-KGTS-1"],
+          "elementBelow": ["EMPTY", ""]
+        },
+        {
+          "type": 1,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""]
+        },
+        {
+          "type": 1,
+          "elementAbove": ["ISOL", "VIC-220-RCTS-WETS-1"],
+          "elementBelow": ["EMPTY", ""]
+        }
+      ]
+    },
+    {
+      "name": "KGTS",
+      "lat":-35.771646,
+      "long":143.933867,
+      "voltage_kv": 220,
+      "bus_name": "1 KGTS",
+      "other_bus_name": "2",
+      "tags": ["kerang terminal station"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-WETS-KGTS-1"],
+          "elementOtherBus": ["ISOL", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BETS-KGTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "BETS",
+      "lat":-36.784045,
+      "long":144.253684,
+      "voltage_kv": 220,
+      "bus_name": "1 BETS",
+      "other_bus_name": "2",
+      "tags": ["bendigo terminal station"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BETS-KGTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BETS-FVTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-BETS-BATS-1"],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "FVTS",
+      "lat":-36.738255,
+      "long":144.510622,
+      "voltage_kv": 220,
+      "bus_name": "1 FVTS",
+      "other_bus_name": "2",
+      "tags": ["fosterville terminal station"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "elementAbove": ["DIRECT", "VIC-220-BETS-FVTS-1"],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""  ],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["DIRECT", "VIC-220-SHTS-FVTS-1"],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        }
+      ]
+    },
+    {
+      "name": "SHTS",
+      "lat":-36.342772,
+      "long":145.414431,
+      "voltage_kv": 220,
+      "bus_name": "1 SHTS",
+      "other_bus_name": "2",
+      "tags": ["shepparton terminal station"],
+      "rotation": 0,
+      "bays": [
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-SHTS-FVTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-SHTS-DDTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-SHTS-GNTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-SHTS-GNTS-3"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementOtherBus": ["EMPTY", ""]
+        },
+        {
+          "type": 2,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["EMPTY", ""],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    },
+    {
+      "name": "GNTS",
+      "lat":-36.493555,
+      "long":146.132263,
+      "voltage_kv": 220,
+      "bus_name": "1 GNTS",
+      "other_bus_name": "2",
+      "tags": ["glenrowan terminal station"],
+      "rotation": 90,
+      "bays": [
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-GNTS-DDTS-1"],
+          "elementTie": ["CB", "VIC-220-SHTS-GNTS-1"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", "VIC-220-GNTS-DDTS-3"],
+          "elementTie": ["CB", "VIC-220-SHTS-GNTS-3"],
+          "elementOtherBus": ["CB", ""]
+        },
+        {
+          "type": 3,
+          "elementAbove": ["EMPTY", ""],
+          "elementBelow": ["CB", ""],
+          "elementTie": ["ISOL", ""],
+          "elementOtherBus": ["CB", ""]
+        }
+      ]
+    }
+  ]
+}
