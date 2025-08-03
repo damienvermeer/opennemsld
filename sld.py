@@ -31,7 +31,6 @@ special cases:
 # one substation has many bays, which reference one or two buses
 
 # Standard library imports
-import json
 import math
 from dataclasses import dataclass, field
 from enum import Enum, auto
@@ -42,21 +41,38 @@ import drawsvg as draw
 import networkx as nx
 import numpy as np
 import utm
+import yaml
 
 # Local application/library specific imports
 import findpath
 
 # --- Constants ---
-MAP_DIMS = 5000
+MAP_DIMS = 6000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 40
-BUSBAR_WEIGHT = 7
+BUSBAR_WEIGHT = 8
+LINE_CROSS_WEIGHT = 15
+NEAR_SUB_WEIGHT = 4
+ELEMENT_WEIGHT = 50
 GRID_STEP = 25
-SUBSTATIONS_DATA_FILE = r"C:\Users\DamienVermeer\Downloads\substations_data.json"
+SUBSTATIONS_DATA_FILE = r"C:\Users\DamienVermeer\Downloads\substation_definitions.yaml"
 TEMPLATE_FILE = r"C:\Users\DamienVermeer\Downloads\index.template.html"
 OUTPUT_SVG = "example.svg"
 OUTPUT_HTML = "index.html"
+
+# below colours from AEMO NEM SLD pdf for consistency
+COLOUR_MAP = {
+    22: "#4682B4",
+    33: "#006400",
+    66: "#A0522D",
+    110: "#FF0000",
+    132: "#FF0000",
+    220: "#0000FF",
+    275: "#FF00FF",
+    330: "#FF8C00",
+    500: "#FFDC00",
+}
 
 
 # --- Enums and Dataclasses ---
@@ -69,57 +85,11 @@ class DrawingParams:
 
 
 class SwitchType(Enum):
-    NOBUS = auto()
-    BUSTIE = auto()
     EMPTY = auto()
     DIRECT = auto()
     CB = auto()
     ISOL = auto()
-
-
-class FeederConnectionPoint(Enum):
-    """Defines connection points for feeders on a bay."""
-
-    A = auto()  # Feeder below the top element.
-    B = auto()  # Feeder below the middle element (for Breaker-and-a-half).
-
-
-@dataclass
-class BaseBay:
-    bus_name: str
-    elementAbove: SwitchType = SwitchType.EMPTY  # Element above the first busbar
-    elementAboveConnection: str = ""
-    elementBelow: SwitchType = SwitchType.CB
-    elementBelowConnection: str = ""
-    flip: bool = True
-    neighbour: "BaseBay" = None
-
-    def __post_init__(self):
-        self.points = [[]]
-        self.connections = {}
-
-
-@dataclass
-class SingleSwitchedBay(BaseBay):
-    pass
-
-
-@dataclass
-class DoubleSwitchedBay(BaseBay):
-    other_bus_name: str = ""
-    elementOtherBus: SwitchType = SwitchType.CB
-    elementOtherBusConnection: str = ""
-
-
-@dataclass
-class BreakerAndHalfBay(DoubleSwitchedBay):
-    elementTie: SwitchType = SwitchType.CB
-    elementTieConnection: str = ""
-
-
-@dataclass
-class BusTieBay(BaseBay):
-    tie_bus_name: str = ""
+    UNKNOWN = auto()
 
 
 @dataclass
@@ -128,11 +98,11 @@ class Substation:
     lat: float
     long: float
     voltage_kv: int
-    bus_name: str = ""
-    other_bus_name: str = ""
     tags: list[str] = field(default_factory=list)
     rotation: int = 0
-    bays: list[BaseBay] = field(default_factory=list)
+    definition: str = ""
+    buses: dict = field(default_factory=dict)
+    connections: dict = field(default_factory=dict)
     scaled_x: float = 0
     scaled_y: float = 0
     x: float = 0.0
@@ -144,85 +114,223 @@ class Substation:
     def __post_init__(self):
         self.grid_points = {}  # Store (x,y) -> weight dictionary for grid points
         self.connection_points: dict[str, tuple[float, float]] = {}
+        self.objects = []  # Store objects associated with this substation
 
-    def add_bay(self, bay: BaseBay) -> None:
-        self.bays.append(bay)
-        # set each bay to its left neighbour
-        for i, _ in enumerate(self.bays):
-            if i == 0:
-                continue
-            self.bays[i].neighbour = self.bays[i - 1]
+    def draw_objects(
+        self, parent_group: draw.Group, params: DrawingParams = DrawingParams()
+    ) -> draw.Group:
+        """Draw all objects associated with the substation."""
+        import math  # Import at the top for rotation calculations
+
+        conn_points = {}  # Initialize conn_points here
+        for obj in self.objects:
+            obj_x = obj["rel_x"] * params.grid_step
+            obj_y = obj["rel_y"] * params.grid_step
+            rotation = obj.get("rotation", 0)
+
+            # Create a group for this object
+            obj_group = draw.Group()
+
+            if obj["type"] == "tx":
+                # Amended code to draw the IEC 60617 transformer symbol (interlocking circles)
+                # Assumes (obj_x, obj_y) is the desired center of the entire symbol object.
+                # Assumes a Y-down coordinate system.
+
+                # --- Define Geometry ---
+                # To make the symbol fit nicely within a grid cell, the radius should be
+                # smaller than half the grid step. A third is a good proportion.
+                radius = 2 * params.grid_step / 3
+
+                # The vertical distance between the center of the whole object (obj_y)
+                # and the center of each circle is half the radius.
+                offset = radius / 2
+
+                # --- Top Circle ---
+                circle1_x = obj_x
+                circle1_y = obj_y - offset
+                top_circle = draw.Circle(
+                    circle1_x,
+                    circle1_y,
+                    radius,
+                    fill="transparent",
+                    stroke="black",
+                    stroke_width=3,
+                )
+                obj_group.append(top_circle)
+
+                # --- Bottom Circle ---
+                circle2_x = obj_x
+                circle2_y = obj_y + offset
+                bottom_circle = draw.Circle(
+                    circle2_x,
+                    circle2_y,
+                    radius,
+                    fill="transparent",
+                    stroke="black",
+                    stroke_width=3,
+                )
+                obj_group.append(bottom_circle)
+
+                # --- Terminal Lines ---
+                # Define a length for the terminal lines - 50% longer as requested
+                line_length = params.grid_step
+
+                # Top terminal line
+                top_line_start_y = circle1_y - radius  # Top point of the top circle
+                top_line_end_y = top_line_start_y - line_length
+                top_line = draw.Line(
+                    obj_x,
+                    top_line_start_y,
+                    obj_x,
+                    top_line_end_y,
+                    stroke="black",
+                    stroke_width=3,
+                )
+                obj_group.append(top_line)
+
+                # Bottom terminal line
+                bottom_line_start_y = (
+                    circle2_y + radius
+                )  # Bottom point of the bottom circle
+                bottom_line_end_y = bottom_line_start_y + line_length
+                bottom_line = draw.Line(
+                    obj_x,
+                    bottom_line_start_y,
+                    obj_x,
+                    bottom_line_end_y,
+                    stroke="black",
+                    stroke_width=3,
+                )
+                obj_group.append(bottom_line)
+
+                # Winding text removed as requested
+
+                # Store connection points (we'll apply rotation later if needed)
+                conn_points = {}
+                if "connections" in obj:
+                    for i, conn_id in enumerate(obj["connections"]):
+                        if i == 0:  # First connection at far end of top terminal line
+                            conn_points[conn_id] = (
+                                circle1_x,
+                                top_line_end_y,
+                            )  # At the far end away from transformer
+                        elif (
+                            i == 1
+                        ):  # Second connection at far end of bottom terminal line
+                            conn_points[conn_id] = (
+                                circle2_x,
+                                bottom_line_end_y,
+                            )  # At the far end away from transformer
+                        # Additional connections would be handled here
+
+                    # Mark the connection points for pathfinding
+                    mark_grid_point(
+                        self, circle1_x, top_line_end_y, weight=0
+                    )  # Connection point has weight 0 for pathfinding
+                    mark_grid_point(
+                        self, circle2_x, bottom_line_end_y, weight=0
+                    )  # Connection point has weight 0 for pathfinding
+
+                # Mark grid points for the transformer body
+                mark_grid_point(self, circle1_x, circle1_y)
+                mark_grid_point(self, circle2_x, circle2_y)
+
+            # Apply rotation if specified
+            if rotation != 0:
+                # Create a container group with rotation transform
+                rotated_group = draw.Group(
+                    transform=f"rotate({rotation}, {obj_x}, {obj_y})"
+                )
+                # Add the entire object group to the rotated group
+                rotated_group.append(obj_group)
+                obj_group = rotated_group
+
+                # Apply the same rotation to the connection points
+                if "connections" in obj:
+                    rotation_rad = math.radians(rotation)
+                    for conn_id, (px, py) in conn_points.items():
+                        # Translate to origin
+                        tx = px - obj_x
+                        ty = py - obj_y
+                        # Rotate
+                        rx = tx * math.cos(rotation_rad) - ty * math.sin(rotation_rad)
+                        ry = tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
+                        # Translate back
+                        rotated_x = rx + obj_x
+                        rotated_y = ry + obj_y
+                        # Update the connection point with rotated coordinates
+                        self.connection_points[conn_id] = (rotated_x, rotated_y)
+
+                        # Also update the grid points for pathfinding with rotated coordinates
+                        mark_grid_point(
+                            self, rotated_x, rotated_y, weight=0
+                        )  # Connection point has weight 0 for pathfinding
+            else:
+                # For non-rotated objects, store the connection points directly
+                if "connections" in obj:
+                    for conn_id, (px, py) in conn_points.items():
+                        # Store connection points for non-rotated objects
+                        self.connection_points[conn_id] = (px, py)
+
+            parent_group.append(obj_group)
+
+        return parent_group
 
     def get_drawing_bbox(
         self, params: DrawingParams
     ) -> tuple[float, float, float, float]:
         """Calculates the bounding box (min_x, min_y, max_x, max_y) of the substation drawing."""
-        if not self.bays:
+        if not self.definition and not self.objects:
             return 0, 0, 0, 0
 
-        # The drawing functions create continuous busbars.
-        # The leftmost point is determined by the first bay.
-        first_bay = self.bays[0]
-        xoff = 0
-        min_x = 0
-        if isinstance(first_bay, (SingleSwitchedBay, DoubleSwitchedBay)):
-            min_x = xoff - params.bay_width / 2
-        elif isinstance(first_bay, BreakerAndHalfBay):
-            min_x = xoff - 50
+        bay_defs = self.definition.strip().split("\n")
+        num_bays = len(bay_defs)
+        max_elements = 0
+        for bay_def in bay_defs:
+            # A simple way to estimate height is by counting elements.
+            # This will need to be more robust.
+            max_elements = max(max_elements, len(bay_def))
 
-        # The rightmost point is determined by the last bay.
-        last_bay = self.bays[-1]
-        xoff = 50 * (len(self.bays) - 1)
-        max_x = 0
-        if isinstance(last_bay, (SingleSwitchedBay, DoubleSwitchedBay)):
-            max_x = xoff + params.bay_width / 2
-        elif isinstance(last_bay, BreakerAndHalfBay):
-            max_x = xoff + 50
+        min_x = -params.grid_step
+        max_x = (num_bays - 1) * 2 * params.grid_step + params.grid_step
+        min_y = 0  # Assuming top bus is at y=0
+        # Estimate height based on number of elements * space per element
+        max_y = max_elements * (params.cb_size + params.grid_step)
 
-        # Height calculation
-        # Account for elementAbove which is drawn above the busbar (negative y)
-        min_y = 0
-        for bay in self.bays:
-            # Check if any bay has elementAbove defined
-            if hasattr(bay, "elementAbove") and bay.elementAbove not in (
-                SwitchType.EMPTY,
-                SwitchType.NOBUS,
-            ):
-                bay_min_y = -1 * (params.grid_step + params.cb_size + params.grid_step)
-                if bay_min_y < min_y:
-                    min_y = bay_min_y
+        # Include objects in the bounding box calculation
+        for obj in self.objects:
+            # Objects have rel_x and rel_y which are in grid steps from origin
+            obj_x = obj["rel_x"] * params.grid_step
+            obj_y = obj["rel_y"] * params.grid_step
 
-        # Calculate max_y (drawings go down with positive y)
-        max_y = 0
-        for bay in self.bays:
-            bay_max_y = 0
-            if isinstance(bay, BreakerAndHalfBay):
-                bay_max_y = 3 * (params.grid_step + params.cb_size + params.grid_step)
-            elif isinstance(bay, DoubleSwitchedBay):
-                bay_max_y = 6 * params.grid_step
-            elif isinstance(bay, SingleSwitchedBay):
-                bay_max_y = params.grid_step + params.cb_size + params.grid_step
+            # For TX objects, consider the two circles
+            if obj["type"] == "tx":
+                # Each circle is 25px (1 grid step) in diameter
+                # Circles are placed side by side
+                obj_min_x = obj_x - params.grid_step
+                obj_max_x = obj_x + params.grid_step * 2
+                obj_min_y = obj_y - params.grid_step / 2
+                obj_max_y = obj_y + params.grid_step * 1.5
+            else:  # Generic object handling for other types
+                obj_min_x = obj_x - params.grid_step / 2
+                obj_max_x = obj_x + params.grid_step / 2
+                obj_min_y = obj_y - params.grid_step / 2
+                obj_max_y = obj_y + params.grid_step / 2
 
-            if bay_max_y > max_y:
-                max_y = bay_max_y
-
-        # For BreakerAndHalf substations, ensure the total height is an even number of grid steps
-        # to keep the rotation center on the grid.
-        is_bah = any(isinstance(b, BreakerAndHalfBay) for b in self.bays)
-        if is_bah:
-            height = max_y - min_y
-            height_in_steps = round(height / params.grid_step)
-            if height_in_steps % 2 != 0:
-                max_y += params.grid_step
+            # Update the bounding box
+            min_x = min(min_x, obj_min_x)
+            max_x = max(max_x, obj_max_x)
+            min_y = min(min_y, obj_min_y)
+            max_y = max(max_y, obj_max_y)
 
         return min_x, min_y, max_x, max_y
 
 
 # --- Data Loading ---
-def load_substations_from_json(filename: str) -> dict[str, Substation]:
-    """Load substations from JSON file into a dictionary."""
+def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
+    """Load substations from YAML file into a dictionary."""
     with open(filename, "r") as f:
-        data = json.load(f)
+        data = yaml.safe_load(f)
 
     substations_map = {}
 
@@ -234,81 +342,16 @@ def load_substations_from_json(filename: str) -> dict[str, Substation]:
             lat=sub_data["lat"],
             long=sub_data["long"],
             voltage_kv=sub_data["voltage_kv"],
-            bus_name=sub_data.get("bus_name", ""),
-            other_bus_name=sub_data.get("other_bus_name", ""),
             tags=sub_data.get("tags", [sub_data["name"]]),
             rotation=sub_data.get("rotation", 0),
+            definition=sub_data.get("def", ""),
+            buses=sub_data.get("buses", {}),
+            connections=sub_data.get("connections", {}),
         )
 
-        # Create bays
-        for bay_data in sub_data["bays"]:
-            bay_type = bay_data["type"]
-
-            # Convert string enum values to SwitchType enums
-            elementAbove = SwitchType[bay_data.get("elementAbove", ["EMPTY", ""])[0]]
-            elementAboveConnection = bay_data["elementAbove"][1]
-            elementBelow = SwitchType[bay_data["elementBelow"][0]]
-            elementBelowConnection = bay_data["elementBelow"][1]
-            flip = bay_data.get("flip", True)
-
-            # Get bus names, using substation-level as default
-            bus_name = bay_data.get("bus_name", substation.bus_name)
-
-            if bay_type == 1:  # SingleSwitchedBay
-                bay = SingleSwitchedBay(
-                    bus_name=bus_name,
-                    elementAbove=elementAbove,
-                    elementAboveConnection=elementAboveConnection,
-                    elementBelow=elementBelow,
-                    elementBelowConnection=elementBelowConnection,
-                    flip=flip,
-                )
-            elif bay_type == 2:  # DoubleSwitchedBay
-                elementOtherBus = SwitchType[bay_data["elementOtherBus"][0]]
-                elementOtherBusConnection = bay_data["elementOtherBus"][1]
-                other_bus_name = bay_data.get(
-                    "other_bus_name", substation.other_bus_name
-                )
-                bay = DoubleSwitchedBay(
-                    bus_name=bus_name,
-                    other_bus_name=other_bus_name,
-                    elementAbove=elementAbove,
-                    elementAboveConnection=elementAboveConnection,
-                    elementBelow=elementBelow,
-                    elementBelowConnection=elementBelowConnection,
-                    elementOtherBus=elementOtherBus,
-                    elementOtherBusConnection=elementOtherBusConnection,
-                    flip=flip,
-                )
-            elif bay_type == 3:  # BreakerAndHalfBay
-                elementTie, elementTieConnection = (
-                    SwitchType[bay_data["elementTie"][0]],
-                    bay_data["elementTie"][1],
-                )
-
-                elementOtherBus = SwitchType[bay_data["elementOtherBus"][0]]
-                elementOtherBusConnection = bay_data["elementOtherBus"][1]
-                other_bus_name = bay_data.get(
-                    "other_bus_name", substation.other_bus_name
-                )
-                bay = BreakerAndHalfBay(
-                    bus_name=bus_name,
-                    other_bus_name=other_bus_name,
-                    elementAbove=elementAbove,
-                    elementAboveConnection=elementAboveConnection,
-                    elementBelow=elementBelow,
-                    elementBelowConnection=elementBelowConnection,
-                    elementTie=elementTie,
-                    elementTieConnection=elementTieConnection,
-                    elementOtherBus=elementOtherBus,
-                    elementOtherBusConnection=elementOtherBusConnection,
-                    flip=flip,
-                )
-            # BusTieBay is not handled as it's not in the numeric types
-            else:
-                raise ValueError(f"Unknown bay type: {bay_type}")
-
-            substation.add_bay(bay)
+        # Add objects to the substation if present in the data
+        if "objects" in sub_data:
+            substation.objects = sub_data["objects"]
 
         substations_map[substation.name] = substation
     return substations_map
@@ -328,6 +371,7 @@ def draw_switch(
     orientation: str = "vertical",
     rotation_angle: int = 45,
     params: DrawingParams = DrawingParams(),
+    colour: str = "black",
 ) -> draw.Group:
     """Generic function to draw a switch (CB or isolator) at given coordinates."""
     if switch_type == SwitchType.CB:
@@ -339,6 +383,21 @@ def draw_switch(
                 params.cb_size,
                 params.cb_size,
                 fill="white",
+                stroke=colour,
+            )
+        )
+    elif switch_type == SwitchType.UNKNOWN:
+        # Unknown switch type is drawn as a question mark
+        parent_group.append(
+            draw.Text(
+                "?",
+                font_size=params.cb_size * 1,
+                x=x,
+                y=y,
+                text_anchor="middle",
+                dominant_baseline="central",
+                fill="black",
+                stroke_width=0,
             )
         )
     elif switch_type == SwitchType.ISOL:
@@ -350,6 +409,7 @@ def draw_switch(
                     y - params.isolator_size / 2,
                     x,
                     y + params.isolator_size / 2,
+                    stroke=colour,
                     stroke_width=2,
                     transform=f"rotate({rotation_angle}, {x}, {y})",
                 )
@@ -361,6 +421,7 @@ def draw_switch(
                     y,
                     x + params.isolator_size / 2,
                     y,
+                    stroke=colour,
                     stroke_width=2,
                     transform=f"rotate({-rotation_angle}, {x}, {y})",
                 )
@@ -369,782 +430,638 @@ def draw_switch(
 
 
 # --- Bay Drawing Functions ---
-def draw_single_switched_bay(
+def draw_bay_from_string(
     xoff: float,
     parent_group: draw.Group,
-    bay: BaseBay,
+    bay_def: str,
     sub: Substation,
+    is_first_bay: bool,
     params: DrawingParams = DrawingParams(),
+    previous_bay_elements: list = None,
+    y_offset: int = 0,
 ) -> draw.Group:
-    """Draw a CB or isolator at the given x offset and y direction."""
-    ys = 1 if bay.flip else -1
-    # handle bus - only draw if its of type other than NOBUS
-    if bay.elementBelow is SwitchType.NOBUS:
-        return parent_group
-    parent_group.append(
-        draw.Line(
-            -params.bay_width / 2 + xoff,
-            0,
-            params.bay_width / 2 + xoff,
-            0,
-            stroke_width=5,
-        )
-    )
-    mark_grid_point(sub, xoff, 0, weight=BUSBAR_WEIGHT)
-    # and left and right of this point on the busbar
-    mark_grid_point(sub, xoff + params.grid_step, 0, weight=BUSBAR_WEIGHT)
-    mark_grid_point(sub, xoff - params.grid_step, 0, weight=BUSBAR_WEIGHT)
+    """
+    Draw a single bay based on a definition string using the new substation language.
+    """
+    colour = COLOUR_MAP.get(sub.voltage_kv, "black")
 
-    # handle bus identifier - only draw if its the first bay on the bus
-    if bay.neighbour is None or bay.neighbour.elementBelow is SwitchType.NOBUS:
-        parent_group.append(
-            draw.Text(
-                bay.bus_name,
-                x=-params.bay_width / 2 + xoff,
-                y=-8,
-                font_size=BUS_LABEL_FONT_SIZE,
-                anchor="end",
-                stroke_width=0,
-            )
-        )
+    # Parse the definition string into elements
+    elements = []
+    char_index = 0
 
-    # Draw elementAbove (ABOVE the busbar)
-    if bay.elementAbove is not SwitchType.EMPTY:
-        if bay.elementAbove is SwitchType.DIRECT:
-            # Direct connection, just a line
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    0,
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size + params.grid_step),
-                )
-            )
-            mark_grid_point(
-                sub, xoff, -1 * (params.grid_step + params.cb_size + params.grid_step)
-            )
-            sub.connection_points[bay.elementAboveConnection] = (
-                xoff,
-                ys * (params.grid_step + params.cb_size + params.grid_step),
-            )
-        else:
-            # Draw CB or isolator
-            # Line from bus to switch
-            parent_group.append(draw.Line(xoff, 0, xoff, -1 * params.grid_step))
-            mark_grid_point(sub, xoff, -1 * params.grid_step)
-            # Draw the switch at the correct position
-            draw_switch(
-                xoff,
-                -1 * (params.grid_step + params.cb_size / 2),
-                parent_group,
-                bay.elementAbove,
-                "vertical",
-                params=params,
-            )
-            # Mark CB center and sides
-            mark_grid_point(sub, xoff, -1 * (params.grid_step))
-            mark_grid_point(sub, xoff, -1 * (params.grid_step + params.cb_size))
-            # Line from switch upward
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size),
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size + params.grid_step),
-                )
-            )
-            mark_grid_point(
-                sub, xoff, -1 * (params.grid_step + params.cb_size + params.grid_step)
-            )
-            sub.connection_points[bay.elementAboveConnection] = (
-                xoff,
-                -1 * (params.grid_step + params.cb_size + params.grid_step),
-            )
+    while char_index < len(bay_def):
+        char = bay_def[char_index]
 
-    # Draw main element (BELOW the busbar)
-    if bay.elementBelow is SwitchType.EMPTY:
-        # nothing else to do
-        return parent_group
+        # Handle busbar objects
+        if char == "|":
+            # Count consecutive | characters for busbar ID
+            bus_start_index = char_index
+            while char_index < len(bay_def) and bay_def[char_index] == "|":
+                char_index += 1
+            bus_id = char_index - bus_start_index
+            elements.append({"type": "busbar", "subtype": "standard", "id": bus_id})
 
-    elif bay.elementBelow is SwitchType.DIRECT:
-        # Line off bus - but is longer than normal as no cb/isol
-        parent_group.append(
-            draw.Line(
-                xoff,
-                0,
-                xoff,
-                ys * (params.grid_step + params.cb_size + params.grid_step),
-            )
-        )
-        mark_grid_point(
-            sub, xoff, ys * (params.grid_step + params.cb_size + params.grid_step)
-        )
-        sub.connection_points[bay.elementBelowConnection] = (
-            xoff,
-            ys * (params.grid_step + params.cb_size + params.grid_step),
-        )
-        return parent_group
+        elif char == "s":
+            elements.append({"type": "busbar", "subtype": "string"})
+            char_index += 1
 
-    # else its either CB or isolator
+        elif char == "N":
+            elements.append({"type": "busbar", "subtype": "null"})
+            char_index += 1
 
-    # Line off bus towards switch
-    parent_group.append(draw.Line(xoff, 0, xoff, ys * params.grid_step))
-    mark_grid_point(sub, xoff, ys * params.grid_step)
-    # Draw the switch at the correct position
-    draw_switch(
-        xoff,
-        ys * (params.grid_step + params.cb_size / 2),
-        parent_group,
-        bay.elementBelow,
-        "vertical",
-        params=params,
-    )
-    # Mark CB center and sides
-    mark_grid_point(sub, xoff, ys * (params.grid_step))
-    mark_grid_point(sub, xoff, ys * (params.grid_step + params.cb_size))
-    # Line from switch towards feeder
-    parent_group.append(
-        draw.Line(
-            xoff,
-            ys * (params.grid_step + params.cb_size),
-            xoff,
-            ys * (params.grid_step + params.cb_size + params.grid_step),
-        )
-    )
-    mark_grid_point(
-        sub, xoff, ys * (params.grid_step + params.cb_size + params.grid_step)
-    )
-    sub.connection_points[bay.elementBelowConnection] = (
-        xoff,
-        ys * (params.grid_step + params.cb_size + params.grid_step),
-    )
+        elif char == "t":
+            # Check for 'ts' variant
+            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
+                elements.append({"type": "busbar", "subtype": "tie_cb_thin"})
+                char_index += 2
+            else:
+                elements.append({"type": "busbar", "subtype": "tie_cb"})
+                char_index += 1
 
-    return parent_group
+        elif char == "i":
+            # Check for 'is' variant
+            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
+                elements.append({"type": "busbar", "subtype": "tie_isol_thin"})
+                char_index += 2
+            else:
+                elements.append({"type": "busbar", "subtype": "tie_isol"})
+                char_index += 1
 
+        # Handle element objects
+        elif char == "x":
+            elements.append({"type": "element", "subtype": "cb"})
+            char_index += 1
 
-def draw_double_switched_bay(
-    xoff: float,
-    parent_group: draw.Group,
-    bay: DoubleSwitchedBay,
-    sub: Substation,
-    params: DrawingParams = DrawingParams(),
-) -> draw.Group:
-    """Draw a double switched bay at the given x offset and y direction."""
-    # top element is the same as single switched bay - this also handles element0
-    parent_group = draw_single_switched_bay(
-        xoff,
-        parent_group,
-        bay,
-        sub,
-        params=params,
-    )
+        elif char == "/":
+            elements.append({"type": "element", "subtype": "isolator"})
+            char_index += 1
 
-    # handle bottom element
-    ys = 1 if bay.flip else -1
-    # handle bus - only draw if its of type other than NOBUS
-    if bay.elementOtherBus is SwitchType.NOBUS:
-        return parent_group
+        elif char == "d":
+            elements.append({"type": "element", "subtype": "direct"})
+            char_index += 1
 
-    top_feeder_y = ys * (params.grid_step + params.cb_size + params.grid_step)
+        elif char == "E":
+            elements.append({"type": "element", "subtype": "empty"})
+            char_index += 1
 
-    # Correctly calculate double-switched bay coordinates based on flip parameter
-    bottom_busbar_distance = 6 * params.grid_step * (1 if bay.flip else -1)
-    bottom_bus_y = bottom_busbar_distance
-
-    # Calculate bottom element positions relative to busbars
-    if bay.flip:  # Elements go down
-        bottom_element_top_y = 4 * params.grid_step
-        bottom_element_center_y = 4.5 * params.grid_step
-        bottom_element_bottom_y = 5 * params.grid_step
-    else:  # Elements go up
-        bottom_element_bottom_y = -4 * params.grid_step
-        bottom_element_center_y = -4.5 * params.grid_step
-        bottom_element_top_y = -5 * params.grid_step
-
-    parent_group.append(
-        draw.Line(
-            -params.bay_width / 2 + xoff,
-            bottom_bus_y,
-            params.bay_width / 2 + xoff,
-            bottom_bus_y,
-            stroke_width=5,
-        )
-    )
-
-    # Mark bottom busbar points in the grid
-    for i in range(int(params.bay_width / params.grid_step) + 1):
-        mark_grid_point(
-            sub, -params.bay_width / 2 + xoff + i * params.grid_step, bottom_bus_y
-        )
-    mark_grid_point(sub, xoff, bottom_bus_y, weight=BUSBAR_WEIGHT)
-
-    # handle bus identifier - only draw if its the first bay on the bus
-    if (
-        bay.neighbour is None
-        or not hasattr(bay.neighbour, "elementOtherBus")
-        or bay.neighbour.elementOtherBus is SwitchType.NOBUS
-    ):
-        parent_group.append(
-            draw.Text(
-                bay.other_bus_name,
-                x=-params.bay_width / 2 + xoff,
-                y=bottom_bus_y + 8,
-                font_size=BUS_LABEL_FONT_SIZE,
-                anchor="end",
-                stroke_width=0,
-            )
-        )
-
-    if bay.elementOtherBus is SwitchType.EMPTY:
-        # nothing else to do
-        return parent_group
-
-    elif bay.elementOtherBus is SwitchType.DIRECT:
-        # Line off bus - but is longer than normal as no cb/isol
-        parent_group.append(draw.Line(xoff, top_feeder_y, xoff, bottom_bus_y))
-        mark_grid_point(sub, xoff, bottom_bus_y)
-        sub.connection_points[bay.elementOtherBusConnection] = (
-            xoff,
-            bottom_bus_y,
-        )
-        return parent_group
-
-    # else its either CB or isolator
-
-    # Line from top feeder towards switch
-    parent_group.append(draw.Line(xoff, top_feeder_y, xoff, bottom_element_top_y))
-    mark_grid_point(sub, xoff, bottom_element_top_y)
-    # Draw the switch at the correct position
-    draw_switch(
-        xoff,
-        bottom_element_center_y,
-        parent_group,
-        bay.elementOtherBus,
-        "vertical",
-        params=params,
-    )
-    mark_grid_point(sub, xoff, bottom_element_center_y)
-    # Line from switch towards bottom bus
-    parent_group.append(draw.Line(xoff, bottom_element_bottom_y, xoff, bottom_bus_y))
-    mark_grid_point(sub, xoff, bottom_element_bottom_y)
-
-    # Mark grid points for the bottom element and connecting lines
-    mark_grid_point(sub, xoff, top_feeder_y)  # Top connection point
-    sub.connection_points[bay.elementOtherBusConnection] = (
-        xoff,
-        top_feeder_y,
-    )
-    mark_grid_point(sub, xoff, bottom_element_center_y)  # Switch center
-    mark_grid_point(sub, xoff, bottom_bus_y, weight=BUSBAR_WEIGHT)  # Bottom busbar
-
-    # Mark intermediate points between top feeder and switch
-    for i in range(
-        1, int(abs(top_feeder_y - bottom_element_top_y) / params.grid_step) + 1
-    ):
-        y_pos = top_feeder_y + i * params.grid_step * (
-            1 if bottom_element_top_y > top_feeder_y else -1
-        )
-        mark_grid_point(sub, xoff, y_pos)
-
-    # Mark intermediate points between switch and bottom busbar
-    for i in range(
-        1, int(abs(bottom_element_bottom_y - bottom_bus_y) / params.grid_step) + 1
-    ):
-        y_pos = bottom_element_bottom_y + i * params.grid_step * (
-            1 if bottom_bus_y > bottom_element_bottom_y else -1
-        )
-        mark_grid_point(sub, xoff, y_pos)
-    mark_grid_point(sub, xoff, bottom_element_bottom_y)
-
-    return parent_group
-
-
-def draw_breaker_and_half_bay(
-    xoff: float,
-    parent_group: draw.Group,
-    bay: BreakerAndHalfBay,
-    sub: Substation,
-    params: DrawingParams = DrawingParams(),
-) -> draw.Group:
-    """Draw a breaker-and-a-half bay with three elements (top, middle, bottom)."""
-    # Draw top bus with proper length to support the bay width
-    parent_group.append(draw.Line(-50 + xoff, 0, 50 + xoff, 0, stroke_width=5))
-
-    # Mark top busbar in grid
-    for i in range(int(100 / params.grid_step) + 1):
-        mark_grid_point(sub, -50 + xoff + i * params.grid_step, 0, weight=BUSBAR_WEIGHT)
-    mark_grid_point(sub, xoff, 0, weight=BUSBAR_WEIGHT)
-
-    # Add bus identifier for top bus if needed
-    if bay.neighbour is None or not isinstance(bay.neighbour, BreakerAndHalfBay):
-        parent_group.append(
-            draw.Text(
-                bay.bus_name,
-                x=-55 + xoff,
-                y=-8,
-                font_size=BUS_LABEL_FONT_SIZE,
-                anchor="end",
-                stroke_width=0,
-            )
-        )
-
-    # Draw elementAbove (ABOVE the first busbar)
-    if (
-        bay.elementAbove is not SwitchType.EMPTY
-        and bay.elementAbove is not SwitchType.NOBUS
-    ):
-        if bay.elementAbove is SwitchType.DIRECT:
-            # Direct connection, just a line
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    0,
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size + params.grid_step),
-                )
-            )
-            mark_grid_point(
-                sub, xoff, -1 * (params.grid_step + params.cb_size + params.grid_step)
-            )
+        # Handle connection objects
+        elif char.isdigit():
+            num_start_index = char_index
+            while char_index < len(bay_def) and bay_def[char_index].isdigit():
+                char_index += 1
+            conn_id = int(bay_def[num_start_index:char_index])
+            elements.append({"type": "connection", "id": conn_id})
 
         else:
-            # Draw CB or isolator
-            # Line from top bus to switch
-            parent_group.append(draw.Line(xoff, 0, xoff, -1 * params.grid_step))
-            mark_grid_point(sub, xoff, -1 * params.grid_step)
-            # Draw the switch
-            draw_switch(
-                xoff,
-                -1 * (params.grid_step + params.cb_size / 2),
-                parent_group,
-                bay.elementAbove,
-                "vertical",
-                params=params,
+            # Warn about unrecognised characters
+            print(
+                f"WARNING: Unrecognised character '{char}' at position {char_index} in bay definition '{bay_def}' for substation '{sub.name}'"
             )
-            mark_grid_point(sub, xoff, -1 * (params.grid_step + params.cb_size / 2))
-            # Line from switch upward
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size),
-                    xoff,
-                    -1 * (params.grid_step + params.cb_size + params.grid_step),
-                )
-            )
-            mark_grid_point(
-                sub, xoff, -1 * (params.grid_step + params.cb_size + params.grid_step)
-            )
+            char_index += 1
 
-    # TOP ELEMENT
-    if (
-        bay.elementBelow is not SwitchType.NOBUS
-        and bay.elementBelow is not SwitchType.EMPTY
-    ):
-        if bay.elementBelow is SwitchType.DIRECT:
-            # Direct connection, just a line
-            parent_group.append(
-                draw.Line(
-                    xoff, 0, xoff, params.grid_step + params.cb_size + params.grid_step
-                )
-            )
-            mark_grid_point(
-                sub, xoff, params.grid_step + params.cb_size + params.grid_step
-            )
-        else:
-            # Draw CB or isolator
-            # Line from top bus to switch
-            parent_group.append(draw.Line(xoff, 0, xoff, params.grid_step))
-            mark_grid_point(sub, xoff, params.grid_step)
-            # Draw the switch
-            draw_switch(
-                xoff,
-                params.grid_step + params.cb_size / 2,
-                parent_group,
-                bay.elementBelow,
-                "vertical",
-                params=params,
-            )
-            mark_grid_point(sub, xoff, params.grid_step + params.cb_size / 2)
-            # Line from switch down
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    params.grid_step + params.cb_size,
-                    xoff,
-                    params.grid_step + params.cb_size + params.grid_step,
-                )
-            )
-            mark_grid_point(
-                sub, xoff, params.grid_step + params.cb_size + params.grid_step
-            )
-            sub.connection_points[bay.elementBelowConnection] = (
-                xoff,
-                (params.grid_step + params.cb_size + params.grid_step),
-            )
+    y_pos = -y_offset
 
-    # MIDDLE ELEMENT
-    if (
-        bay.elementTie is not SwitchType.NOBUS
-        and bay.elementTie is not SwitchType.EMPTY
-    ):
-        top_conn_y = params.grid_step + params.cb_size + params.grid_step
-        if bay.elementTie is SwitchType.DIRECT:
-            # Direct connection, just a line
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    top_conn_y,
-                    xoff,
-                    top_conn_y + params.grid_step + params.cb_size + params.grid_step,
+    # Draw elements with proper connecting lines
+    last_y = y_pos
+
+    for i, element in enumerate(elements):
+        if element["type"] == "busbar":
+            # Draw connecting line from previous element if needed
+            if i > 0 and last_y != y_pos:
+                parent_group.append(
+                    draw.Line(xoff, last_y, xoff, y_pos, stroke=colour, stroke_width=2)
                 )
-            )
-            mark_grid_point(
+                # Mark intermediate grid points
+                steps = int((y_pos - last_y) / params.grid_step)
+                for step in range(1, steps):
+                    mark_grid_point(
+                        sub,
+                        xoff,
+                        last_y + step * params.grid_step,
+                        weight=ELEMENT_WEIGHT,
+                    )
+
+            y_pos = draw_busbar_object(
+                element,
+                xoff,
+                y_pos,
+                parent_group,
                 sub,
-                xoff,
-                top_conn_y + params.grid_step + params.cb_size + params.grid_step,
+                is_first_bay,
+                params,
+                colour,
+                previous_bay_elements,
             )
-            sub.connection_points[bay.elementTieConnection] = (
-                xoff,
-                top_conn_y + params.grid_step + params.cb_size + params.grid_step,
-            )
-        else:
-            # Draw CB or isolator
-            # Line to switch
-            parent_group.append(
-                draw.Line(xoff, top_conn_y, xoff, top_conn_y + params.grid_step)
-            )
-            mark_grid_point(sub, xoff, top_conn_y + params.grid_step)
-            # Draw the switch
-            draw_switch(
-                xoff,
-                top_conn_y + params.grid_step + params.cb_size / 2,
-                parent_group,
-                bay.elementTie,
-                "vertical",
-                params=params,
-            )
-            mark_grid_point(
-                sub, xoff, top_conn_y + params.grid_step + params.cb_size / 2
-            )
-            # Line from switch down
-            parent_group.append(
-                draw.Line(
-                    xoff,
-                    top_conn_y + params.grid_step + params.cb_size,
-                    xoff,
-                    top_conn_y + params.grid_step + params.cb_size + params.grid_step,
+            last_y = y_pos
+
+        elif element["type"] == "element":
+            # Draw connecting line from previous element if needed
+            if i > 0 and last_y != y_pos:
+                parent_group.append(
+                    draw.Line(xoff, last_y, xoff, y_pos, stroke=colour, stroke_width=2)
                 )
+                # Mark intermediate grid points
+                steps = int((y_pos - last_y) / params.grid_step)
+                for step in range(1, steps):
+                    mark_grid_point(
+                        sub,
+                        xoff,
+                        last_y + step * params.grid_step,
+                        weight=ELEMENT_WEIGHT,
+                    )
+
+            y_pos = draw_element_object(
+                element, xoff, y_pos, parent_group, sub, params, colour
             )
-            mark_grid_point(
-                sub,
-                xoff,
-                top_conn_y + params.grid_step + params.cb_size + params.grid_step,
-            )
-            sub.connection_points[bay.elementTieConnection] = (
-                xoff,
-                top_conn_y + params.grid_step + params.cb_size + params.grid_step,
-            )
+            last_y = y_pos
 
-    # BOTTOM ELEMENT
-    if (
-        bay.elementOtherBus is SwitchType.NOBUS
-        or bay.elementOtherBus is SwitchType.EMPTY
-    ):
-        # No bottom element or bus
-        return parent_group
+            # Add grid step spacing after each element only if there's another non-connection element following
+            next_element_idx = i + 1
+            while (
+                next_element_idx < len(elements)
+                and elements[next_element_idx]["type"] == "connection"
+            ):
+                next_element_idx += 1
 
-    middle_conn_y = 2 * (params.grid_step + params.cb_size + params.grid_step)
-    if bay.elementOtherBus is SwitchType.DIRECT:
-        # Direct connection, just a line
-        parent_group.append(
-            draw.Line(
-                xoff,
-                middle_conn_y,
-                xoff,
-                middle_conn_y + params.grid_step + params.cb_size + params.grid_step,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            middle_conn_y + params.grid_step + params.cb_size + params.grid_step,
-        )
-    else:
-        # Draw CB or isolator
-        # Line to switch
-        parent_group.append(
-            draw.Line(xoff, middle_conn_y, xoff, middle_conn_y + params.grid_step)
-        )
-        mark_grid_point(sub, xoff, middle_conn_y + params.grid_step)
-        # Draw the switch
-        draw_switch(
-            xoff,
-            middle_conn_y + params.grid_step + params.cb_size / 2,
-            parent_group,
-            bay.elementOtherBus,
-            "vertical",
-            params=params,
-        )
-        mark_grid_point(
-            sub, xoff, middle_conn_y + params.grid_step + params.cb_size / 2
-        )
-        # Line from switch to bottom bus
-        parent_group.append(
-            draw.Line(
-                xoff,
-                middle_conn_y + params.grid_step + params.cb_size,
-                xoff,
-                middle_conn_y + params.grid_step + params.cb_size + params.grid_step,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            middle_conn_y + params.grid_step + params.cb_size + params.grid_step,
-        )
-
-    # Draw bottom bus with same width as top bus for consistency
-    bottom_bus_y = 3 * (params.grid_step + params.cb_size + params.grid_step)
-    parent_group.append(
-        draw.Line(-50 + xoff, bottom_bus_y, 50 + xoff, bottom_bus_y, stroke_width=5)
-    )
-
-    # Mark bottom busbar in grid
-    for i in range(int(100 / params.grid_step) + 1):
-        mark_grid_point(
-            sub, -50 + xoff + i * params.grid_step, bottom_bus_y, weight=BUSBAR_WEIGHT
-        )
-    mark_grid_point(sub, xoff, bottom_bus_y, weight=BUSBAR_WEIGHT)
-
-    # Handle bottom bus identifier - only draw if its the first bay on the bus
-    if (
-        bay.neighbour is None
-        or not isinstance(bay.neighbour, BreakerAndHalfBay)
-        or bay.neighbour.elementOtherBus is SwitchType.NOBUS
-    ):
-        parent_group.append(
-            draw.Text(
-                bay.other_bus_name,
-                x=-55 + xoff,
-                y=bottom_bus_y + 8,
-                font_size=BUS_LABEL_FONT_SIZE,
-                anchor="end",
-                stroke_width=0,
-            )
-        )
-
-    # Mark grid points for element above and lines only if elementAbove exists
-    if (
-        bay.elementAbove is not SwitchType.EMPTY
-        and bay.elementAbove is not SwitchType.NOBUS
-    ):
-        top_y = -1 * (params.grid_step + params.cb_size + params.grid_step)
-        cb_y = -1 * (params.grid_step + params.cb_size / 2)
-
-        # Always mark the busbar connection
-        mark_grid_point(sub, xoff, 0)  # Busbar connection
-
-        if bay.elementAbove is SwitchType.DIRECT:
-            # For direct connections, just mark the end point
-            mark_grid_point(sub, xoff, top_y)  # End of line
-        else:
-            # For CB/isolator, mark all points of the switch square:
-            # Top of CB
-            mark_grid_point(sub, xoff, -1 * params.grid_step)
-            # Left side of CB
-            mark_grid_point(sub, xoff - params.cb_size / 2, cb_y)
-            # CB center
-            mark_grid_point(sub, xoff, cb_y)
-            # Right side of CB
-            mark_grid_point(sub, xoff + params.cb_size / 2, cb_y)
-            # Bottom of CB
-            mark_grid_point(sub, xoff, -1 * (params.grid_step + params.cb_size))
-            # End of line
-            mark_grid_point(sub, xoff, top_y)
-
-        # Mark intermediate points between busbar and switch
-        for i in range(1, int(abs(cb_y) / params.grid_step)):
-            mark_grid_point(sub, xoff, -i * params.grid_step)
-
-        # Mark intermediate points between switch and end of line
-        switch_bottom = -1 * (params.grid_step + params.cb_size)
-        for i in range(1, int(abs(top_y - switch_bottom) / params.grid_step) + 1):
-            y_pos = switch_bottom - i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-        mark_grid_point(
-            sub, xoff, -1 * (params.grid_step + params.cb_size + params.grid_step)
-        )
-
-    # Mark grid points for top element and lines only if elementBelow exists
-    if (
-        bay.elementBelow is not SwitchType.NOBUS
-        and bay.elementBelow is not SwitchType.EMPTY
-    ):
-        bottom_y = params.grid_step + params.cb_size + params.grid_step
-        cb_y = params.grid_step + params.cb_size / 2
-
-        # Always mark the busbar connection
-        mark_grid_point(sub, xoff, 0)  # Busbar connection
-
-        if bay.elementBelow is SwitchType.DIRECT:
-            # For direct connections, just mark the end point
-            mark_grid_point(sub, xoff, bottom_y)  # End of line
-        else:
-            # For CB/isolator, mark all points of the switch square:
-            # Top of CB
-            mark_grid_point(sub, xoff, params.grid_step)
-            # Left side of CB
-            mark_grid_point(sub, xoff - params.cb_size / 2, cb_y)
-            # CB center
-            mark_grid_point(sub, xoff, cb_y)
-            # Right side of CB
-            mark_grid_point(sub, xoff + params.cb_size / 2, cb_y)
-            # Bottom of CB
-            mark_grid_point(sub, xoff, params.grid_step + params.cb_size)
-            # End of line
-            mark_grid_point(sub, xoff, bottom_y)
-
-        # Mark intermediate points between busbar and switch
-        for i in range(1, int(cb_y / params.grid_step)):
-            mark_grid_point(sub, xoff, i * params.grid_step)
-
-        # Mark intermediate points between switch and end of line
-        switch_bottom = params.grid_step + params.cb_size
-        for i in range(1, int(abs(bottom_y - switch_bottom) / params.grid_step) + 1):
-            y_pos = switch_bottom + i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-        mark_grid_point(sub, xoff, params.grid_step + params.cb_size + params.grid_step)
-
-    # Mark grid points for middle element and lines only if elementTie exists
-    if (
-        bay.elementTie is not SwitchType.NOBUS
-        and bay.elementTie is not SwitchType.EMPTY
-    ):
-        switch_y = top_conn_y + params.grid_step + params.cb_size / 2
-        bottom_y = top_conn_y + params.grid_step + params.cb_size + params.grid_step
-
-        # Always mark the top connection
-        mark_grid_point(sub, xoff, top_conn_y)  # Top connection
-
-        if bay.elementTie is SwitchType.DIRECT:
-            # For direct connections, just mark the end point
-            mark_grid_point(sub, xoff, bottom_y)  # End of line
-        else:
-            # For CB/isolator, mark all points of the switch square:
-            # Top of CB
-            mark_grid_point(sub, xoff, top_conn_y + params.grid_step)
-            # Left side of CB
-            mark_grid_point(sub, xoff - params.cb_size / 2, switch_y)
-            # CB center
-            mark_grid_point(sub, xoff, switch_y)
-            # Right side of CB
-            mark_grid_point(sub, xoff + params.cb_size / 2, switch_y)
-            # Bottom of CB
-            mark_grid_point(sub, xoff, top_conn_y + params.grid_step + params.cb_size)
-            # End of line
-            mark_grid_point(sub, xoff, bottom_y)
-
-        # Mark intermediate points between top connection and switch
-        for i in range(1, int(abs(switch_y - top_conn_y) / params.grid_step)):
-            y_pos = top_conn_y + i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-
-        # Mark intermediate points between switch and end of line
-        switch_bottom = top_conn_y + params.grid_step + params.cb_size
-        for i in range(1, int(abs(bottom_y - switch_bottom) / params.grid_step) + 1):
-            y_pos = switch_bottom + i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-        mark_grid_point(
-            sub, xoff, top_conn_y + params.grid_step + params.cb_size + params.grid_step
-        )
-
-    # Mark grid points for bottom element and lines only if elementOtherBus exists
-    if (
-        bay.elementOtherBus is not SwitchType.NOBUS
-        and bay.elementOtherBus is not SwitchType.EMPTY
-    ):
-        switch_y = middle_conn_y + params.grid_step + params.cb_size / 2
-        bottom_y = middle_conn_y + params.grid_step + params.cb_size + params.grid_step
-
-        # Always mark the middle connection
-        mark_grid_point(sub, xoff, middle_conn_y)  # Middle connection
-
-        if bay.elementOtherBus is SwitchType.DIRECT:
-            # For direct connections, just mark the end point
-            mark_grid_point(sub, xoff, bottom_y)  # End of line
-        else:
-            # For CB/isolator, mark all points of the switch square:
-            # Top of CB
-            mark_grid_point(sub, xoff, middle_conn_y + params.grid_step)
-            # Left side of CB
-            mark_grid_point(sub, xoff - params.cb_size / 2, switch_y)
-            # CB center
-            mark_grid_point(sub, xoff, switch_y)
-            # Right side of CB
-            mark_grid_point(sub, xoff + params.cb_size / 2, switch_y)
-            # Bottom of CB
-            mark_grid_point(
-                sub, xoff, middle_conn_y + params.grid_step + params.cb_size
-            )
-            # End of line
-            mark_grid_point(sub, xoff, bottom_y)
-
-        # Mark intermediate points between middle connection and switch
-        for i in range(1, int(abs(switch_y - middle_conn_y) / params.grid_step)):
-            y_pos = middle_conn_y + i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-
-        # Mark intermediate points between switch and bottom bus
-        switch_bottom = middle_conn_y + params.grid_step + params.cb_size
-        for i in range(1, int(abs(bottom_y - switch_bottom) / params.grid_step) + 1):
-            y_pos = switch_bottom + i * params.grid_step
-            mark_grid_point(sub, xoff, y_pos)
-        mark_grid_point(
-            sub,
-            xoff,
-            middle_conn_y + params.grid_step + params.cb_size + params.grid_step,
-        )
+        elif element["type"] == "connection":
+            draw_connection_object(element, xoff, y_pos, parent_group, sub, colour)
 
     return parent_group
 
 
-def get_substation_group(
-    sub: Substation, params: DrawingParams, colour="blue", rotation=0
+def draw_busbar_object(
+    element,
+    xoff,
+    y_pos,
+    parent_group,
+    sub,
+    is_first_bay,
+    params,
+    colour,
+    previous_bay_elements=None,
 ):
+    """Draw a busbar object at the specified position."""
+    subtype = element["subtype"]
+
+    # Check if previous bay has a busbar at the same y position for continuity
+    extend_left = False
+    if previous_bay_elements and not is_first_bay:
+        # Find if there's a busbar at the same relative position in the previous bay
+        current_busbar_index = 0
+        for prev_element in previous_bay_elements:
+            if prev_element["type"] == "busbar":
+                if current_busbar_index == 0:  # This is the matching busbar position
+                    extend_left = True
+                    break
+                current_busbar_index += 1
+
+    if subtype == "standard":
+        # Determine line start position
+        line_start_x = xoff - (
+            2 * params.grid_step if extend_left else params.grid_step
+        )
+
+        # Draw thick horizontal line spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
+        parent_group.append(
+            draw.Line(
+                line_start_x,
+                y_pos,
+                xoff + params.grid_step,
+                y_pos,
+                stroke=colour,
+                stroke_width=5,
+            )
+        )
+        # Mark grid points with BUSBAR_WEIGHT
+        if extend_left:
+            mark_grid_point(
+                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+            )
+        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+
+        # Add text label if first bay
+        if is_first_bay:
+            bus_id = element["id"]
+            bus_name = sub.buses.get(bus_id, f"Bus {bus_id}")
+            parent_group.append(
+                draw.Text(
+                    bus_name,
+                    x=xoff - params.grid_step - 5,
+                    y=y_pos - 8,
+                    font_size=BUS_LABEL_FONT_SIZE,
+                    text_anchor="end",
+                    stroke_width=0,
+                )
+            )
+
+    elif subtype == "string":
+        # Determine line start position
+        line_start_x = xoff - (
+            2 * params.grid_step if extend_left else params.grid_step
+        )
+
+        # Draw normal thickness horizontal line spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
+        parent_group.append(
+            draw.Line(
+                line_start_x,
+                y_pos,
+                xoff + params.grid_step,
+                y_pos,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        # Mark grid points with BUSBAR_WEIGHT
+        if extend_left:
+            mark_grid_point(
+                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+            )
+        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+
+    elif subtype == "null":
+        # No line drawn, but mark grid points spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
+        if extend_left:
+            mark_grid_point(
+                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+            )
+        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+
+    elif subtype in ["tie_cb", "tie_cb_thin"]:
+        # Draw busbar with circuit breaker tie
+        line_width = 5 if subtype == "tie_cb" else 2
+
+        # Determine left line start position
+        left_line_start_x = xoff - (
+            2 * params.grid_step if extend_left else params.grid_step
+        )
+
+        # Left line segment (extended if needed)
+        parent_group.append(
+            draw.Line(
+                left_line_start_x,
+                y_pos,
+                xoff - params.grid_step / 2,
+                y_pos,
+                stroke=colour,
+                stroke_width=line_width,
+            )
+        )
+
+        # Circuit breaker square (25x25)
+        parent_group.append(
+            draw.Rectangle(
+                xoff - params.grid_step / 2,
+                y_pos - params.grid_step / 2,
+                params.grid_step,
+                params.grid_step,
+                fill="white",
+                stroke=colour,
+            )
+        )
+
+        # Right line segment
+        parent_group.append(
+            draw.Line(
+                xoff + params.grid_step / 2,
+                y_pos,
+                xoff + params.grid_step,
+                y_pos,
+                stroke=colour,
+                stroke_width=line_width,
+            )
+        )
+
+        # Mark grid points with ELEMENT_WEIGHT
+        if extend_left:
+            mark_grid_point(
+                sub, xoff - 2 * params.grid_step, y_pos, weight=ELEMENT_WEIGHT
+            )
+        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+
+    elif subtype in ["tie_isol", "tie_isol_thin"]:
+        # Draw busbar with isolator tie
+        line_width = 5 if subtype == "tie_isol" else 2
+
+        # Determine left line start position
+        left_line_start_x = xoff - (
+            2 * params.grid_step if extend_left else params.grid_step
+        )
+
+        # Left line segment (extended if needed)
+        parent_group.append(
+            draw.Line(
+                left_line_start_x,
+                y_pos,
+                xoff - params.grid_step / 2,
+                y_pos,
+                stroke=colour,
+                stroke_width=line_width,
+            )
+        )
+
+        # 45-degree isolator line (25px wide)
+        isolator_half_size = params.grid_step / 2
+        parent_group.append(
+            draw.Line(
+                xoff - isolator_half_size,
+                y_pos - isolator_half_size,
+                xoff + isolator_half_size,
+                y_pos + isolator_half_size,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+
+        # Right line segment
+        parent_group.append(
+            draw.Line(
+                xoff + params.grid_step / 2,
+                y_pos,
+                xoff + params.grid_step,
+                y_pos,
+                stroke=colour,
+                stroke_width=line_width,
+            )
+        )
+
+        # Mark grid points with ELEMENT_WEIGHT
+        if extend_left:
+            mark_grid_point(
+                sub, xoff - 2 * params.grid_step, y_pos, weight=ELEMENT_WEIGHT
+            )
+        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+
+    return y_pos
+
+
+def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour):
+    """Draw an element object at the specified position."""
+    subtype = element["subtype"]
+
+    if subtype == "cb":
+        # Circuit breaker: 25px line + square + 25px line
+        # First vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos,
+                xoff,
+                y_pos + params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # Square (full grid step size, centered in middle grid step)
+        square_center_y = y_pos + params.grid_step + (params.grid_step // 2)
+        parent_group.append(
+            draw.Rectangle(
+                xoff - params.grid_step // 2,
+                square_center_y - params.grid_step // 2,
+                params.grid_step,
+                params.grid_step,
+                fill="white",
+                stroke=colour,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # Second vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos + 2 * params.grid_step,
+                xoff,
+                y_pos + 3 * params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+    elif subtype == "isolator":
+        # Isolator: 25px line + 45° line + 25px line
+        # First vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos,
+                xoff,
+                y_pos + params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # 45-degree line (centered in middle grid step)
+        isolator_center_y = y_pos + params.grid_step + (params.grid_step // 2)
+        isolator_half_size = params.grid_step // 2
+        parent_group.append(
+            draw.Line(
+                xoff - isolator_half_size,
+                isolator_center_y - isolator_half_size,
+                xoff + isolator_half_size,
+                isolator_center_y + isolator_half_size,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # Second vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos + 2 * params.grid_step,
+                xoff,
+                y_pos + 3 * params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+    elif subtype == "direct":
+        # Direct connection: single vertical line spanning 3*GRID_STEP
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos,
+                xoff,
+                y_pos + 3 * params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+    elif subtype == "empty":
+        # Empty element: no drawing, no grid marking, but advance position
+        pass
+
+    return y_pos + 3 * params.grid_step
+
+
+def parse_bay_elements(bay_def: str) -> list:
+    """Parse a bay definition string into elements for continuity checking."""
+    elements = []
+    char_index = 0
+
+    while char_index < len(bay_def):
+        char = bay_def[char_index]
+
+        # Handle busbar objects
+        if char == "|":
+            # Count consecutive | characters for busbar ID
+            bus_start_index = char_index
+            while char_index < len(bay_def) and bay_def[char_index] == "|":
+                char_index += 1
+            bus_id = char_index - bus_start_index
+            elements.append({"type": "busbar", "subtype": "standard", "id": bus_id})
+
+        elif char == "s":
+            elements.append({"type": "busbar", "subtype": "string"})
+            char_index += 1
+
+        elif char == "N":
+            elements.append({"type": "busbar", "subtype": "null"})
+            char_index += 1
+
+        elif char == "t":
+            # Check for 'ts' variant
+            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
+                elements.append({"type": "busbar", "subtype": "tie_cb_thin"})
+                char_index += 2
+            else:
+                elements.append({"type": "busbar", "subtype": "tie_cb"})
+                char_index += 1
+
+        elif char == "i":
+            # Check for 'is' variant
+            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
+                elements.append({"type": "busbar", "subtype": "tie_isol_thin"})
+                char_index += 2
+            else:
+                elements.append({"type": "busbar", "subtype": "tie_isol"})
+                char_index += 1
+
+        # Handle element objects
+        elif char == "x":
+            elements.append({"type": "element", "subtype": "cb"})
+            char_index += 1
+
+        elif char == "/":
+            elements.append({"type": "element", "subtype": "isolator"})
+            char_index += 1
+
+        elif char == "d":
+            elements.append({"type": "element", "subtype": "direct"})
+            char_index += 1
+
+        elif char == "E":
+            elements.append({"type": "element", "subtype": "empty"})
+            char_index += 1
+
+        # Handle connection objects
+        elif char.isdigit():
+            num_start_index = char_index
+            while char_index < len(bay_def) and bay_def[char_index].isdigit():
+                char_index += 1
+            conn_id = int(bay_def[num_start_index:char_index])
+            elements.append({"type": "connection", "id": conn_id})
+
+        else:
+            # Warn about unrecognised characters (but don't include substation name as it's not available here)
+            print(
+                f"WARNING: Unrecognised character '{char}' at position {char_index} in bay definition '{bay_def}'"
+            )
+            char_index += 1
+
+    return elements
+
+
+def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
+    """Draw a connection object at the specified position."""
+    conn_id = element["id"]
+    connection_name = sub.connections.get(conn_id)
+
+    if connection_name:
+        # Store the connection point for pathfinding
+        sub.connection_points[connection_name] = (xoff, y_pos)
+        mark_grid_point(sub, xoff, y_pos, weight=0)  # Connection points have weight 0
+    else:
+        # Draw an unused connection circle
+        parent_group.append(draw.Circle(xoff, y_pos, 4, fill=colour, stroke="none"))
+
+
+def get_substation_group(sub: Substation, params: DrawingParams, rotation=0):
     min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
     center_x = (min_x + max_x) / 2
     center_y = (min_y + max_y) / 2
     dg = draw.Group(
-        stroke=colour,
         stroke_width=2,
         transform=f"rotate({rotation}, {center_x}, {center_y})",
     )
-    for i, bay in enumerate(sub.bays):
-        xoff = 50 * i
-        if isinstance(bay, SingleSwitchedBay):
-            dg = draw_single_switched_bay(
-                xoff,
-                parent_group=dg,
-                bay=bay,
-                sub=sub,
-                params=params,
-            )
-        elif isinstance(bay, BreakerAndHalfBay):
-            dg = draw_breaker_and_half_bay(
-                xoff,
-                parent_group=dg,
-                bay=bay,
-                sub=sub,
-                params=params,
-            )
-        elif isinstance(bay, DoubleSwitchedBay):
-            dg = draw_double_switched_bay(
-                xoff,
-                parent_group=dg,
-                bay=bay,
-                sub=sub,
-                params=params,
-            )
+
+    bay_defs = sub.definition.strip().split("\n")
+
+    # Pre-calculate the maximum y-offset needed for any bay to align all busbars
+    max_y_offset = 0
+    parsed_bays = [parse_bay_elements(bay_def) for bay_def in bay_defs]
+    for elements in parsed_bays:
+        y_offset = 0
+        first_busbar_idx = next(
+            (i for i, el in enumerate(elements) if el["type"] == "busbar"), -1
+        )
+        if first_busbar_idx > 0:
+            # Count elements before the first busbar
+            for i in range(first_busbar_idx):
+                if elements[i]["type"] == "element":
+                    y_offset += 3 * params.grid_step
+            # Add one grid step for the connecting line to the first busbar
+            y_offset += params.grid_step
+        max_y_offset = max(max_y_offset, y_offset)
+
+    previous_bay_elements = None
+    for i, bay_def in enumerate(bay_defs):
+        xoff = 2 * params.grid_step * i  # Use 2*GRID_STEP spacing between bays (50px)
+        is_first_bay = i == 0
+
+        # Parse previous bay elements for continuity checking
+        if i > 0:
+            previous_bay_elements = parsed_bays[i - 1]
+
+        dg = draw_bay_from_string(
+            xoff,
+            dg,
+            bay_def,
+            sub,
+            is_first_bay,
+            params,
+            previous_bay_elements,
+            y_offset=max_y_offset,
+        )
+
+    # Draw objects after bays
+    if sub.objects:
+        dg = sub.draw_objects(parent_group=dg, params=params)
 
     return dg
 
@@ -1201,20 +1118,9 @@ def apply_spring_layout(substations: list[Substation]) -> dict:
     # Find connections between substations to create edges
     connection_map = {}
     for sub in substations:
-        for bay in sub.bays:
-            connections = [
-                getattr(bay, conn_attr, "")
-                for conn_attr in [
-                    "elementAboveConnection",
-                    "elementBelowConnection",
-                    "elementOtherBusConnection",
-                    "elementTieConnection",
-                ]
-                if hasattr(bay, conn_attr)
-            ]
-            for conn_name in connections:
-                if conn_name:
-                    connection_map.setdefault(conn_name, []).append(sub.name)
+        for conn_name in sub.connections.values():
+            if conn_name:
+                connection_map.setdefault(conn_name, []).append(sub.name)
 
     # Add edges for substations sharing a connection
     for sub_names in connection_map.values():
@@ -1270,14 +1176,16 @@ def calculate_final_positions(
         raw_y = norm_y * (_90 - _15) + _15
 
         min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-        height = max_y - min_y
-        busbar_to_center_offset = 0 - (min_y + height / 2)
 
+        # Find the first busbar position (y=0 in local coordinates)
+        first_busbar_y = 0
+
+        # Calculate where the first busbar should be in global coordinates
+        target_busbar_global_y = round(raw_y / params.grid_step) * params.grid_step
+
+        # Calculate the substation's use coordinates to place first busbar at target
         sub.scaled_x = round(raw_x / params.grid_step) * params.grid_step
-        snapped_center_y = round(raw_y / params.grid_step) * params.grid_step
-        busbar_y = snapped_center_y + busbar_to_center_offset
-        snapped_busbar_y = round(busbar_y / params.grid_step) * params.grid_step
-        sub.scaled_y = snapped_busbar_y - busbar_to_center_offset
+        sub.scaled_y = target_busbar_global_y - first_busbar_y
 
     print("\nFinal SVG coordinates after network balancing:")
     for sub in substations:
@@ -1292,22 +1200,25 @@ def calculate_final_positions(
         sub.use_x = use_x
         sub.use_y = use_y
 
-    # Re-snap positions to the grid after overlap avoidance by snapping the center
+    # Re-snap positions to ensure first busbar aligns to grid
     for sub in substations:
         min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-        width = max_x - min_x
-        height = max_y - min_y
-        local_center_x = min_x + width / 2
-        local_center_y = min_y + height / 2
 
-        global_center_x = sub.use_x + local_center_x
-        global_center_y = sub.use_y + local_center_y
+        # Find the first busbar position (y=0 in local coordinates)
+        first_busbar_local_y = 0
 
-        snapped_center_x = round(global_center_x / params.grid_step) * params.grid_step
-        snapped_center_y = round(global_center_y / params.grid_step) * params.grid_step
+        # Calculate current global position of first busbar
+        current_busbar_global_y = sub.use_y + first_busbar_local_y
 
-        sub.use_x = snapped_center_x - local_center_x
-        sub.use_y = snapped_center_y - local_center_y
+        # Snap to grid
+        snapped_busbar_global_y = (
+            round(current_busbar_global_y / params.grid_step) * params.grid_step
+        )
+        snapped_x = round((sub.use_x + min_x) / params.grid_step) * params.grid_step
+
+        # Update use coordinates
+        sub.use_x = snapped_x - min_x
+        sub.use_y = snapped_busbar_global_y - first_busbar_local_y
 
 
 # --- Main Drawing Orchestration ---
@@ -1318,6 +1229,11 @@ def populate_pathfinding_grid(
     num_steps = len(points)
     step = params.grid_step
     for sub in substations:
+        # First, calculate all global grid points for the substation to find its bounding box
+        sub_global_grid_points = {}
+        min_gx, min_gy = num_steps, num_steps
+        max_gx, max_gy = -1, -1
+
         min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
         center_x = (min_x + max_x) / 2
         center_y = (min_y + max_y) / 2
@@ -1338,7 +1254,28 @@ def populate_pathfinding_grid(
             grid_y = int(round(global_y / step))
 
             if 0 <= grid_x < num_steps and 0 <= grid_y < num_steps:
-                points[grid_x][grid_y] = sub.grid_points.get((local_x, local_y))
+                weight = sub.grid_points.get((local_x, local_y))
+                sub_global_grid_points[(grid_x, grid_y)] = weight
+                min_gx = min(min_gx, grid_x)
+                max_gx = max(max_gx, grid_x)
+                min_gy = min(min_gy, grid_y)
+                max_gy = max(max_gy, grid_y)
+
+        # Apply a penalty in the expanded bounding box of the substation
+        if min_gx <= max_gx:  # Check if any points were found
+            expanded_min_gx = max(0, min_gx - 2)
+            expanded_max_gx = min(num_steps - 1, max_gx + 2)
+            expanded_min_gy = max(0, min_gy - 2)
+            expanded_max_gy = min(num_steps - 1, max_gy + 2)
+
+            for gx in range(expanded_min_gx, expanded_max_gx + 1):
+                for gy in range(expanded_min_gy, expanded_max_gy + 1):
+                    if points[gx][gy] == 0:  # Only apply to empty space
+                        points[gx][gy] = NEAR_SUB_WEIGHT
+
+        # Place the substation's own points on the grid, overwriting the penalty
+        for (grid_x, grid_y), weight in sub_global_grid_points.items():
+            points[grid_x][grid_y] = weight
 
 
 def calculate_connection_points(
@@ -1365,7 +1302,8 @@ def calculate_connection_points(
             rotated_local_y = rotated_y + center_y
 
             global_coords = (sub.use_x + rotated_local_x, sub.use_y + rotated_local_y)
-            all_connections.setdefault(linedef, []).append(global_coords)
+            connection_data = {"coords": global_coords, "voltage": sub.voltage_kv}
+            all_connections.setdefault(linedef, []).append(connection_data)
     return all_connections
 
 
@@ -1380,17 +1318,25 @@ def draw_connections(
 
     valid_connections = {k: v for k, v in all_connections.items() if len(v) == 2}
     sorted_connections = sorted(
-        valid_connections.items(), key=lambda item: _distance(*item[1])
+        valid_connections.items(),
+        key=lambda item: _distance(item[1][0]["coords"], item[1][1]["coords"]),
     )
 
     for _, connection_points in sorted_connections:
+        start_coord_px = connection_points[0]["coords"]
+        end_coord_px = connection_points[1]["coords"]
+
+        voltage1 = connection_points[0]["voltage"]
+        voltage2 = connection_points[1]["voltage"]
+        colour = COLOUR_MAP.get(voltage1, "black") if voltage1 == voltage2 else "black"
+
         start_coord = (
-            int(connection_points[0][0] // step),
-            int(connection_points[0][1] // step),
+            int(start_coord_px[0] // step),
+            int(start_coord_px[1] // step),
         )
         end_coord = (
-            int(connection_points[1][0] // step),
-            int(connection_points[1][1] // step),
+            int(end_coord_px[0] // step),
+            int(end_coord_px[1] // step),
         )
 
         start_coord = (
@@ -1407,7 +1353,14 @@ def draw_connections(
 
         print(f"Finding path from {start_coord} to {end_coord}")
         try:
-            path, points = findpath.run_gridsearch(start_coord, end_coord, points)
+            # The grid is updated with path weights after each run.
+            # A new graph is created from the grid on each call.
+            path, points, _ = findpath.run_gridsearch(
+                start_coord,
+                end_coord,
+                points,
+                path_weight=LINE_CROSS_WEIGHT,
+            )
             if len(path) > 1:
                 print(f"Drawing path with {len(path)} points")
                 for i in range(len(path) - 1):
@@ -1418,7 +1371,7 @@ def draw_connections(
                             start[1] * step,
                             end[0] * step,
                             end[1] * step,
-                            stroke="blue",
+                            stroke=colour,
                             stroke_width=2,
                         )
                     )
@@ -1502,7 +1455,175 @@ def draw_titles(
             )
 
 
+def render_substation_svg(
+    substation: Substation, params: DrawingParams = None, filename: str = None
+) -> str:
+    """
+    Render a single substation as an SVG image for documentation purposes.
+
+    Args:
+        substation: The substation to render
+        params: Drawing parameters (uses defaults if None)
+        filename: Optional filename to save the SVG (if None, returns SVG string)
+
+    Returns:
+        SVG content as a string
+    """
+    if params is None:
+        params = DrawingParams()
+
+    # Get the bounding box of the substation
+    min_x, min_y, max_x, max_y = substation.get_drawing_bbox(params)
+
+    # Add some padding around the substation
+    padding = 2 * params.grid_step
+    svg_width = max_x - min_x + 2 * padding
+    svg_height = max_y - min_y + 2 * padding
+
+    # Create the drawing with appropriate size
+    drawing = draw.Drawing(svg_width, svg_height, origin=(0, 0))
+
+    # Create a temporary copy of the substation with adjusted use coordinates
+    # to center it in the SVG with padding
+    temp_sub = Substation(
+        name=substation.name,
+        lat=substation.lat,
+        long=substation.long,
+        voltage_kv=substation.voltage_kv,
+        tags=substation.tags,
+        rotation=substation.rotation,
+        definition=substation.definition,
+        buses=substation.buses,
+        connections=substation.connections,
+    )
+
+    # Copy objects and other attributes
+    temp_sub.objects = substation.objects.copy() if substation.objects else []
+    temp_sub.grid_points = substation.grid_points.copy()
+    temp_sub.connection_points = substation.connection_points.copy()
+
+    # Set use coordinates to position the substation with padding
+    temp_sub.use_x = padding - min_x
+    temp_sub.use_y = padding - min_y
+
+    # Generate the substation group
+    substation_group = get_substation_group(
+        temp_sub, params, rotation=substation.rotation
+    )
+
+    # Add the substation to the drawing
+    drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
+
+    # Add a title
+    title_x = svg_width / 2
+    title_y = padding / 2
+    drawing.append(
+        draw.Text(
+            substation.name,
+            font_size=BUS_LABEL_FONT_SIZE,
+            x=title_x,
+            y=title_y,
+            text_anchor="middle",
+            fill="black",
+            stroke_width=0,
+        )
+    )
+
+    # Add voltage level indicator
+    voltage_text = f"{substation.voltage_kv} kV"
+    voltage_colour = COLOUR_MAP.get(substation.voltage_kv, "black")
+    drawing.append(
+        draw.Text(
+            voltage_text,
+            font_size=BUS_LABEL_FONT_SIZE * 0.8,
+            x=title_x,
+            y=title_y + BUS_LABEL_FONT_SIZE + 5,
+            text_anchor="middle",
+            fill=voltage_colour,
+            stroke_width=0,
+        )
+    )
+
+    # Add grid overlay for documentation (optional - can be removed)
+    grid_colour = "#E0E0E0"
+    grid_stroke_width = 0.5
+
+    # Vertical grid lines
+    for x in range(0, int(svg_width) + 1, params.grid_step):
+        drawing.append(
+            draw.Line(
+                x,
+                0,
+                x,
+                svg_height,
+                stroke=grid_colour,
+                stroke_width=grid_stroke_width,
+                opacity=0.3,
+            )
+        )
+
+    # Horizontal grid lines
+    for y in range(0, int(svg_height) + 1, params.grid_step):
+        drawing.append(
+            draw.Line(
+                0,
+                y,
+                svg_width,
+                y,
+                stroke=grid_colour,
+                stroke_width=grid_stroke_width,
+                opacity=0.3,
+            )
+        )
+
+    # Get SVG content as string
+    svg_content = drawing.as_svg()
+
+    # Save to file if filename provided
+    if filename:
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(svg_content)
+        print(f"Saved substation SVG to {filename}")
+
+    return svg_content
+
+
 # --- Output Generation ---
+def generate_substation_documentation_svgs(
+    substations: list[Substation], output_dir: str = "substation_docs"
+):
+    """
+    Generate individual SVG files for each substation for documentation purposes.
+
+    Args:
+        substations: List of substations to render
+        output_dir: Directory to save the SVG files
+    """
+    import os
+
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    params = DrawingParams()
+
+    print(f"\nGenerating documentation SVGs for {len(substations)} substations...")
+
+    for substation in substations:
+        # Create a safe filename from the substation name
+        safe_name = "".join(
+            c for c in substation.name if c.isalnum() or c in (" ", "-", "_")
+        ).rstrip()
+        safe_name = safe_name.replace(" ", "_")
+        filename = os.path.join(output_dir, f"{safe_name}.svg")
+
+        try:
+            render_substation_svg(substation, params, filename)
+        except Exception as e:
+            print(f"Error rendering {substation.name}: {e}")
+
+    print(f"Documentation SVGs saved to {output_dir}/")
+
+
 def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
     """Saves the SVG and generates the final HTML file."""
     drawing.save_svg(OUTPUT_SVG)
@@ -1539,10 +1660,39 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
 # --- Main Execution ---
 def main():
     """Main function to run the SLD generation process."""
+    import sys
+
+    # Check for command line arguments
+    if len(sys.argv) > 1 and sys.argv[1] == "--docs":
+        # Generate documentation SVGs
+        substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
+        substations = list(substation_map.values())
+        generate_substation_documentation_svgs(substations)
+        return
+
+    if len(sys.argv) > 1 and sys.argv[1] == "--single":
+        # Generate single substation SVG
+        if len(sys.argv) < 3:
+            print("Usage: python sld.py --single <substation_name>")
+            return
+
+        substation_name = sys.argv[2]
+        substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
+
+        if substation_name not in substation_map:
+            print(f"Substation '{substation_name}' not found.")
+            print(f"Available substations: {', '.join(substation_map.keys())}")
+            return
+
+        substation = substation_map[substation_name]
+        filename = f"{substation_name.replace(' ', '_')}_single.svg"
+        render_substation_svg(substation, filename=filename)
+        return
+
     params = DrawingParams()
 
     # 1. Load data
-    substation_map = load_substations_from_json(SUBSTATIONS_DATA_FILE)
+    substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
     substations = list(substation_map.values())
 
     # 2. Calculate initial positions
@@ -1573,10 +1723,24 @@ def main():
     all_connections = calculate_connection_points(substations, params)
     draw_connections(drawing, all_connections, points, GRID_STEP)
 
+    # draw red circules on grid keep out areas for debugging
+    for i in range(num_steps):
+        for j in range(num_steps):
+            if points[i][j] < 1:
+                col = "grey"
+            elif points[i][j] > 10:
+                col = "red"
+            else:
+                col = "orange"
+            drawing.append(draw.Circle(i * GRID_STEP, j * GRID_STEP, 1, fill=col))
+
     # Draw circles at connection points for debugging
     for connection in all_connections.values():
         for point in connection:
-            drawing.append(draw.Circle(point[0], point[1], 5, fill="blue"))
+            coords = point["coords"]
+            voltage = point["voltage"]
+            colour = COLOUR_MAP.get(voltage, "black")
+            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 8. Draw titles
     draw_titles(drawing, substations, points, params)
