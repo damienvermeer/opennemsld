@@ -1,0 +1,455 @@
+
+substations:
+  - name: KMTS
+    lat: -35.029758
+    long: 142.293822
+    voltage_kv: 220
+    tags:
+      - KMTS
+    rotation: -90
+    def: |
+      |/1x2x||
+      |x3x4x||
+    buses:
+      1: '?'
+      2: '?'
+    connections:
+      1: VIC-220-MRTS-KMTS-1
+      2: KIAMAL-SF1
+      3: VIC-220-RCTS-KMTS-1
+      4: KIAMAL-SC
+  - name: ARTS
+    lat: -37.163788
+    long: 143.245555
+    voltage_kv: 220
+    tags:
+      - ARTS
+    rotation: 0
+    def: |
+      |xd2x||
+      |/3x4/||
+    buses:
+      1: '?'
+      2: '?'
+    connections:
+      2: VIC-220-ARTS-CWTS-1
+      3: ARWF-WF1-220
+      4: VIC-220-ARTS-WBTS-1
+    objects:
+      - type: tx
+        metadata:
+          w1: 220
+          w2: 132
+        connections:
+          - ARWF-WF1-220
+          - ARWF-WF1-132
+        rel_x: 7
+        rel_y: 3
+        rotation: 90
+  - name: WBTS
+    lat: -37.35569
+    long: 143.6054
+    voltage_kv: 220
+    tags:
+      - WBTS
+    rotation: 0
+    def: |
+      x|/1
+      x|/2
+    buses:
+      1: ""
+    connections:
+      1: VIC-220-ARTS-WBTS-1
+      2: VIC-220-WBTS-BATS-1
+    objects:
+      - type: tx
+        metadata:
+          w1: 66
+          w2: 220
+        connections: []
+        rel_x: 0
+        rel_y: -6
+        rotation: 0
+      - type: gen
+        metadata:
+          voltage: 66
+          text: WF
+          info: |
+            Waubra Wind Farm
+            192 MW
+        connections: []
+        rel_x: 0
+        rel_y: -7
+        rotation: 0
+      - type: tx
+        metadata:
+          w1: 66
+          w2: 220
+        connections: []
+        rel_x: 2
+        rel_y: -6
+        rotation: 0
+      - type: gen
+        metadata:
+          voltage: 66
+          text: WF
+        connections: []
+        rel_x: 2
+        rel_y: -7
+        rotation: 0
+  - name: CWTS
+    lat: -37.120842
+    long: 143.154319
+    voltage_kv: 220
+    tags:
+      - CWTS
+    rotation: 0
+    def: |
+      |xx1x||
+      |xd2x||
+    buses:
+      1: 'CWTS'
+      2: '?'
+    connections:
+      1: VIC-220-BGTS-CWTS-1
+      2: VIC-220-ARTS-CWTS-1
+  - name: BATS
+    lat: -37.567614
+    long: 143.920895
+    voltage_kv: 220
+    tags:
+      - BATS
+    rotation: 0
+    def: |
+      |/1x||
+      |x/||
+      |xx||
+      |xx||
+      |Ex||x
+      |xE||
+      |x2x||
+    buses:
+      1: '2'
+      2: '1'
+    connections:
+      1: VIC-220-WBTS-BATS-1
+      2: VIC-220-BETS-BATS-1
+  - name: BGTS
+    lat: -37.037312
+    long: 142.984249
+    voltage_kv: 220
+    tags:
+      - BGTS
+    rotation: 90
+    def: |
+      1/|x
+      2/|x
+    buses:
+      1: '1 bgts'
+    connections:
+      1: VIC-220-BGTS-HOTS-1
+      2: VIC-220-BGTS-CWTS-1
+  - name: MRTS
+    lat: -36.432714
+    long: 142.319309
+    voltage_kv: 220
+    tags:
+      - MRTS
+    rotation: 90
+    def: |
+      x|d1
+      /|/2
+    buses:
+      1: '1 MRTS'
+    connections:
+      1: VIC-220-MRTS-KMTS-1
+      2: VIC-220-MRTS-HOTS-1
+  - name: HOTS
+    lat: -36.722307
+    long: 142.247224
+    voltage_kv: 220
+    tags:
+      - HOTS
+    rotation: 0
+    def: |
+      |Ex||
+      |x1x||
+      |x2x||
+      |xE||
+      |xE||
+    buses:
+      1: '1 HOTS'
+      2: '2'
+    connections:
+      1: VIC-220-MRTS-HOTS-1
+      2: VIC-220-BGTS-HOTS-1
+  - name: RCTS
+    lat: -34.292682
+    long: 142.238698
+    voltage_kv: 220
+    tags:
+      - RCTS
+    rotation: 0
+    def: |
+      |dx||
+      |Ex1||
+      |Ex||
+      |x2E||
+      |xx||
+      |x/||
+      |xx||
+      |xx||
+    buses:
+      1: '1 RCTS'
+      2: '2'
+    connections:
+      1: VIC-220-RCTS-KMTS-1
+      2: VIC-220-RCTS-WETS-1
+  - name: WETS
+    lat: -34.786893
+    long: 142.524842
+    voltage_kv: 220
+    tags:
+      - wemen terminal station
+    rotation: 180
+    def: |
+      1/|
+      |x3
+      2/|
+    buses:
+      1: '1 WETS'
+    connections:
+      1: VIC-220-WETS-KGTS-1
+      2: VIC-220-RCTS-WETS-1
+  - name: KGTS
+    lat: -35.771646
+    long: 143.933867
+    voltage_kv: 220
+    tags:
+      - kerang terminal station
+    rotation: 0
+    def: |
+      |xE||
+      |xx||
+      |x1/||
+      |x2x||
+      |xE||
+      |Ex||
+    buses:
+      1: '1 KGTS'
+      2: '2'
+    connections:
+      1: VIC-220-WETS-KGTS-1
+      2: VIC-220-BETS-KGTS-1
+  - name: BETS
+    lat: -36.784045
+    long: 144.253684
+    voltage_kv: 220
+    tags:
+      - bendigo terminal station
+    rotation: 0
+    def: |
+      |x1x||
+      |Ex||
+      |xE||
+      |x2x||
+      |xE||
+      |Ex||
+      |x3x||
+    buses:
+      1: '1 BETS'
+      2: '2'
+    connections:
+      1: VIC-220-BETS-KGTS-1
+      2: VIC-220-BETS-FVTS-1
+      3: VIC-220-BETS-BATS-1
+  - name: FVTS
+    lat: -36.738255
+    long: 144.510622
+    voltage_kv: 220
+    tags:
+      - fosterville terminal station
+    rotation: 0
+    def: |
+      1ds
+      sx3
+      2ds
+    buses: []
+    connections:
+      1: VIC-220-BETS-FVTS-1
+      2: VIC-220-SHTS-FVTS-1
+      3: FVTS-LOAd
+  - name: SHTS
+    lat: -36.342772
+    long: 145.414431
+    voltage_kv: 220
+    tags:
+      - shepparton terminal station
+    rotation: 0
+    def: |
+      |x1x||
+      |x2x||
+      |xx||
+      |x3x||x4
+      |xx||
+      NEx||
+    buses:
+      1: '2'
+      2: '1'
+    connections:
+      1: VIC-220-SHTS-FVTS-1
+      2: VIC-220-SHTS-DDTS-1
+      3: VIC-220-SHTS-GNTS-1
+      4: VIC-220-SHTS-GNTS-3
+  - name: GNTS
+    lat: -36.493555
+    long: 146.132263
+    voltage_kv: 220
+    tags:
+      - glenrowan terminal station
+    rotation: 90
+    def: |
+      |x1x2x||
+      |x3x4x||
+      |x/x||
+    buses:
+      1: '1 GNTS'
+      2: '2'
+    connections:
+      1: VIC-220-GNTS-DDTS-1
+      2: VIC-220-SHTS-GNTS-1
+      3: VIC-220-GNTS-DDTS-3
+      4: VIC-220-SHTS-GNTS-3
+  - name: Stawell (STL)
+    lat: -37.0582013
+    long: 142.7523823
+    voltage_kv: 66
+    tags:
+      - STL
+    rotation: 0
+    def: |
+      1x|x2
+      3x|E
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-HOTS-STL1
+      2: VIC-66-HOTS-STL2
+      3: VIC-66-STL-ART
+  - name: Ararat (ART)
+    lat: -37.268485
+    long: 142.923999
+    voltage_kv: 66
+    tags:
+      - ART
+    rotation: 0
+    def: |
+      1x|x2
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-STL-ART
+      2: VIC-66-ART-BGR
+  - name: Buangor (BGR)
+    lat: -37.3592765
+    long: 143.1523484
+    voltage_kv: 66
+    tags:
+      - BGR
+    rotation: 0
+    def: |
+      1/|
+      t
+      2/|
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-ART-BGR
+      2: VIC-66-BGR-BAN
+  - name: Ballarat North (BAN)
+    lat: -37.534507
+    long: 143.847329
+    voltage_kv: 66
+    tags:
+      - BAN
+    rotation: 0
+    def: |
+      x|xx||x2
+      3x|x1
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-66-BATS-BAN1
+      2: VIC-66-BATS-BAN2
+      3: VIC-66-BGR-BAN
+  - name: Tarrone (TRTS)
+    lat: -38.1791611
+    long: 142.181207
+    voltage_kv: 500
+    tags:
+      - TRTS
+    rotation: 0
+    def: |
+      |x1x2x||
+      |/d3/|
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-500-HGTS-TRTS
+      2: VIC-500-TRTS-HYTS1
+      3: MCARTHURWF-TX-HV
+  - name: Mortlake Power Station (MOPS)
+    lat: -38.062049
+    long: 142.670733
+    voltage_kv: 500
+    tags:
+      - MOPS
+    rotation: 0
+    def: |
+      |/x1x2|
+      |x3dx||x4
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-500-MLTS2-MOPS
+      2: VIC-500-MOPS-HYTS2
+      3: MOPS1-TX-HV
+      4: MOPS2-TX-HV
+  - name: Haunted Gully (HGTS)
+    lat: -38.007447
+    long: 143.315237
+    voltage_kv: 500
+    tags:
+      - HGTS
+    rotation: 0
+    def: |
+      |x1x2x||
+      3/|/d/||
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-500-MLTS1-HGTS
+      2: VIC-500-HGTS-TRTS
+      3: STOCKYARDHILLWF-TX-HV
+  - name: Moorabool (MLTS)
+    lat: -38.036876
+    long: 144.296812
+    voltage_kv: 500
+    tags:
+      - MLTS
+    rotation: 0
+    def: |
+      |xEE||
+      |xdx||
+      |x2xx||
+      |x1xx||
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-500-MLTS1-HGTS
+      2: VIC-500-MLTS2-MOPS
