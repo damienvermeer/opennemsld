@@ -47,7 +47,7 @@ import yaml
 import findpath
 
 # --- Constants ---
-MAP_DIMS = 6000
+MAP_DIMS = 7000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 40
@@ -136,6 +136,12 @@ class Substation:
                 # Assumes (obj_x, obj_y) is the desired center of the entire symbol object.
                 # Assumes a Y-down coordinate system.
 
+                # Get colours from metadata
+                w1_voltage = obj.get("metadata", {}).get("w1")
+                w2_voltage = obj.get("metadata", {}).get("w2")
+                colour1 = COLOUR_MAP.get(w1_voltage, "black")
+                colour2 = COLOUR_MAP.get(w2_voltage, "black")
+
                 # --- Define Geometry ---
                 # To make the symbol fit nicely within a grid cell, the radius should be
                 # smaller than half the grid step. A third is a good proportion.
@@ -153,7 +159,7 @@ class Substation:
                     circle1_y,
                     radius,
                     fill="transparent",
-                    stroke="black",
+                    stroke=colour1,
                     stroke_width=3,
                 )
                 obj_group.append(top_circle)
@@ -166,7 +172,7 @@ class Substation:
                     circle2_y,
                     radius,
                     fill="transparent",
-                    stroke="black",
+                    stroke=colour2,
                     stroke_width=3,
                 )
                 obj_group.append(bottom_circle)
@@ -183,8 +189,8 @@ class Substation:
                     top_line_start_y,
                     obj_x,
                     top_line_end_y,
-                    stroke="black",
-                    stroke_width=3,
+                    stroke=colour1,
+                    stroke_width=2,
                 )
                 obj_group.append(top_line)
 
@@ -198,8 +204,8 @@ class Substation:
                     bottom_line_start_y,
                     obj_x,
                     bottom_line_end_y,
-                    stroke="black",
-                    stroke_width=3,
+                    stroke=colour2,
+                    stroke_width=2,
                 )
                 obj_group.append(bottom_line)
 
@@ -234,6 +240,64 @@ class Substation:
                 # Mark grid points for the transformer body
                 mark_grid_point(self, circle1_x, circle1_y)
                 mark_grid_point(self, circle2_x, circle2_y)
+
+            elif obj["type"] == "gen":
+                # Generator is a "lollipop" - a circle on a stick
+                radius = 2 * params.grid_step / 3
+                voltage = obj.get("metadata", {}).get("voltage")
+                colour = COLOUR_MAP.get(voltage, "black")
+                text = obj.get("metadata", {}).get("text", "G")
+
+                # The reference point (obj_x, obj_y) is the bottom of the stick.
+                line_start_y = obj_y
+                line_end_y = obj_y - params.grid_step
+                circle_center_x = obj_x
+                # The circle sits on top of the stick, so its center is radius-distance above the stick's end
+                circle_center_y = line_end_y - radius
+
+                # Draw the stick (line)
+                obj_group.append(
+                    draw.Line(
+                        obj_x,
+                        line_start_y,
+                        obj_x,
+                        line_end_y,
+                        stroke=colour,
+                        stroke_width=2,
+                    )
+                )
+
+                # Draw circle
+                obj_group.append(
+                    draw.Circle(
+                        circle_center_x,
+                        circle_center_y,
+                        radius,
+                        fill="transparent",
+                        stroke=colour,
+                        stroke_width=2,
+                    )
+                )
+
+                # Draw text inside circle
+                obj_group.append(
+                    draw.Text(
+                        text,
+                        font_size=params.grid_step * 0.7,
+                        x=circle_center_x,
+                        y=circle_center_y,
+                        text_anchor="middle",
+                        dominant_baseline="central",
+                        fill=colour,
+                        stroke_width=0,
+                    )
+                )
+                # Mark grid points for the line and the circle center
+                mark_grid_point(self, obj_x, obj_y)  # bottom of stick
+                mark_grid_point(self, obj_x, line_end_y)  # top of stick
+                mark_grid_point(
+                    self, circle_center_x, circle_center_y
+                )  # circle center
 
             # Apply rotation if specified
             if rotation != 0:
@@ -311,6 +375,15 @@ class Substation:
                 obj_max_x = obj_x + params.grid_step * 2
                 obj_min_y = obj_y - params.grid_step / 2
                 obj_max_y = obj_y + params.grid_step * 1.5
+            elif obj["type"] == "gen":
+                radius = 2 * params.grid_step / 3
+                # The reference point (obj_x, obj_y) is the bottom of the stick.
+                # The lollipop is drawn upwards from there.
+                obj_min_x = obj_x - radius
+                obj_max_x = obj_x + radius
+                obj_max_y = obj_y
+                # Top of lollipop is top of circle: (line_end_y - radius) - radius
+                obj_min_y = (obj_y - params.grid_step) - (2 * radius)
             else:  # Generic object handling for other types
                 obj_min_x = obj_x - params.grid_step / 2
                 obj_max_x = obj_x + params.grid_step / 2
@@ -609,7 +682,10 @@ def draw_busbar_object(
         # Find if there's a busbar at the same relative position in the previous bay
         current_busbar_index = 0
         for prev_element in previous_bay_elements:
-            if prev_element["type"] == "busbar":
+            if (
+                prev_element["type"] == "busbar"
+                and prev_element["subtype"] == "standard"
+            ):
                 if current_busbar_index == 0:  # This is the matching busbar position
                     extend_left = True
                     break
@@ -1044,6 +1120,13 @@ def get_substation_group(sub: Substation, params: DrawingParams, rotation=0):
         xoff = 2 * params.grid_step * i  # Use 2*GRID_STEP spacing between bays (50px)
         is_first_bay = i == 0
 
+        # check if the first element is a busbar type, if so, pass an offset
+        # ... of one grid step
+        if parsed_bays[i][0]["type"] == "busbar":
+            y_offset = params.grid_step  # not sure why though?
+        else:
+            y_offset = max_y_offset
+
         # Parse previous bay elements for continuity checking
         if i > 0:
             previous_bay_elements = parsed_bays[i - 1]
@@ -1056,7 +1139,7 @@ def get_substation_group(sub: Substation, params: DrawingParams, rotation=0):
             is_first_bay,
             params,
             previous_bay_elements,
-            y_offset=max_y_offset,
+            y_offset=y_offset,
         )
 
     # Draw objects after bays
@@ -1143,7 +1226,7 @@ def apply_spring_layout(substations: list[Substation]) -> dict:
     if avg_distance > 0:
         print("\nApplying spring layout to adjust substation positions...")
         return nx.spring_layout(
-            G, pos=initial_pos, iterations=3, k=avg_distance, seed=0
+            G, pos=initial_pos, iterations=4, k=avg_distance, seed=0
         )
 
     return initial_pos
