@@ -477,14 +477,14 @@ substations:
           w1: 220
           w2: 66
         rel_x: 1
-        rel_y: 6
+        rel_y: 3
         connections: {}
       - type: tx-ud
         metadata:
           w1: 220
           w2: 66
         rel_x: 5
-        rel_y: 6
+        rel_y: 3
         connections: {}
     child_definitions:
       - def: |
@@ -496,12 +496,12 @@ substations:
         rel_y: 3
         connections: {}
       - def: |
-          x|x1
-          i
           x|x2
+          i
+          x|x1
         voltage_kv: 66
         rel_x: 0
-        rel_y: 10
+        rel_y: 9
         connections:
           2: VIC-66-WEMENSF
           1: VIC-66-WETS-BSP
@@ -542,18 +542,78 @@ substations:
     tags:
       - kerang terminal station
     def: |
-      |xE||
-      |xx||
+      |x4E||
+      |x3x||
       |x1/||
       |x2x||
-      |xE||
-      |Ex||
+      |xE||x5
     buses:
-      1: '1 KGTS'
+      1: '1'
       2: '2'
     connections:
       1: VIC-220-WETS-KGTS-1
       2: VIC-220-BETS-KGTS-1
+      3: VIC-220-KGTS-TX2
+      4: VIC-220-KGTS-TX1
+      5: VIC-220-KGTS-TX3
+    objects:
+      - type: gen
+        metadata:
+          voltage: 220
+          text: SVC
+          info: |
+            Kerang SVC
+            - 50 MVAr / +25 MVAr
+        rel_x: 9
+        rel_y: 4
+      - type: tx-ud # TX1
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: -1
+        rel_y: 9
+        connections:
+          1: VIC-220-KGTS-TX1
+          2: VIC-66-KGTS-TX1
+      - type: tx-ud # TX2
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 3
+        rel_y: 9
+        connections:
+          1: VIC-220-KGTS-TX2
+          2: VIC-66-KGTS-TX2
+      - type: tx-ud # TX3
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 9
+        rel_y: 9
+        connections:
+          1: VIC-220-KGTS-TX3
+          2: VIC-66-KGTS-TX3
+    child_definitions:
+      - def: |
+          1x|
+          2x|
+          Ei
+          2x|
+          3x|x4
+        voltage_kv: 66
+        rel_x: 0
+        rel_y: 16
+        connections:
+          1: VIC-66-KGTS-TX1
+          2: VIC-66-KGTS-66-TIE
+          3: VIC-66-KGTS-TX3
+          4: VIC-66-KGTS-GSF/SHL
+
+
+
+
+
+
   - name: BETS
     lat: -36.784045
     long: 144.253684
@@ -923,4 +983,79 @@ substations:
             90 MW
         rel_x: 3
         rel_y: 4
+  - name: SHL
+    title: Swan Hill
+    lat: -35.3455287
+    long: 143.5222635
+    voltage_kv: 66
+    tags:
+      - SHL
+      - Swan Hill
+    def: |
+      1?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-GSF-SHL
+  - name: GSF
+    title: Gannawarra (GSF/GESS)
+    lat: -35.7330445
+    long: 143.7804412
+    voltage_kv: 66
+    tags:
+      - GSF
+      - Gannawarra Solar Farm
+    def: |
+      1/sx
+      sx3
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-KGTS-GSF/SHL
+      3: VIC-66-GSF-SHL
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+    child_definitions:
+      - def: |
+          |x
+          |x
+        voltage_kv: 33
+        rel_x: 0
+        rel_y: 7
+        objects:
+          - type: gen
+            metadata:
+              voltage_kv: 33
+              text: SF
+              info: |
+                Gannawarra Solar Farm
+                50 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage_kv: 33
+              text: B
+              info: |
+                Gannawarra BESS
+                25 MW / 50 MWh
+            rel_x: 3
+            rel_y: 4
+  - name: Cohuna
+    lat: -35.8803326
+    long: 144.2189295
+    voltage_kv: 66
+    tags:
+      - Cohuna
+    def: |
+      1?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-KGTS-COH
   

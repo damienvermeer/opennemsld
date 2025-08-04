@@ -1473,8 +1473,8 @@ def get_substation_group(
     # Add title centered above the substation
     min_x, min_y, max_x, _ = bbox
     title_x = (min_x + max_x) / 2
-    # Place title half a grid step above the top of the bounding box
-    title_y = min_y - (params.grid_step / 2)
+    # Place title one and a half grid steps above the top of the bounding box
+    title_y = min_y - (1.5 * params.grid_step)
     dg.append(
         draw.Text(
             sub.title,
@@ -1500,8 +1500,8 @@ def get_substation_group(
     grid_start_x_idx = math.floor(start_x / params.grid_step)
     grid_end_x_idx = math.ceil(end_x / params.grid_step)
 
-    # Mark the grid row of the title, and the rows above and below it
-    for y_offset in [-params.grid_step, 0, params.grid_step]:
+    # Mark the grid row of the title, and the row above it
+    for y_offset in [-params.grid_step, 0]:
         current_grid_y = grid_y + y_offset
         for i in range(grid_start_x_idx, grid_end_x_idx + 1):
             grid_x = i * params.grid_step
@@ -1663,7 +1663,7 @@ def draw_connections(
                 points,
                 path_weight=LINE_CROSS_WEIGHT,
             )
-            if len(path) > 1:
+            if len(path) > 0:
                 print(f"Drawing path with {len(path)} points")
                 # The path is returned as (row, col) tuples. Drawing needs (x, y).
                 for i in range(len(path) - 1):
