@@ -2008,7 +2008,7 @@ def main():
                 max_x - min_x,
                 max_y - min_y,
                 fill="none",
-                stroke="red",
+                stroke="grey",
                 stroke_width=2,
                 stroke_dasharray="5,5",
             )

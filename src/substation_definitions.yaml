@@ -118,7 +118,7 @@ substations:
           w1: 33
           w2: 220
         connections:
-          1: CROWLANDS-WF-220
+          2: CROWLANDS-WF-220
         rel_x: -5
         rel_y: 3
       - type: gen
