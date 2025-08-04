@@ -137,10 +137,10 @@ class Substation:
             # Create a group for this object
             obj_group = draw.Group()
 
-            if obj["type"] == "tx":
-                # Amended code to draw the IEC 60617 transformer symbol (interlocking circles)
-                # Assumes (obj_x, obj_y) is the desired center of the entire symbol object.
-                # Assumes a Y-down coordinate system.
+            if obj["type"] == "tx-ud":
+                # Draw up-down transformer. Winding 1 is at the top.
+                # (obj_x, obj_y) is the connection point for winding 1.
+                # Total height is 4 * grid_step.
 
                 # Get colours from metadata
                 w1_voltage = obj.get("metadata", {}).get("w1")
@@ -149,47 +149,19 @@ class Substation:
                 colour2 = COLOUR_MAP.get(w2_voltage, "black")
 
                 # --- Define Geometry ---
-                # To make the symbol fit nicely within a grid cell, the radius should be
-                # smaller than half the grid step. A third is a good proportion.
-                radius = 2 * params.grid_step / 3
+                # Symbol is two interlocking circles in a 2*grid_step space.
+                radius = (2 * params.grid_step) / 3
 
-                # The vertical distance between the center of the whole object (obj_y)
-                # and the center of each circle is half the radius.
-                offset = radius / 2
+                # Circles are centered in the middle 2 grid steps of the 4 grid step total height.
+                symbol_top_y = obj_y + params.grid_step
+                symbol_center_y = symbol_top_y + params.grid_step
 
-                # --- Top Circle ---
-                circle1_x = obj_x
-                circle1_y = obj_y - offset
-                top_circle = draw.Circle(
-                    circle1_x,
-                    circle1_y,
-                    radius,
-                    fill="transparent",
-                    stroke=colour1,
-                    stroke_width=3,
-                )
-                obj_group.append(top_circle)
+                circle1_y = symbol_center_y - radius / 2
+                circle2_y = symbol_center_y + radius / 2
 
-                # --- Bottom Circle ---
-                circle2_x = obj_x
-                circle2_y = obj_y + offset
-                bottom_circle = draw.Circle(
-                    circle2_x,
-                    circle2_y,
-                    radius,
-                    fill="transparent",
-                    stroke=colour2,
-                    stroke_width=3,
-                )
-                obj_group.append(bottom_circle)
-
-                # --- Terminal Lines ---
-                # Define a length for the terminal lines - 50% longer as requested
-                line_length = params.grid_step
-
-                # Top terminal line
-                top_line_start_y = circle1_y - radius  # Top point of the top circle
-                top_line_end_y = top_line_start_y - line_length
+                # --- Top Terminal Line ---
+                top_line_start_y = obj_y
+                top_line_end_y = symbol_top_y
                 top_line = draw.Line(
                     obj_x,
                     top_line_start_y,
@@ -200,11 +172,31 @@ class Substation:
                 )
                 obj_group.append(top_line)
 
-                # Bottom terminal line
-                bottom_line_start_y = (
-                    circle2_y + radius
-                )  # Bottom point of the bottom circle
-                bottom_line_end_y = bottom_line_start_y + line_length
+                # --- Top Circle ---
+                top_circle = draw.Circle(
+                    obj_x,
+                    circle1_y,
+                    radius,
+                    fill="transparent",
+                    stroke=colour1,
+                    stroke_width=3,
+                )
+                obj_group.append(top_circle)
+
+                # --- Bottom Circle ---
+                bottom_circle = draw.Circle(
+                    obj_x,
+                    circle2_y,
+                    radius,
+                    fill="transparent",
+                    stroke=colour2,
+                    stroke_width=3,
+                )
+                obj_group.append(bottom_circle)
+
+                # --- Bottom Terminal Line ---
+                bottom_line_start_y = symbol_top_y + 2 * params.grid_step
+                bottom_line_end_y = bottom_line_start_y + params.grid_step
                 bottom_line = draw.Line(
                     obj_x,
                     bottom_line_start_y,
@@ -215,17 +207,112 @@ class Substation:
                 )
                 obj_group.append(bottom_line)
 
-                # Winding text removed as requested
+                # Mark grid points for the transformer elements
+                mark_grid_point(self, obj_x, top_line_start_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, obj_x, top_line_end_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, obj_x, symbol_center_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, obj_x, bottom_line_start_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, obj_x, bottom_line_end_y, weight=ELEMENT_WEIGHT)
 
-                # Store connection points (we'll apply rotation later if needed)
+                # Store connection points
                 conn_points = {}
                 if "connections" in obj:
                     for terminal_num, conn_name in obj["connections"].items():
                         coords = None
                         if terminal_num == 1:  # Top terminal
-                            coords = (circle1_x, top_line_end_y)
+                            coords = (obj_x, top_line_start_y)
                         elif terminal_num == 2:  # Bottom terminal
-                            coords = (circle2_x, bottom_line_end_y)
+                            coords = (obj_x, bottom_line_end_y)
+
+                        if coords:
+                            conn_points[conn_name] = coords
+
+            elif obj["type"] == "tx-lr":
+                # Draw left-right transformer. Winding 1 is on the left.
+                # (obj_x, obj_y) is the connection point for winding 1.
+                # Total width is 4 * grid_step.
+
+                # Get colours from metadata
+                w1_voltage = obj.get("metadata", {}).get("w1")
+                w2_voltage = obj.get("metadata", {}).get("w2")
+                colour1 = COLOUR_MAP.get(w1_voltage, "black")
+                colour2 = COLOUR_MAP.get(w2_voltage, "black")
+
+                # --- Define Geometry ---
+                # Symbol is two interlocking circles in a 2*grid_step space.
+                radius = (2 * params.grid_step) / 3
+
+                # Circles are centered in the middle 2 grid steps of the 4 grid step total width.
+                symbol_left_x = obj_x + params.grid_step
+                symbol_center_x = symbol_left_x + params.grid_step
+
+                circle1_x = symbol_center_x - radius / 2
+                circle2_x = symbol_center_x + radius / 2
+
+                # --- Left Terminal Line ---
+                left_line_start_x = obj_x
+                left_line_end_x = symbol_left_x
+                left_line = draw.Line(
+                    left_line_start_x,
+                    obj_y,
+                    left_line_end_x,
+                    obj_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(left_line)
+
+                # --- Left Circle ---
+                left_circle = draw.Circle(
+                    circle1_x,
+                    obj_y,
+                    radius,
+                    fill="transparent",
+                    stroke=colour1,
+                    stroke_width=3,
+                )
+                obj_group.append(left_circle)
+
+                # --- Right Circle ---
+                right_circle = draw.Circle(
+                    circle2_x,
+                    obj_y,
+                    radius,
+                    fill="transparent",
+                    stroke=colour2,
+                    stroke_width=3,
+                )
+                obj_group.append(right_circle)
+
+                # --- Right Terminal Line ---
+                right_line_start_x = symbol_left_x + 2 * params.grid_step
+                right_line_end_x = right_line_start_x + params.grid_step
+                right_line = draw.Line(
+                    right_line_start_x,
+                    obj_y,
+                    right_line_end_x,
+                    obj_y,
+                    stroke=colour2,
+                    stroke_width=2,
+                )
+                obj_group.append(right_line)
+
+                # Mark grid points for the transformer elements
+                mark_grid_point(self, left_line_start_x, obj_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, left_line_end_x, obj_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, symbol_center_x, obj_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, right_line_start_x, obj_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(self, right_line_end_x, obj_y, weight=ELEMENT_WEIGHT)
+
+                # Store connection points
+                conn_points = {}
+                if "connections" in obj:
+                    for terminal_num, conn_name in obj["connections"].items():
+                        coords = None
+                        if terminal_num == 1:  # Left terminal
+                            coords = (left_line_start_x, obj_y)
+                        elif terminal_num == 2:  # Right terminal
+                            coords = (right_line_end_x, obj_y)
 
                         if coords:
                             conn_points[conn_name] = coords
@@ -254,7 +341,7 @@ class Substation:
                 mark_grid_point(self, circle_center_x, circle_center_y)
 
             # Apply rotation if specified
-            if rotation != 0 and obj["type"] != "gen":
+            if rotation != 0 and obj["type"] not in ["gen", "tx-ud", "tx-lr"]:
                 # Create a container group with rotation transform
                 rotated_group = draw.Group(
                     transform=f"rotate({rotation}, {obj_x}, {obj_y})"
