@@ -318,7 +318,7 @@ class Substation:
 
             parent_group.append(obj_group)
 
-            # Draw text for 'gen' object separately to avoid rotation
+            # Draw text for 'gen' object separately to avoid manual rotation calculation
             if obj["type"] == "gen":
                 radius = 2 * params.grid_step / 3
                 text = obj.get("metadata", {}).get("text", "G")
@@ -330,9 +330,10 @@ class Substation:
                 circle_center_x = obj_x
                 circle_center_y = line_end_y - radius
 
+                # For the popup coordinates calculation, we still need to know the
+                # final position after rotation
                 text_x, text_y = circle_center_x, circle_center_y
 
-                # If the object is rotated, we need to calculate the new center for the text
                 if rotation != 0:
                     rotation_rad = math.radians(rotation)
                     # Translate to origin for rotation
@@ -378,18 +379,36 @@ class Substation:
                         }
                     )
 
-                parent_group.append(
-                    draw.Text(
-                        text,
-                        font_size=params.grid_step * 0.7,
-                        x=text_x,
-                        y=text_y,
-                        text_anchor="middle",
-                        dominant_baseline="central",
-                        fill=colour,
-                        stroke_width=0,
-                    )
+                # Create a text group and apply rotation transform if needed
+                text_group = draw.Group()
+
+                # Add the text to the text group
+                text_element = draw.Text(
+                    text,
+                    font_size=params.grid_step * 0.7,
+                    x=circle_center_x,  # Use original, pre-rotation coordinates
+                    y=circle_center_y,  # Use original, pre-rotation coordinates
+                    text_anchor="middle",
+                    dominant_baseline="central",
+                    fill=colour,
+                    stroke_width=0,
                 )
+
+                # Add to text group
+                text_group.append(text_element)
+
+                # Apply the same rotation transform as the object group
+                # This ensures the text rotation is consistent with the object rotation
+                if rotation != 0:
+                    # Create a text group with rotation transform
+                    # Need to create it with the transform attribute from the start
+                    text_group = draw.Group(
+                        transform=f"rotate({rotation}, {obj_x}, {obj_y})"
+                    )
+                    text_group.append(text_element)
+
+                # Add the text group to the parent group
+                parent_group.append(text_group)
 
         return parent_group
 
@@ -1227,10 +1246,9 @@ def get_substation_group(
         xoff = 2 * params.grid_step * i  # Use 2*GRID_STEP spacing between bays (50px)
         is_first_bay = i == 0
 
-        # check if the first element is a busbar type, if so, pass an offset
-        # ... of one grid step
+        # handle correct offset
         if parsed_bays[i][0]["type"] == "busbar":
-            y_offset = params.grid_step  # not sure why though?
+            y_offset = 0
         else:
             y_offset = max_y_offset
 
