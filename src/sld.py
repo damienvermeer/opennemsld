@@ -2058,7 +2058,7 @@ def main():
                 col = "red"
             else:
                 col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 5, fill=col))
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 1, fill=col))
 
     # Draw circles at connection points for debugging
     # for connection in all_connections.values():
@@ -2067,6 +2067,14 @@ def main():
     #         voltage = point["voltage"]
     #         colour = COLOUR_MAP.get(voltage, "black")
     #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
+
+    # draw circules of the correct colour given the voltage at each conneciton point
+    for connection in all_connections.values():
+        for point in connection:
+            coords = point["coords"]
+            voltage = point["voltage"]
+            colour = COLOUR_MAP.get(voltage, "black")
+            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 8. Draw titles
     draw_titles(drawing, substations, points, params, sub_bboxes)
