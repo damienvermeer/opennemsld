@@ -966,8 +966,8 @@ substations:
       - KSF
       - Karadoc Solar Farm
     def: |
-      1/s
       3xsx
+      s/1
     buses:
       1: ""
     connections:
@@ -981,7 +981,7 @@ substations:
           info: |
             Karadoc Solar Farm
             90 MW
-        rel_x: 3
+        rel_x: 1
         rel_y: 4
   - name: SHL
     title: Swan Hill
@@ -1006,8 +1006,8 @@ substations:
       - GSF
       - Gannawarra Solar Farm
     def: |
+      3xs
       1/sx
-      sx3
     buses:
       1: ""
     connections:
@@ -1018,7 +1018,7 @@ substations:
         metadata:
           w1: 66
           w2: 33
-        rel_x: 1
+        rel_x: 3
         rel_y: 3
     child_definitions:
       - def: |

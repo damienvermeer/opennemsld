@@ -60,7 +60,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "example.svg"
 OUTPUT_HTML = "index.html"
-PADDING_STEPS = 5
+PADDING_STEPS = 6
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -2117,6 +2117,7 @@ def main():
                 stroke="grey",
                 stroke_width=2,
                 stroke_dasharray="5,5",
+                opacity=0.5,
             )
         )
 
@@ -2151,12 +2152,12 @@ def main():
     #         drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
 
     # Draw circles at connection points for debugging
-    for connection in all_connections.values():
-        for point in connection:
-            coords = point["coords"]
-            voltage = point["voltage"]
-            colour = COLOUR_MAP.get(voltage, "black")
-            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
+    # for connection in all_connections.values():
+    #     for point in connection:
+    #         coords = point["coords"]
+    #         voltage = point["voltage"]
+    #         colour = COLOUR_MAP.get(voltage, "black")
+    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 9. Generate output files
     generate_output_files(drawing, substations)
