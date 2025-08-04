@@ -126,11 +126,6 @@ def run_gridsearch(
         - The updated grid with the path marked as high-penalty.
         - The graph used for pathfinding (note: it will be stale after points are updated).
     """
-    # --- 1. Validate Inputs ---
-    if points[start_node[0]][start_node[1]] >= 25:
-        raise ValueError(f"Start node {start_node} is on a high-penalty obstacle!")
-    if points[end_node[0]][end_node[1]] >= 25:
-        raise ValueError(f"End node {end_node} is on a high-penalty obstacle!")
 
     # --- 2. Create Graph ---
     # Always create a new graph from the potentially updated points grid to ensure

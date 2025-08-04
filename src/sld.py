@@ -1183,7 +1183,10 @@ def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
     if connection_name:
         # Store the connection point for pathfinding
         sub.connection_points.setdefault(connection_name, []).append((xoff, y_pos))
-        mark_grid_point(sub, xoff, y_pos, weight=0)  # Connection points have weight 0
+        mark_grid_point(
+            sub, xoff, y_pos, weight=ELEMENT_WEIGHT * 2
+        )  # Connection points have weight 2x ELEMENT_WEIGHT
+        # ... this is to prevent other lines using this point as a path
     else:
         # Draw an unused connection circle
         parent_group.append(draw.Circle(xoff, y_pos, 4, fill=colour, stroke="none"))
@@ -2058,7 +2061,7 @@ def main():
                 col = "red"
             else:
                 col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 1, fill=col))
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 4, fill=col))
 
     # Draw circles at connection points for debugging
     # for connection in all_connections.values():
