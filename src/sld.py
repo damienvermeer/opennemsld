@@ -44,7 +44,7 @@ import findpath
 from rectangle_spacing import space_rectangles
 
 # --- Constants ---
-MAP_DIMS = 9000
+MAP_DIMS = 16000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -514,7 +514,7 @@ def get_substation_bbox_from_svg(
     temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
 
     # Save to a temporary file
-    temp_svg_path = f"temp_{substation.name}.svg"
+    temp_svg_path = f"temp_{substation.name.replace('/', '_').replace('(', '_').replace(')', '_')}.svg"
     temp_drawing.save_svg(temp_svg_path)
 
     try:

@@ -1087,16 +1087,29 @@ substations:
       - GTS
       - Geelong
     def: |
-      |xEE||
-      |xdx||
-      |x2xx||
-      |x1xx||
+      NE|x0EN
+      1x|Ex0||
+      |x3x||
+      |E4x||
+      |x5x||
+      |x6E||
+      |x7x||
+      |x8E||
+      |x9EN
     buses:
       1: '1'
       2: '2'
     connections:
-      1: VIC-220-GTS1
+      # 0 are the old PTH lines
+      1: mlts2-gts
       2: VIC-220-GTS2
+      3: b3 tx
+      4: mlts1-gts
+      5: b2 tx
+      6: b1 tx
+      7: kts3-gts
+      8: kts1-gts
+      9: gts-deerpark
   - name: APD (Alcoa Portland)
     lat: -38.386731
     long: 141.624475
@@ -1157,11 +1170,21 @@ substations:
       - ATS
       - Altona
     def: |
-      1?|
+      |x1EEN
+      |EEE||x2
+      |Ed3/||
+      |x4x5x||
+      |xd6x||
     buses:
-      1: ""
+      1: "2"
+      2: "3"
     connections:
-      1: VIC-220-ATS
+      1: lngs2
+      2: lngs1
+      3: ats kts
+      4: ats b2 tx
+      5: ats b3 tx
+      6: ats b4 tx
   - name: Brooklyn (BLTS)
     lat: -37.825967
     long: 144.861786
@@ -1170,11 +1193,23 @@ substations:
       - BLTS
       - Brooklyn
     def: |
-      1?|
+      NE1x||
+      2x|EE||
+      NE3x||
+      4x|x5x||
+      |x6x||
+      |x7x||
     buses:
-      1: ""
+      1: "3"
+      2: "4"
     connections:
-      1: VIC-220-BLTS
+      1: blts ats
+      2: blts kts
+      3: blts newport
+      4: blts fbts
+      5: blts b5 tx
+      6: blts b1 tx
+      7: blts b3 tx
   - name: Newport (NPSD)
     lat: -37.840536
     long: 144.894214
@@ -1183,11 +1218,14 @@ substations:
       - NPSD
       - Newport
     def: |
-      1?|
+      1x|x2x||
+      |xx||x3
     buses:
       1: ""
     connections:
-      1: VIC-220-NPSD
+      1: blts-newport
+      2: newport gen
+      3: newport-fbts
     objects:
       - type: gen
         metadata:
@@ -1206,11 +1244,21 @@ substations:
       - FBTS
       - Fishermens Bend
     def: |
-      1?|
+      NE1x|
+      NE2x|
+      3x|x4E||
+      5/|x6x||/7
     buses:
-      1: ""
+      1: "4"
+      2: "1"
     connections:
-      1: VIC-220-FBTS
+      1: fbts blts
+      2: fbts wmts2
+      3: fbts wmts1
+      4: FBTS  newport
+      5: b4 tx
+      6: b3 tx
+      7: b2 tx
   - name: WMTS (West Melbourne)
     lat: -37.800342
     long: 144.934853
