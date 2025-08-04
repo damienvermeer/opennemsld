@@ -229,58 +229,32 @@ class Substation:
 
                         if coords:
                             conn_points[conn_name] = coords
-                            # Mark the connection point for pathfinding (local coords)
-                            mark_grid_point(self, coords[0], coords[1], weight=0)
-
-                # Mark grid points for the transformer body
-                mark_grid_point(self, circle1_x, circle1_y)
-                mark_grid_point(self, circle2_x, circle2_y)
 
             elif obj["type"] == "gen":
-                # Generator is a "lollipop" - a circle on a stick
-                radius = 2 * params.grid_step / 3
+                # Generator is a circle. The reference point (obj_x, obj_y) is the center.
                 voltage = obj.get("metadata", {}).get("voltage")
                 colour = COLOUR_MAP.get(voltage, "black")
-                text = obj.get("metadata", {}).get("text", "G")
 
-                # The reference point (obj_x, obj_y) is the bottom of the stick.
-                line_start_y = obj_y
-                line_end_y = obj_y - params.grid_step
                 circle_center_x = obj_x
-                # The circle sits on top of the stick, so its center is radius-distance above the stick's end
-                circle_center_y = line_end_y - radius
-
-                # Draw the stick (line)
-                obj_group.append(
-                    draw.Line(
-                        obj_x,
-                        line_start_y,
-                        obj_x,
-                        line_end_y,
-                        stroke=colour,
-                        stroke_width=2,
-                    )
-                )
+                circle_center_y = obj_y
 
                 # Draw circle
                 obj_group.append(
                     draw.Circle(
                         circle_center_x,
                         circle_center_y,
-                        radius,
+                        params.grid_step,
                         fill="transparent",
                         stroke=colour,
                         stroke_width=2,
                     )
                 )
 
-                # Mark grid points for the line and the circle center
-                mark_grid_point(self, obj_x, obj_y)  # bottom of stick
-                mark_grid_point(self, obj_x, line_end_y)  # top of stick
-                mark_grid_point(self, circle_center_x, circle_center_y)  # circle center
+                # Mark grid point for the circle center
+                mark_grid_point(self, circle_center_x, circle_center_y)
 
             # Apply rotation if specified
-            if rotation != 0:
+            if rotation != 0 and obj["type"] != "gen":
                 # Create a container group with rotation transform
                 rotated_group = draw.Group(
                     transform=f"rotate({rotation}, {obj_x}, {obj_y})"
@@ -320,54 +294,31 @@ class Substation:
 
             # Draw text for 'gen' object separately to avoid manual rotation calculation
             if obj["type"] == "gen":
-                radius = 2 * params.grid_step / 3
                 text = obj.get("metadata", {}).get("text", "G")
                 voltage = obj.get("metadata", {}).get("voltage")
                 colour = COLOUR_MAP.get(voltage, "black")
 
-                # Calculate the circle's center, which is the text's anchor
-                line_end_y = obj_y - params.grid_step
+                # The reference point (obj_x, obj_y) is the center of the circle.
                 circle_center_x = obj_x
-                circle_center_y = line_end_y - radius
-
-                # For the popup coordinates calculation, we still need to know the
-                # final position after rotation
-                text_x, text_y = circle_center_x, circle_center_y
-
-                if rotation != 0:
-                    rotation_rad = math.radians(rotation)
-                    # Translate to origin for rotation
-                    tx = text_x - obj_x
-                    ty = text_y - obj_y
-                    # Rotate (for Y-down coordinate system, this is a clockwise rotation)
-                    rx = tx * math.cos(rotation_rad) + ty * math.sin(rotation_rad)
-                    ry = -tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
-                    # Translate back
-                    text_x = rx + obj_x
-                    text_y = ry + obj_y
+                circle_center_y = obj_y
 
                 # Store popup info for generator objects with metadata.info
                 if obj.get("metadata", {}).get("info"):
-                    # Calculate global coordinates
-                    global_x = self.use_x + obj_x * params.grid_step / GRID_STEP
-                    global_y = self.use_y + obj_y * params.grid_step / GRID_STEP
+                    # Calculate global coordinates for the popup
+                    global_circle_x = (
+                        self.use_x + circle_center_x * params.grid_step / GRID_STEP
+                    )
+                    global_circle_y = (
+                        self.use_y + circle_center_y * params.grid_step / GRID_STEP
+                    )
 
-                    # Store popup info directly when drawing the object
-                    # This includes the info text and the coordinates (with y-axis inversion)
                     info_text = obj["metadata"]["info"]
-                    info_text = info_text.replace('"', '\\"')  # Escape double quotes
-                    info_text = info_text.replace(
-                        "\n", "<br>"
-                    )  # Convert newlines to HTML breaks
-
-                    # Calculate the position of the circle center (top of the lollipop)
-                    # instead of using the bottom of the stick (obj_x, obj_y)
-                    global_circle_x = self.use_x + text_x * params.grid_step / GRID_STEP
-                    global_circle_y = self.use_y + text_y * params.grid_step / GRID_STEP
+                    info_text = info_text.replace('"', '\\"')
+                    info_text = info_text.replace("\n", "<br>")
 
                     # Apply y-axis inversion for Leaflet coordinates
                     leaflet_x = global_circle_x
-                    leaflet_y = MAP_DIMS - global_circle_y  # Invert y-axis
+                    leaflet_y = MAP_DIMS - global_circle_y
 
                     self.object_popups.append(
                         {
@@ -379,36 +330,19 @@ class Substation:
                         }
                     )
 
-                # Create a text group and apply rotation transform if needed
-                text_group = draw.Group()
-
-                # Add the text to the text group
-                text_element = draw.Text(
-                    text,
-                    font_size=params.grid_step * 0.7,
-                    x=circle_center_x,  # Use original, pre-rotation coordinates
-                    y=circle_center_y,  # Use original, pre-rotation coordinates
-                    text_anchor="middle",
-                    dominant_baseline="central",
-                    fill=colour,
-                    stroke_width=0,
-                )
-
-                # Add to text group
-                text_group.append(text_element)
-
-                # Apply the same rotation transform as the object group
-                # This ensures the text rotation is consistent with the object rotation
-                if rotation != 0:
-                    # Create a text group with rotation transform
-                    # Need to create it with the transform attribute from the start
-                    text_group = draw.Group(
-                        transform=f"rotate({rotation}, {obj_x}, {obj_y})"
+                # Draw text (always horizontal)
+                parent_group.append(
+                    draw.Text(
+                        text,
+                        font_size=params.grid_step * 0.98,
+                        x=circle_center_x,
+                        y=circle_center_y,
+                        text_anchor="middle",
+                        dominant_baseline="central",
+                        fill=colour,
+                        stroke_width=0,
                     )
-                    text_group.append(text_element)
-
-                # Add the text group to the parent group
-                parent_group.append(text_group)
+                )
 
         return parent_group
 
@@ -1933,18 +1867,18 @@ def main():
         # drawing.append(draw.Circle(global_center_x, global_center_y, 5, fill="blue"))
 
     # draw a grey dot at each grid point
-    # for y in range(num_steps):
-    # for x in range(num_steps):
-    #     weight = points[y][x]
-    #     if weight == 0:
-    #         col = "green"
-    #     elif weight > 10:
-    #         col = "red"
-    #     else:
-    #         col = "orange"
-    #     drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
+    for y in range(num_steps):
+        for x in range(num_steps):
+            weight = points[y][x]
+            if weight == 0:
+                col = "green"
+            elif weight > 10:
+                col = "red"
+            else:
+                col = "orange"
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
 
-    # Draw circles at connection points for debugging
+    # # Draw circles at connection points for debugging
     # for connection in all_connections.values():
     #     for point in connection:
     #         coords = point["coords"]

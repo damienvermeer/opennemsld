@@ -50,7 +50,7 @@ substations:
           info: |
             Ararat Wind Farm
             240 MW
-        rel_x: 7
+        rel_x: 9
         rel_y: 2
         rotation: 90
   - name: WBTS
@@ -82,8 +82,8 @@ substations:
           info: |
             Waubra Wind Farm
             192 MW
-        rel_x: 01
-        rel_y: -6
+        rel_x: 1
+        rel_y: -8
         rotation: 0
       - type: tx
         metadata:
@@ -96,8 +96,11 @@ substations:
         metadata:
           voltage: 66
           text: WF
+          info: |
+            Waubra Wind Farm
+            192 MW
         rel_x: 3
-        rel_y: -6
+        rel_y: -8
         rotation: 0
   - name: CWTS
     lat: -37.120842
@@ -123,7 +126,7 @@ substations:
         connections:
           2: CROWLANDS-WF-220
         rel_x: -3
-        rel_y: 2
+        rel_y: 3
         rotation: -90
       - type: gen
         metadata:
@@ -132,8 +135,8 @@ substations:
           info: |
             Crowlands Wind Farm
             80 MW
-        rel_x: -4
-        rel_y: 2
+        rel_x: -6
+        rel_y: 3
         rotation: -90
   - name: BATS
     lat: -37.567614
