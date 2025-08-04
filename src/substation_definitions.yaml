@@ -185,17 +185,58 @@ substations:
     tags:
       - HOTS
     def: |
-      |Ex||
-      |x1x||
+      |xEN
+      |x1EN
       |x2x||
-      |xE||
-      |xE||
+      |x3x||
+      NEE||x4
     buses:
-      1: '1 HOTS'
-      2: '2'
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-MRTS-HOTS-1
+      1: HOTS-B2-TX-220
       2: VIC-220-BGTS-HOTS-1
+      3: VIC-220-MRTS-HOTS-1
+      4: HOTS-B3-TX-220
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: -3
+        rel_y: 8
+        connections:
+          1: HOTS-B2-TX-220
+          2: HOTS-B2-TX-66
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 9
+        rel_y: 8
+        connections:
+          1: HOTS-B3-TX-220
+          2: HOTS-B3-TX-66
+    child_definitions:
+      - def: |
+          1x|x
+          |x
+          |x
+          |x3
+          t
+          |x4
+          2x|x
+          |x
+          |x
+          |x
+        voltage_kv: 66
+        rel_x: -3
+        rel_y: 14
+        connections:
+          1: HOTS-B2-TX-66
+          2: HOTS-B3-TX-66
+          3: VIC-66-HOTS-STL1
+          4: VIC-66-HOTS-STL2
   - name: RCTS
     lat: -34.292682
     long: 142.238698

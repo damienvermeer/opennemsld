@@ -104,6 +104,7 @@ class Substation:
     definition: str = ""
     buses: dict = field(default_factory=dict)
     connections: dict = field(default_factory=dict)
+    child_definitions: list = field(default_factory=list)
     object_popups: list = field(default_factory=list)
     scaled_x: float = 0
     scaled_y: float = 0
@@ -115,7 +116,7 @@ class Substation:
 
     def __post_init__(self):
         self.grid_points = {}  # Store (x,y) -> weight dictionary for grid points
-        self.connection_points: dict[str, list[tuple[float, float]]] = {}
+        self.connection_points: dict[str, list[dict]] = {}
         self.objects = []  # Store objects associated with this substation
 
     def draw_objects(
@@ -219,13 +220,19 @@ class Substation:
                 if "connections" in obj:
                     for terminal_num, conn_name in obj["connections"].items():
                         coords = None
+                        voltage = None
                         if terminal_num == 1:  # Top terminal
                             coords = (obj_x, top_line_start_y)
+                            voltage = w1_voltage
                         elif terminal_num == 2:  # Bottom terminal
                             coords = (obj_x, bottom_line_end_y)
+                            voltage = w2_voltage
 
                         if coords:
-                            conn_points[conn_name] = coords
+                            conn_points[conn_name] = {
+                                "coords": coords,
+                                "voltage": voltage,
+                            }
 
             elif obj["type"] == "tx-lr":
                 # Draw left-right transformer. Winding 1 is on the left.
@@ -309,13 +316,19 @@ class Substation:
                 if "connections" in obj:
                     for terminal_num, conn_name in obj["connections"].items():
                         coords = None
+                        voltage = None
                         if terminal_num == 1:  # Left terminal
                             coords = (left_line_start_x, obj_y)
+                            voltage = w1_voltage
                         elif terminal_num == 2:  # Right terminal
                             coords = (right_line_end_x, obj_y)
+                            voltage = w2_voltage
 
                         if coords:
-                            conn_points[conn_name] = coords
+                            conn_points[conn_name] = {
+                                "coords": coords,
+                                "voltage": voltage,
+                            }
 
             elif obj["type"] == "gen":
                 # Generator is a circle. The reference point (obj_x, obj_y) is the center.
@@ -399,9 +412,9 @@ class Substation:
             else:
                 # For non-rotated objects, store the connection points directly
                 if "connections" in obj:
-                    for conn_id, (px, py) in conn_points.items():
+                    for conn_id, data in conn_points.items():
                         # Store connection points for non-rotated objects
-                        self.connection_points.setdefault(conn_id, []).append((px, py))
+                        self.connection_points.setdefault(conn_id, []).append(data)
 
             parent_group.append(obj_group)
 
@@ -481,6 +494,7 @@ def get_substation_bbox_from_svg(
         definition=substation.definition,
         buses=substation.buses,
         connections=substation.connections,
+        child_definitions=substation.child_definitions,
     )
     temp_sub.objects = substation.objects.copy() if substation.objects else []
 
@@ -581,6 +595,7 @@ def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
             definition=sub_data.get("def", ""),
             buses=sub_data.get("buses", {}),
             connections=sub_data.get("connections", {}),
+            child_definitions=sub_data.get("child_definitions", []),
         )
 
         # Add objects to the substation if present in the data
@@ -1293,8 +1308,9 @@ def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
     connection_name = sub.connections.get(conn_id)
 
     if connection_name:
-        # Store the connection point for pathfinding
-        sub.connection_points.setdefault(connection_name, []).append((xoff, y_pos))
+        # Store the connection point for pathfinding, including voltage
+        connection_data = {"coords": (xoff, y_pos), "voltage": sub.voltage_kv}
+        sub.connection_points.setdefault(connection_name, []).append(connection_data)
         mark_grid_point(
             sub, xoff, y_pos, weight=ELEMENT_WEIGHT * 2
         )  # Connection points have weight 2x ELEMENT_WEIGHT
@@ -1370,6 +1386,68 @@ def get_substation_group(
     # Draw objects after bays
     if sub.objects:
         dg = sub.draw_objects(parent_group=dg, params=params)
+
+    # Draw child definitions
+    if sub.child_definitions:
+        original_voltage = sub.voltage_kv
+        original_connections = sub.connections
+        for child_def in sub.child_definitions:
+            sub.voltage_kv = child_def["voltage_kv"]
+            sub.connections = child_def.get("connections", {})
+
+            child_bay_defs = child_def["def"].strip().split("\n")
+            child_parsed_bays = [
+                parse_bay_elements(bay_def) for bay_def in child_bay_defs
+            ]
+
+            # Pre-calculate the maximum y-offset needed for any bay to align all busbars
+            child_max_y_offset = 0
+            for elements in child_parsed_bays:
+                y_offset_for_alignment = 0
+                first_busbar_idx = next(
+                    (i for i, el in enumerate(elements) if el["type"] == "busbar"), -1
+                )
+                if first_busbar_idx > 0:
+                    # Count elements before the first busbar
+                    for i in range(first_busbar_idx):
+                        if elements[i]["type"] == "element":
+                            y_offset_for_alignment += 3 * params.grid_step
+                child_max_y_offset = max(child_max_y_offset, y_offset_for_alignment)
+
+            child_previous_bay_elements = None
+            for i, bay_def in enumerate(child_bay_defs):
+                base_xoff = child_def["rel_x"] * params.grid_step
+                # Snap base_xoff to the bay grid (multiples of 2 * grid_step)
+                bay_width = 2 * params.grid_step
+                base_xoff = round(base_xoff / bay_width) * bay_width
+                xoff = base_xoff + (bay_width * i)
+
+                # handle correct y offset for this bay within the child
+                y_offset_for_alignment = 0
+                if child_parsed_bays[i] and child_parsed_bays[i][0]["type"] != "busbar":
+                    y_offset_for_alignment = child_max_y_offset
+
+                # y_offset is negative of desired y_pos start
+                # The final y_offset should combine the relative position and the alignment.
+                y_offset = (
+                    -(child_def["rel_y"] * params.grid_step) + y_offset_for_alignment
+                )
+
+                if i > 0:
+                    child_previous_bay_elements = child_parsed_bays[i - 1]
+
+                draw_bay_from_string(
+                    xoff,
+                    dg,
+                    bay_def,
+                    sub,
+                    is_first_bay=False,  # Child bays never get bus labels
+                    params=params,
+                    previous_bay_elements=child_previous_bay_elements,
+                    y_offset=y_offset,
+                )
+        sub.voltage_kv = original_voltage
+        sub.connections = original_connections
 
     # Add title centered above the substation
     min_x, min_y, max_x, _ = bbox
@@ -1472,11 +1550,14 @@ def calculate_connection_points(
 
         rotation_rad = math.radians(sub.rotation)
 
-        for linedef, local_coords_list in sub.connection_points.items():
+        for linedef, connection_data_list in sub.connection_points.items():
             if not linedef:
                 continue
 
-            for local_coords in local_coords_list:
+            for connection_data in connection_data_list:
+                local_coords = connection_data["coords"]
+                voltage = connection_data["voltage"]
+
                 local_x, local_y = local_coords
                 rel_x = local_x - center_x
                 rel_y = local_y - center_y
@@ -1494,8 +1575,8 @@ def calculate_connection_points(
                     sub.use_x + rotated_local_x,
                     sub.use_y + rotated_local_y,
                 )
-                connection_data = {"coords": global_coords, "voltage": sub.voltage_kv}
-                all_connections.setdefault(linedef, []).append(connection_data)
+                new_connection_data = {"coords": global_coords, "voltage": voltage}
+                all_connections.setdefault(linedef, []).append(new_connection_data)
     return all_connections
 
 
@@ -1617,6 +1698,7 @@ def render_substation_svg(
         definition=substation.definition,
         buses=substation.buses,
         connections=substation.connections,
+        child_definitions=substation.child_definitions,
     )
 
     # Copy objects and other attributes
