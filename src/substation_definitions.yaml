@@ -552,14 +552,51 @@ substations:
     tags:
       - BGR
     def: |
-      1/|
+      1/|x3
       t
-      2/|
+      2/|x4
     buses:
-      1: '1'
+      1: ""
     connections:
       1: VIC-66-ART-BGR
       2: VIC-66-BGR-BAN
+      3: VIC-66-CHWF1
+      4: VIC-66-CHWF2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+        connections:
+          1: VIC-66-CHWF1
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 3
+        rel_y: 3
+        connections:
+          1: VIC-66-CHWF2
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Challicum Hills
+            53 MW
+        rel_x: 1
+        rel_y: 8
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Challicum Hills
+            53 MW
+        rel_x: 5
+        rel_y: 8
   - name: Ballarat North (BAN)
     lat: -37.534507
     long: 143.847329
