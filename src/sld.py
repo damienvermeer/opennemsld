@@ -47,7 +47,7 @@ from rectangle_spacing import space_rectangles
 MAP_DIMS = 7000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
-TITLE_FONT_SIZE = 40
+TITLE_FONT_SIZE = 20
 BUSBAR_WEIGHT = 8
 LINE_CROSS_WEIGHT = 15
 NEAR_SUB_WEIGHT = 4
@@ -359,48 +359,6 @@ class Substation:
 
         return parent_group
 
-    def get_bays_bbox(self, params: DrawingParams) -> tuple[float, float, float, float]:
-        """Calculates the bounding box (min_x, min_y, max_x, max_y) of the substation bays only."""
-        if not self.definition:
-            return 0, 0, 0, 0
-
-        bay_defs = self.definition.strip().split("\n")
-        num_bays = len(bay_defs)
-
-        # Calculate y-offset for pre-busbar elements to find min_y
-        max_y_offset = 0
-        max_elements_after_bus = 0
-        parsed_bays = [parse_bay_elements(bay_def) for bay_def in bay_defs]
-        for elements in parsed_bays:
-            y_offset = 0
-            first_busbar_idx = next(
-                (i for i, el in enumerate(elements) if el["type"] == "busbar"), -1
-            )
-            if first_busbar_idx > 0:
-                # Count elements before the first busbar
-                for i in range(first_busbar_idx):
-                    if elements[i]["type"] == "element":
-                        y_offset += 3 * params.grid_step
-                # Add one grid step for the connecting line to the first busbar
-                y_offset += params.grid_step
-            max_y_offset = max(max_y_offset, y_offset)
-
-            # Estimate height below busbars
-            elements_after_bus = 0
-            if first_busbar_idx != -1:
-                elements_after_bus = len(elements) - first_busbar_idx - 1
-            else:  # no busbar
-                elements_after_bus = len(elements)
-            max_elements_after_bus = max(max_elements_after_bus, elements_after_bus)
-
-        min_x = -params.grid_step
-        max_x = (num_bays - 1) * 2 * params.grid_step + params.grid_step
-        min_y = -max_y_offset
-        # Estimate height based on number of elements * space per element
-        max_y = max_elements_after_bus * (params.cb_size + params.grid_step)
-
-        return min_x, min_y, max_x, max_y
-
 
 def get_substation_bbox_from_svg(
     substation: "Substation", params: "DrawingParams"
@@ -434,6 +392,7 @@ def get_substation_bbox_from_svg(
     # We pass a dummy bbox to get_substation_group as it's not used for drawing, only for rotation center.
     # Since we render unrotated, the center is not important here.
     substation_group = get_substation_group(temp_sub, params, (0, 0, 0, 0), rotation=0)
+
     temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
 
     # Save to a temporary file
@@ -1227,8 +1186,6 @@ def get_substation_group(
             for i in range(first_busbar_idx):
                 if elements[i]["type"] == "element":
                     y_offset += 3 * params.grid_step
-            # Add one grid step for the connecting line to the first busbar
-            y_offset += params.grid_step
         max_y_offset = max(max_y_offset, y_offset)
 
     previous_bay_elements = None
@@ -1261,6 +1218,40 @@ def get_substation_group(
     # Draw objects after bays
     if sub.objects:
         dg = sub.draw_objects(parent_group=dg, params=params)
+
+    # Add title centered above the substation
+    min_x, min_y, max_x, _ = bbox
+    title_x = (min_x + max_x) / 2
+    # Place title half a grid step above the top of the bounding box
+    title_y = min_y - (params.grid_step / 2)
+    dg.append(
+        draw.Text(
+            sub.title,
+            font_size=TITLE_FONT_SIZE,
+            x=title_x,
+            y=title_y,
+            text_anchor="middle",
+            dominant_baseline="text-after-edge",
+            fill="black",
+            stroke_width=0,
+        )
+    )
+
+    # Mark grid points under the title to prevent line crossovers
+    # Approximate text width. A common heuristic is num_chars * font_size * 0.6
+    text_width = len(sub.title) * TITLE_FONT_SIZE * 0.6
+    start_x = title_x - text_width / 2
+    end_x = title_x + text_width / 2
+
+    # Find the grid points that this text spans
+    grid_y = round(title_y / params.grid_step) * params.grid_step
+
+    grid_start_x_idx = math.floor(start_x / params.grid_step)
+    grid_end_x_idx = math.ceil(end_x / params.grid_step)
+
+    for i in range(grid_start_x_idx, grid_end_x_idx + 1):
+        grid_x = i * params.grid_step
+        mark_grid_point(sub, grid_x, grid_y, weight=ELEMENT_WEIGHT)
 
     return dg
 
@@ -1432,187 +1423,6 @@ def draw_connections(
                     )
         except Exception as e:
             print(f"Error finding path: {e}")
-
-
-def _draw_text_in_clear_area(
-    drawing: draw.Drawing,
-    points: list[list],
-    text_lines: list[str],
-    font_size: float,
-    center_gx: int,
-    center_gy: int,
-    step: int,
-    max_search_radius_grid: int,
-    is_info_text: bool = False,
-) -> bool:
-    """Finds a clear area and draws centered text."""
-    num_steps = len(points)
-    line_height = font_size * 1.2
-    max_line_width = max(len(line) for line in text_lines) if text_lines else 0
-
-    text_width_px = max_line_width * font_size * 0.6
-    text_height_px = len(text_lines) * line_height
-
-    # Use smaller padding for info text bounding box
-    padding = 0 if is_info_text else 1
-    text_width_grid = int(math.ceil(text_width_px / step)) + padding
-    text_height_grid = int(math.ceil(text_height_px / step)) + padding
-
-    found_spot = False
-    for r_grid in range(1, max_search_radius_grid + 1):
-        for angle_deg in range(0, 360, 15):
-            angle_rad = math.radians(angle_deg)
-            gx = center_gx + int(r_grid * math.cos(angle_rad))
-            gy = center_gy + int(r_grid * math.sin(angle_rad))
-
-            is_clear = True
-            # Check area for text block, anchored at top-center
-            check_start_gx = gx - text_width_grid // 2
-            check_start_gy = gy
-
-            for i in range(text_width_grid):
-                for j in range(text_height_grid):
-                    check_gx, check_gy = check_start_gx + i, check_start_gy + j
-                    if not (
-                        0 <= check_gx < num_steps
-                        and 0 <= check_gy < num_steps
-                        and points[check_gx][check_gy] == 0
-                    ):
-                        is_clear = False
-                        break
-                if not is_clear:
-                    break
-
-            if is_clear:
-                title_x, title_y = check_start_gx * step, check_start_gy * step
-                # Draw the multi-line text
-                for idx, line in enumerate(text_lines):
-                    line_y_pos = title_y + (idx * line_height)
-                    drawing.append(
-                        draw.Text(
-                            line,
-                            font_size=font_size,
-                            x=title_x + text_width_px / 2,
-                            y=line_y_pos,
-                            text_anchor="middle",
-                            dominant_baseline="hanging",
-                            fill="black",
-                        )
-                    )
-
-                # Mark grid as used
-                for i in range(text_width_grid):
-                    for j in range(text_height_grid):
-                        mark_gx, mark_gy = check_start_gx + i, check_start_gy + j
-                        if 0 <= mark_gx < num_steps and 0 <= mark_gy < num_steps:
-                            points[mark_gx][mark_gy] = 1
-                found_spot = True
-                break
-        if found_spot:
-            break
-    return found_spot
-
-
-def draw_titles(
-    drawing: draw.Drawing,
-    substations: list[Substation],
-    points: list[list],
-    params: DrawingParams,
-    bboxes: dict[str, tuple[float, float, float, float]],
-):
-    """Draws titles for each substation and info text for generators."""
-    num_steps = len(points)
-    step = params.grid_step
-    max_search_radius_grid = TITLE_MAX_SEARCH_RADIUS_PX // step
-
-    for sub in substations:
-        # --- Draw Main Substation Title ---
-        if sub.title:
-            min_x, min_y, max_x, max_y = bboxes[sub.name]
-            local_center_x = (min_x + max_x) / 2
-            local_center_y = (min_y + max_y) / 2
-            center_x = sub.use_x + local_center_x
-            center_y = sub.use_y + local_center_y
-            center_gx = int(round(center_x / step))
-            center_gy = int(round(center_y / step))
-
-            found_spot = _draw_text_in_clear_area(
-                drawing,
-                points,
-                [sub.title],
-                TITLE_FONT_SIZE,
-                center_gx,
-                center_gy,
-                step,
-                max_search_radius_grid,
-            )
-
-            if not found_spot:
-                print(
-                    f"Warning: Could not find a free spot for title of substation {sub.name}"
-                )
-
-        # --- Draw Info Text for Gen Objects ---
-        for obj in sub.objects:
-            if obj.get("type") == "gen" and "info" in obj.get("metadata", {}):
-                info_text = obj["metadata"]["info"].strip()
-                if not info_text:
-                    continue
-
-                # Calculate the object's global center for text placement
-                radius = 2 * params.grid_step / 3
-                origin_x = -params.grid_step
-                origin_y = 0
-                local_obj_x = origin_x + obj["rel_x"] * params.grid_step
-                local_obj_y = origin_y + obj["rel_y"] * params.grid_step
-                local_center_x = local_obj_x
-                local_center_y = (local_obj_y - params.grid_step) - radius
-
-                sub_min_x, sub_min_y, sub_max_x, sub_max_y = bboxes[sub.name]
-                sub_center_x = (sub_min_x + sub_max_x) / 2
-                sub_center_y = (sub_min_y + sub_max_y) / 2
-
-                # Snap rotation center to match get_substation_group
-                grid_step = params.grid_step
-                sub_center_x = round(sub_center_x / grid_step) * grid_step
-                sub_center_y = round(sub_center_y / grid_step) * grid_step
-
-                rotation_rad = math.radians(sub.rotation)
-
-                rel_x = local_center_x - sub_center_x
-                rel_y = local_center_y - sub_center_y
-                # Rotate (for Y-down coordinate system, this is a clockwise rotation)
-                rotated_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(
-                    rotation_rad
-                )
-                rotated_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(
-                    rotation_rad
-                )
-                rotated_local_x = rotated_x + sub_center_x
-                rotated_local_y = rotated_y + sub_center_y
-
-                global_x = sub.use_x + rotated_local_x
-                global_y = sub.use_y + rotated_local_y
-
-                center_gx = int(round(global_x / step))
-                center_gy = int(round(global_y / step))
-
-                found_info_spot = _draw_text_in_clear_area(
-                    drawing,
-                    points,
-                    info_text.split("\n"),
-                    TITLE_FONT_SIZE / 2,
-                    center_gx,
-                    center_gy,
-                    step,
-                    max_search_radius_grid,
-                    is_info_text=True,
-                )
-
-                if not found_info_spot:
-                    print(
-                        f"Warning: Could not find a free spot for info text of gen object in {sub.name}"
-                    )
 
 
 def render_substation_svg(
@@ -1791,7 +1601,7 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
 
     locations_data = []
     for sub in substations:
-        title = sub.title if sub.title else sub.name
+        title = sub.name if sub.name else sub.name
         leaflet_y = MAP_DIMS - sub.use_y
         leaflet_x = sub.use_x
         locations_data.append(
@@ -2061,26 +1871,15 @@ def main():
                 col = "red"
             else:
                 col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 4, fill=col))
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
 
     # Draw circles at connection points for debugging
-    # for connection in all_connections.values():
-    #     for point in connection:
-    #         coords = point["coords"]
-    #         voltage = point["voltage"]
-    #         colour = COLOUR_MAP.get(voltage, "black")
-    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
-
-    # draw circules of the correct colour given the voltage at each conneciton point
     for connection in all_connections.values():
         for point in connection:
             coords = point["coords"]
             voltage = point["voltage"]
             colour = COLOUR_MAP.get(voltage, "black")
             drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
-
-    # 8. Draw titles
-    draw_titles(drawing, substations, points, params, sub_bboxes)
 
     # 9. Generate output files
     generate_output_files(drawing, substations)
