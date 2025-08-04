@@ -104,6 +104,7 @@ class Substation:
     definition: str = ""
     buses: dict = field(default_factory=dict)
     connections: dict = field(default_factory=dict)
+    object_popups: list = field(default_factory=list)
     scaled_x: float = 0
     scaled_y: float = 0
     x: float = 0.0
@@ -343,6 +344,39 @@ class Substation:
                     # Translate back
                     text_x = rx + obj_x
                     text_y = ry + obj_y
+
+                # Store popup info for generator objects with metadata.info
+                if obj.get("metadata", {}).get("info"):
+                    # Calculate global coordinates
+                    global_x = self.use_x + obj_x * params.grid_step / GRID_STEP
+                    global_y = self.use_y + obj_y * params.grid_step / GRID_STEP
+
+                    # Store popup info directly when drawing the object
+                    # This includes the info text and the coordinates (with y-axis inversion)
+                    info_text = obj["metadata"]["info"]
+                    info_text = info_text.replace('"', '\\"')  # Escape double quotes
+                    info_text = info_text.replace(
+                        "\n", "<br>"
+                    )  # Convert newlines to HTML breaks
+
+                    # Calculate the position of the circle center (top of the lollipop)
+                    # instead of using the bottom of the stick (obj_x, obj_y)
+                    global_circle_x = self.use_x + text_x * params.grid_step / GRID_STEP
+                    global_circle_y = self.use_y + text_y * params.grid_step / GRID_STEP
+
+                    # Apply y-axis inversion for Leaflet coordinates
+                    leaflet_x = global_circle_x
+                    leaflet_y = MAP_DIMS - global_circle_y  # Invert y-axis
+
+                    self.object_popups.append(
+                        {
+                            "info": info_text,
+                            "coords": (
+                                leaflet_y,
+                                leaflet_x,
+                            ),  # Format as [y, x] for Leaflet
+                        }
+                    )
 
                 parent_group.append(
                     draw.Text(
@@ -1604,57 +1638,20 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
 
     for sub in substations:
         title = sub.name if sub.name else sub.name
-        # Use original y-coordinate for data export (will be inverted in JavaScript)
-        leaflet_y = sub.use_y
+        # Invert y-axis for Leaflet coordinates
+        leaflet_y = MAP_DIMS - sub.use_y
         leaflet_x = sub.use_x
         locations_data.append(
             f'{{ title: "{title}", coords: [{leaflet_y}, {leaflet_x}] }}'
         )
 
-        # Collect generator objects with info fields
-        if hasattr(sub, "objects") and sub.objects:
-            for obj in sub.objects:
-                if (
-                    obj.get("type") == "gen"
-                    and "metadata" in obj
-                    and "info" in obj["metadata"]
-                ):
-                    # Calculate global coordinates for this object
-                    rel_x = obj.get("rel_x", 0)
-                    rel_y = obj.get("rel_y", 0)
-
-                    # Convert relative coordinates to global
-                    # Need to account for substation rotation
-                    rotation_rad = math.radians(
-                        sub.rotation if hasattr(sub, "rotation") and sub.rotation else 0
-                    )
-                    cos_r = math.cos(rotation_rad)
-                    sin_r = math.sin(rotation_rad)
-
-                    # Calculate rotated relative coordinates
-                    rot_rel_x = rel_x * cos_r - rel_y * sin_r
-                    rot_rel_y = rel_x * sin_r + rel_y * cos_r
-
-                    # Convert to global grid coordinates
-                    obj_x = sub.use_x + rot_rel_x * GRID_STEP
-                    obj_y = sub.use_y + rot_rel_y * GRID_STEP
-
-                    # Apply y-axis inversion to match Leaflet coordinates
-                    # MAP_DIMS is 5000 (the height of the canvas)
-                    leaflet_x = obj_x
-                    leaflet_y = MAP_DIMS - obj_y  # Invert y-axis
-
-                    # Escape special characters in the info text
-                    info_text = obj["metadata"]["info"]
-                    info_text = info_text.replace('"', '\\"')
-                    info_text = info_text.replace("\n", "<br>")
-
-                    # Add to object_popups_data
-                    # All transformations are handled in Python
-                    # Leaflet will use these coordinates directly
-                    object_popups_data.append(
-                        f'{{ info: "{info_text}", coords: [{leaflet_y}, {leaflet_x}] }}'
-                    )
+        # Use the popup data that was stored during object drawing
+        # This already contains properly calculated coordinates and formatted info text
+        if hasattr(sub, "object_popups") and sub.object_popups:
+            for popup in sub.object_popups:
+                object_popups_data.append(
+                    f'{{ info: "{popup["info"]}", coords: [{popup["coords"][0]}, {popup["coords"][1]}] }}'
+                )
 
     # Create JSON strings
     locations_json_string = (
