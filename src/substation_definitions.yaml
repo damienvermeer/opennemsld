@@ -199,7 +199,7 @@ substations:
             80 MW
         rel_x: -6
         rel_y: 3
-  - name: BATS
+  - name: Ballarat (BATS)
     lat: -37.567381
     long: 143.921856
     voltage_kv: 220
@@ -210,8 +210,8 @@ substations:
       |x/||
       |xx||
       |xx||
-      |Ex||x
-      |xE||
+      |E4x||x
+      |x3E||
       |x2x||
     buses:
       1: '2'
@@ -219,6 +219,8 @@ substations:
     connections:
       1: VIC-220-WBTS-BATS-1
       2: VIC-220-BETS-BATS-1
+      3: VIC-220-TGTS-BATS
+      4: VIC-220-BATS-ELTS
   - name: BGTS
     lat: -37.037044
     long: 142.985036
@@ -1061,11 +1063,17 @@ substations:
       - TGTS
       - Terang
     def: |
-      1?|
+      |x1EN
+      |x2x||x3
+      |x4x||
     buses:
-      1: ""
+      1: "2"
+      2: "1"
     connections:
-      1: VIC-220-TGTS
+      1: tgts tx1
+      2: VIC-220-TGTS-BATS
+      3: tgts tx2
+      4: tgts-mlts
   - name: ELTS (Elaine)
     lat: -37.729953
     long: 144.011536
@@ -1074,11 +1082,22 @@ substations:
       - ELTS
       - Elaine
     def: |
-      1?|
+      |/1
+      |/2
+      t
+      3/|
+      4/|
+      |x5
+      |x6
     buses:
       1: ""
     connections:
-      1: VIC-220-ELTS
+      1: mt mercer tx 1
+      2: mt mercer tx2
+      3: VIC-220-BATS-ELTS
+      4: VIC-220-ELTS-MLTS
+      5: moorabool WF TX
+      6: elaine wind farm tx
   - name: Geelong (GTS)
     lat: -38.082625
     long: 144.338497
@@ -1109,7 +1128,7 @@ substations:
       6: b1 tx
       7: kts3-gts
       8: kts1-gts
-      9: gts-deerpark
+      9: VIC-220-GTS-DPTS
   - name: APD (Alcoa Portland)
     lat: -38.386731
     long: 141.624475
@@ -1131,11 +1150,16 @@ substations:
       - DPTS
       - Deer Park
     def: |
-      1?|
+      |x1x3||
+      |x2x4||
     buses:
-      1: ""
+      1: "B"
+      2: "A"
     connections:
-      1: VIC-220-DPTS
+      1: VIC-220-GTS-DPTS
+      2: VIC-220-DPTS-KTS2
+      3: DPTS tx2
+      4: DPTS tx4
   - name: Sydenham (SYTS)
     lat: -37.676164
     long: 144.747214
@@ -1174,7 +1198,7 @@ substations:
       |EEE||x2
       |Ed3/||
       |x4x5x||
-      |xd6x||
+      7/|xd6x||
     buses:
       1: "2"
       2: "3"
@@ -1185,6 +1209,7 @@ substations:
       4: ats b2 tx
       5: ats b3 tx
       6: ats b4 tx
+      7: VIC-220-BLTS-ATS
   - name: Brooklyn (BLTS)
     lat: -37.825967
     long: 144.861786
@@ -1203,10 +1228,10 @@ substations:
       1: "3"
       2: "4"
     connections:
-      1: blts ats
+      1: VIC-220-BLTS-ATS
       2: blts kts
-      3: blts newport
-      4: blts fbts
+      3: VIC-220-BLTS-NPSD
+      4: VIC-220-BLTS-FBTS
       5: blts b5 tx
       6: blts b1 tx
       7: blts b3 tx
@@ -1223,9 +1248,9 @@ substations:
     buses:
       1: ""
     connections:
-      1: blts-newport
+      1: VIC-220-BLTS-NPSD
       2: newport gen
-      3: newport-fbts
+      3: VIC-220-FBTS-NPSD
     objects:
       - type: gen
         metadata:
@@ -1252,13 +1277,13 @@ substations:
       1: "4"
       2: "1"
     connections:
-      1: fbts blts
+      1: VIC-220-BLTS-FBTS
       2: fbts wmts2
       3: fbts wmts1
-      4: FBTS  newport
-      5: b4 tx
-      6: b3 tx
-      7: b2 tx
+      4: VIC-220-FBTS-NPSD
+      5: b4 tx fbts
+      6: b3 tx fbts
+      7: b2 tx fbts
   - name: WMTS (West Melbourne)
     lat: -37.800342
     long: 144.934853
