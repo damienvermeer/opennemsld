@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SLD Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-fusesearch@1.1.0/dist/leaflet.fusesearch.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-fusesearch@1.1.0/dist/leaflet.fusesearch.min.js"></script>
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+    // Initialize the map
+    var map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -5, // Allow zooming out
+        maxZoom: 2,  // Allow zooming in
+        zoomDelta: 0.02, // Smaller zoom steps
+        zoomSnap: 0, // Snap to smaller increments
+    });
+
+
+    // Define the bounds to match the SVG dimensions (5000x5000)
+    var bounds = [[0, 0], [5000, 5000]];
+    
+    // Create SVG element - This is where you would paste your pre-prepared SVG content
+    var svgString = `%%SVG_CONTENT%%`;
+
+    // Parse the SVG string into an SVG DOM element
+    var parser = new DOMParser();
+    var svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
+    var svgElement = svgDoc.documentElement;
+    
+    // Create a proper SVG overlay with the SVG element
+    var overlay = L.svgOverlay(svgElement, bounds).addTo(map);
+    
+    // Fit the map to the bounds
+    map.fitBounds(bounds);
+
+    // --- Search functionality ---
+
+    // Data for searchable locations (substations)
+    var locations = %%LOCATIONS_DATA%%;
+
+    // Convert locations to GeoJSON features for the search plugin
+    var features = locations.map(function(loc) {
+        return {
+            type: "Feature",
+            properties: {
+                title: loc.title
+            },
+            geometry: {
+                type: "Point",
+                // GeoJSON is [x, y], our coords are [y, x] for Leaflet.
+                coordinates: [loc.coords[1], loc.coords[0]]
+            }
+        };
+    });
+
+    // Initialize the fuzzy search control
+    var searchControl = new L.Control.FuseSearch({
+        position: 'topright',
+        title: 'Search Substations',
+        placeholder: 'e.g. ARTS',
+        maxResultLength: 10,
+        showResultFct: function (feature, container) {
+            // Display the title in the search results
+            container.innerHTML = feature.properties.title;
+        },
+        // Fuse.js options for fuzzy matching
+        fuse: {
+            keys: ['properties.title'],
+            threshold: 0.3, // Lower is more strict
+        }
+    });
+    map.addControl(searchControl);
+
+    // Index the location features
+    searchControl.indexFeatures(features);
+
+    // Handle search result selection to pan/zoom without adding a marker
+    map.on('search:locationfound', function (e) {
+        // The plugin adds a marker to e.layer. We'll clear it to keep the map clean.
+        if (e.layer) {
+            e.layer.clearLayers();
+        }
+        // Pan and zoom to the found location
+        map.setView(e.latlng, 4);
+    });
+
+    // Override Enter key to select the first result
+    var searchInput = document.querySelector('.leaflet-fusesearch-input');
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var firstResult = document.querySelector('.search-results-item');
+                if (firstResult) {
+                    firstResult.click();
+                }
+            }
+        });
+    }
+
+    // Override Ctrl+F to focus the search box
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
+            e.preventDefault();
+            var searchInput = document.querySelector('.leaflet-fusesearch-input');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,10 +1,10 @@
 # CB notes
 """
 general notes
-- for flexibility, each bay should allow each cb to be replaced with an isol or a solid connection
-- there might also be benefit in requiring all bay types to match the sub, e.g. a double switched sub should only have double switched bays BUT you could specify that one of the bays has no connection on one side, making it a single switched bay?
 - only 66 kV and higher, no 22kv or 33kv
 - dont show isols if CB presnet, dont show double isol if there is meant to be a CB, but no CB (e.g. GNTS)
+
+import math
 
 
 single switched arrangements:
@@ -14,15 +14,10 @@ single switched arrangements:
 double switched subs:
     - need to support single switched lines off of double switched buses (e.g. GTS)
     -
-
-breaker and a half subs:
-    - need to support double switched and single switched bays e.g. MLTS - make sure bus spacing is correct
-
 special cases:
     - need to support ring bus subs, rings arnt always 4, e.g. CAMPERDOWN is 4 cb 1 isol ring, COLAC is 3c ring
     - need to support 3-bus double switched arrangements (e.g. TTS, though i cant see any direct bus-ties, so planar bus arrangement might be possible)
     - need to support unused bays, e.g. SMTS bay next to F2 tx on 500 kV side
-
 
 """
 
@@ -38,13 +33,15 @@ from itertools import combinations
 
 # Third-party imports
 import drawsvg as draw
-import networkx as nx
 import numpy as np
 import utm
 import yaml
+import svgelements
+import os
 
 # Local application/library specific imports
 import findpath
+from rectangle_spacing import space_rectangles
 
 # --- Constants ---
 MAP_DIMS = 7000
@@ -56,10 +53,14 @@ LINE_CROSS_WEIGHT = 15
 NEAR_SUB_WEIGHT = 4
 ELEMENT_WEIGHT = 50
 GRID_STEP = 25
-SUBSTATIONS_DATA_FILE = r"C:\Users\DamienVermeer\Downloads\substation_definitions.yaml"
-TEMPLATE_FILE = r"C:\Users\DamienVermeer\Downloads\index.template.html"
+import pathlib
+
+SCRIPT_DIR = pathlib.Path(__file__).parent
+SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
+TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "example.svg"
 OUTPUT_HTML = "index.html"
+PADDING_STEPS = 3
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -113,7 +114,7 @@ class Substation:
 
     def __post_init__(self):
         self.grid_points = {}  # Store (x,y) -> weight dictionary for grid points
-        self.connection_points: dict[str, tuple[float, float]] = {}
+        self.connection_points: dict[str, list[tuple[float, float]]] = {}
         self.objects = []  # Store objects associated with this substation
 
     def draw_objects(
@@ -124,8 +125,12 @@ class Substation:
 
         conn_points = {}  # Initialize conn_points here
         for obj in self.objects:
-            obj_x = obj["rel_x"] * params.grid_step
-            obj_y = obj["rel_y"] * params.grid_step
+            # The origin for objects is the leftmost point of the first busbar.
+            # The first busbar starts at x = -grid_step and y = 0.
+            origin_x = -params.grid_step
+            origin_y = 0
+            obj_x = origin_x + obj["rel_x"] * params.grid_step
+            obj_y = origin_y + obj["rel_y"] * params.grid_step
             rotation = obj.get("rotation", 0)
 
             # Create a group for this object
@@ -214,28 +219,17 @@ class Substation:
                 # Store connection points (we'll apply rotation later if needed)
                 conn_points = {}
                 if "connections" in obj:
-                    for i, conn_id in enumerate(obj["connections"]):
-                        if i == 0:  # First connection at far end of top terminal line
-                            conn_points[conn_id] = (
-                                circle1_x,
-                                top_line_end_y,
-                            )  # At the far end away from transformer
-                        elif (
-                            i == 1
-                        ):  # Second connection at far end of bottom terminal line
-                            conn_points[conn_id] = (
-                                circle2_x,
-                                bottom_line_end_y,
-                            )  # At the far end away from transformer
-                        # Additional connections would be handled here
+                    for terminal_num, conn_name in obj["connections"].items():
+                        coords = None
+                        if terminal_num == 1:  # Top terminal
+                            coords = (circle1_x, top_line_end_y)
+                        elif terminal_num == 2:  # Bottom terminal
+                            coords = (circle2_x, bottom_line_end_y)
 
-                    # Mark the connection points for pathfinding
-                    mark_grid_point(
-                        self, circle1_x, top_line_end_y, weight=0
-                    )  # Connection point has weight 0 for pathfinding
-                    mark_grid_point(
-                        self, circle2_x, bottom_line_end_y, weight=0
-                    )  # Connection point has weight 0 for pathfinding
+                        if coords:
+                            conn_points[conn_name] = coords
+                            # Mark the connection point for pathfinding (local coords)
+                            mark_grid_point(self, coords[0], coords[1], weight=0)
 
                 # Mark grid points for the transformer body
                 mark_grid_point(self, circle1_x, circle1_y)
@@ -279,25 +273,10 @@ class Substation:
                     )
                 )
 
-                # Draw text inside circle
-                obj_group.append(
-                    draw.Text(
-                        text,
-                        font_size=params.grid_step * 0.7,
-                        x=circle_center_x,
-                        y=circle_center_y,
-                        text_anchor="middle",
-                        dominant_baseline="central",
-                        fill=colour,
-                        stroke_width=0,
-                    )
-                )
                 # Mark grid points for the line and the circle center
                 mark_grid_point(self, obj_x, obj_y)  # bottom of stick
                 mark_grid_point(self, obj_x, line_end_y)  # top of stick
-                mark_grid_point(
-                    self, circle_center_x, circle_center_y
-                )  # circle center
+                mark_grid_point(self, circle_center_x, circle_center_y)  # circle center
 
             # Apply rotation if specified
             if rotation != 0:
@@ -323,80 +302,203 @@ class Substation:
                         rotated_x = rx + obj_x
                         rotated_y = ry + obj_y
                         # Update the connection point with rotated coordinates
-                        self.connection_points[conn_id] = (rotated_x, rotated_y)
+                        self.connection_points.setdefault(conn_id, []).append(
+                            (rotated_x, rotated_y)
+                        )
 
-                        # Also update the grid points for pathfinding with rotated coordinates
-                        mark_grid_point(
-                            self, rotated_x, rotated_y, weight=0
-                        )  # Connection point has weight 0 for pathfinding
+                        # The grid point was already marked with local coordinates.
+                        # The rotation is handled globally in populate_pathfinding_grid.
             else:
                 # For non-rotated objects, store the connection points directly
                 if "connections" in obj:
                     for conn_id, (px, py) in conn_points.items():
                         # Store connection points for non-rotated objects
-                        self.connection_points[conn_id] = (px, py)
+                        self.connection_points.setdefault(conn_id, []).append((px, py))
 
             parent_group.append(obj_group)
 
+            # Draw text for 'gen' object separately to avoid rotation
+            if obj["type"] == "gen":
+                radius = 2 * params.grid_step / 3
+                text = obj.get("metadata", {}).get("text", "G")
+                voltage = obj.get("metadata", {}).get("voltage")
+                colour = COLOUR_MAP.get(voltage, "black")
+
+                # Calculate the circle's center, which is the text's anchor
+                line_end_y = obj_y - params.grid_step
+                circle_center_x = obj_x
+                circle_center_y = line_end_y - radius
+
+                text_x, text_y = circle_center_x, circle_center_y
+
+                # If the object is rotated, we need to calculate the new center for the text
+                if rotation != 0:
+                    rotation_rad = math.radians(rotation)
+                    # Translate to origin for rotation
+                    tx = text_x - obj_x
+                    ty = text_y - obj_y
+                    # Rotate
+                    rx = tx * math.cos(rotation_rad) - ty * math.sin(rotation_rad)
+                    ry = tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
+                    # Translate back
+                    text_x = rx + obj_x
+                    text_y = ry + obj_y
+
+                parent_group.append(
+                    draw.Text(
+                        text,
+                        font_size=params.grid_step * 0.7,
+                        x=text_x,
+                        y=text_y,
+                        text_anchor="middle",
+                        dominant_baseline="central",
+                        fill=colour,
+                        stroke_width=0,
+                    )
+                )
+
         return parent_group
 
-    def get_drawing_bbox(
-        self, params: DrawingParams
-    ) -> tuple[float, float, float, float]:
-        """Calculates the bounding box (min_x, min_y, max_x, max_y) of the substation drawing."""
-        if not self.definition and not self.objects:
+    def get_bays_bbox(self, params: DrawingParams) -> tuple[float, float, float, float]:
+        """Calculates the bounding box (min_x, min_y, max_x, max_y) of the substation bays only."""
+        if not self.definition:
             return 0, 0, 0, 0
 
         bay_defs = self.definition.strip().split("\n")
         num_bays = len(bay_defs)
-        max_elements = 0
-        for bay_def in bay_defs:
-            # A simple way to estimate height is by counting elements.
-            # This will need to be more robust.
-            max_elements = max(max_elements, len(bay_def))
+
+        # Calculate y-offset for pre-busbar elements to find min_y
+        max_y_offset = 0
+        max_elements_after_bus = 0
+        parsed_bays = [parse_bay_elements(bay_def) for bay_def in bay_defs]
+        for elements in parsed_bays:
+            y_offset = 0
+            first_busbar_idx = next(
+                (i for i, el in enumerate(elements) if el["type"] == "busbar"), -1
+            )
+            if first_busbar_idx > 0:
+                # Count elements before the first busbar
+                for i in range(first_busbar_idx):
+                    if elements[i]["type"] == "element":
+                        y_offset += 3 * params.grid_step
+                # Add one grid step for the connecting line to the first busbar
+                y_offset += params.grid_step
+            max_y_offset = max(max_y_offset, y_offset)
+
+            # Estimate height below busbars
+            elements_after_bus = 0
+            if first_busbar_idx != -1:
+                elements_after_bus = len(elements) - first_busbar_idx - 1
+            else:  # no busbar
+                elements_after_bus = len(elements)
+            max_elements_after_bus = max(max_elements_after_bus, elements_after_bus)
 
         min_x = -params.grid_step
         max_x = (num_bays - 1) * 2 * params.grid_step + params.grid_step
-        min_y = 0  # Assuming top bus is at y=0
+        min_y = -max_y_offset
         # Estimate height based on number of elements * space per element
-        max_y = max_elements * (params.cb_size + params.grid_step)
-
-        # Include objects in the bounding box calculation
-        for obj in self.objects:
-            # Objects have rel_x and rel_y which are in grid steps from origin
-            obj_x = obj["rel_x"] * params.grid_step
-            obj_y = obj["rel_y"] * params.grid_step
-
-            # For TX objects, consider the two circles
-            if obj["type"] == "tx":
-                # Each circle is 25px (1 grid step) in diameter
-                # Circles are placed side by side
-                obj_min_x = obj_x - params.grid_step
-                obj_max_x = obj_x + params.grid_step * 2
-                obj_min_y = obj_y - params.grid_step / 2
-                obj_max_y = obj_y + params.grid_step * 1.5
-            elif obj["type"] == "gen":
-                radius = 2 * params.grid_step / 3
-                # The reference point (obj_x, obj_y) is the bottom of the stick.
-                # The lollipop is drawn upwards from there.
-                obj_min_x = obj_x - radius
-                obj_max_x = obj_x + radius
-                obj_max_y = obj_y
-                # Top of lollipop is top of circle: (line_end_y - radius) - radius
-                obj_min_y = (obj_y - params.grid_step) - (2 * radius)
-            else:  # Generic object handling for other types
-                obj_min_x = obj_x - params.grid_step / 2
-                obj_max_x = obj_x + params.grid_step / 2
-                obj_min_y = obj_y - params.grid_step / 2
-                obj_max_y = obj_y + params.grid_step / 2
-
-            # Update the bounding box
-            min_x = min(min_x, obj_min_x)
-            max_x = max(max_x, obj_max_x)
-            min_y = min(min_y, obj_min_y)
-            max_y = max(max_y, obj_max_y)
+        max_y = max_elements_after_bus * (params.cb_size + params.grid_step)
 
         return min_x, min_y, max_x, max_y
+
+
+def get_substation_bbox_from_svg(
+    substation: "Substation", params: "DrawingParams"
+) -> tuple[float, float, float, float]:
+    """
+    Calculates the bounding box of a single substation by rendering it to a
+    temporary SVG and measuring it with svgelements.
+    """
+    # Create a temporary drawing of a fixed large size
+    temp_drawing = draw.Drawing(2000, 2000, origin=(0, 0))
+
+    # Create a temporary copy of the substation to avoid modifying the original
+    temp_sub = Substation(
+        name=substation.name,
+        lat=substation.lat,
+        long=substation.long,
+        voltage_kv=substation.voltage_kv,
+        tags=substation.tags,
+        rotation=0,  # Render unrotated to get the base bounding box
+        definition=substation.definition,
+        buses=substation.buses,
+        connections=substation.connections,
+    )
+    temp_sub.objects = substation.objects.copy() if substation.objects else []
+
+    # Center the substation in the temporary drawing to ensure all parts are rendered
+    temp_sub.use_x = 1000
+    temp_sub.use_y = 1000
+
+    # Generate the substation group (unrotated)
+    # We pass a dummy bbox to get_substation_group as it's not used for drawing, only for rotation center.
+    # Since we render unrotated, the center is not important here.
+    substation_group = get_substation_group(temp_sub, params, (0, 0, 0, 0), rotation=0)
+    temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
+
+    # Save to a temporary file
+    temp_svg_path = f"temp_{substation.name}.svg"
+    temp_drawing.save_svg(temp_svg_path)
+
+    try:
+        # Use svgelements to get the bounding box
+        svg = svgelements.SVG.parse(temp_svg_path)
+        x, y, x_max, y_max = svg.bbox()
+        width = x_max - x
+        height = y_max - y
+
+        # The bbox is global to the temp SVG. We need to make it relative to the substation's
+        # local origin. The substation was placed at (1000, 1000).
+        min_x = x - temp_sub.use_x
+        min_y = y - temp_sub.use_y
+        max_x = min_x + width
+        max_y = min_y + height
+
+        return min_x, min_y, max_x, max_y
+
+    finally:
+        # Clean up the temporary file
+        if os.path.exists(temp_svg_path):
+            os.remove(temp_svg_path)
+
+
+def get_rotated_bbox(
+    bbox: tuple[float, float, float, float], rotation_deg: int
+) -> tuple[float, float, float, float]:
+    """Calculates the axis-aligned bounding box of a rotated rectangle."""
+    if rotation_deg % 360 == 0:
+        return bbox
+
+    min_x, min_y, max_x, max_y = bbox
+    center_x = (min_x + max_x) / 2
+    center_y = (min_y + max_y) / 2
+
+    rotation_rad = math.radians(rotation_deg)
+    cos_r = math.cos(rotation_rad)
+    sin_r = math.sin(rotation_rad)
+
+    corners = [
+        (min_x, min_y),
+        (max_x, min_y),
+        (max_x, max_y),
+        (min_x, max_y),
+    ]
+
+    rotated_corners = []
+    for x, y in corners:
+        # Translate to origin for rotation
+        rel_x = x - center_x
+        rel_y = y - center_y
+        # Rotate
+        rotated_x = rel_x * cos_r - rel_y * sin_r
+        rotated_y = rel_x * sin_r + rel_y * cos_r
+        # Translate back
+        rotated_corners.append((rotated_x + center_x, rotated_y + center_y))
+
+    rotated_xs = [p[0] for p in rotated_corners]
+    rotated_ys = [p[1] for p in rotated_corners]
+
+    return min(rotated_xs), min(rotated_ys), max(rotated_xs), max(rotated_ys)
 
 
 # --- Data Loading ---
@@ -1080,17 +1182,28 @@ def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
 
     if connection_name:
         # Store the connection point for pathfinding
-        sub.connection_points[connection_name] = (xoff, y_pos)
+        sub.connection_points.setdefault(connection_name, []).append((xoff, y_pos))
         mark_grid_point(sub, xoff, y_pos, weight=0)  # Connection points have weight 0
     else:
         # Draw an unused connection circle
         parent_group.append(draw.Circle(xoff, y_pos, 4, fill=colour, stroke="none"))
 
 
-def get_substation_group(sub: Substation, params: DrawingParams, rotation=0):
-    min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
+def get_substation_group(
+    sub: Substation,
+    params: DrawingParams,
+    bbox: tuple[float, float, float, float],
+    rotation=0,
+):
+    min_x, min_y, max_x, max_y = bbox
     center_x = (min_x + max_x) / 2
     center_y = (min_y + max_y) / 2
+
+    # Snap rotation center to the nearest grid point to ensure grid alignment after rotation
+    grid_step = params.grid_step
+    center_x = round(center_x / grid_step) * grid_step
+    center_y = round(center_y / grid_step) * grid_step
+
     dg = draw.Group(
         stroke_width=2,
         transform=f"rotate({rotation}, {center_x}, {center_y})",
@@ -1159,6 +1272,7 @@ def calculate_initial_scaled_positions(substations: list[Substation]):
     lats = np.array([sub.lat for sub in substations])
     longs = np.array([sub.long for sub in substations])
     eastings, northings, _, _ = utm.from_latlon(lats, longs)
+    northings = [-x for x in northings]
 
     min_east = np.min(eastings)
     min_north = np.min(northings)
@@ -1182,211 +1296,59 @@ def calculate_initial_scaled_positions(substations: list[Substation]):
     scale_factor_y = MAP_DIMS * 0.9 / y_range if y_range > 0 else 1
     scale_factor = min(scale_factor_x, scale_factor_y)
 
-    # Apply scaling and translation
+    # Apply scaling and translation to fit within MAP_DIMS
+    # Use margin of 5% on each side (10% total)
+    margin = MAP_DIMS * 0.05
+
     print("\nScaled coordinates:")
     for sub in substations:
-        sub.scaled_x = (sub.x - min_x) * scale_factor * 4 + (MAP_DIMS * 0.2)
-        sub.scaled_y = (sub.y - min_y) * scale_factor * 4 + (MAP_DIMS * 0.2)
+        sub.scaled_x = (sub.x - min_x) * scale_factor + margin
+        sub.scaled_y = (sub.y - min_y) * scale_factor + margin
         print(f"{sub.name}: ({sub.scaled_x:.1f}, {sub.scaled_y:.1f})")
-
-
-def apply_spring_layout(substations: list[Substation]) -> dict:
-    """Applies a NetworkX spring layout to adjust substation positions."""
-    nodes = [sub.name for sub in substations]
-    initial_pos = {sub.name: (sub.scaled_x, sub.scaled_y) for sub in substations}
-
-    G = nx.Graph()
-    G.add_nodes_from(nodes)
-
-    # Find connections between substations to create edges
-    connection_map = {}
-    for sub in substations:
-        for conn_name in sub.connections.values():
-            if conn_name:
-                connection_map.setdefault(conn_name, []).append(sub.name)
-
-    # Add edges for substations sharing a connection
-    for sub_names in connection_map.values():
-        unique_names = list(set(sub_names))
-        if len(unique_names) > 1:
-            for i in range(len(unique_names)):
-                for j in range(i + 1, len(unique_names)):
-                    G.add_edge(unique_names[i], unique_names[j])
-
-    if G.number_of_edges() == 0:
-        return initial_pos
-
-    # Calculate average distance for setting spring layout parameter `k`
-    distances = [
-        np.linalg.norm(np.array(initial_pos[u]) - np.array(initial_pos[v]))
-        for u, v in G.edges()
-    ]
-    avg_distance = np.mean(distances) if distances else 0
-
-    if avg_distance > 0:
-        print("\nApplying spring layout to adjust substation positions...")
-        return nx.spring_layout(
-            G, pos=initial_pos, iterations=4, k=avg_distance, seed=0
-        )
-
-    return initial_pos
-
-
-def calculate_final_positions(
-    substations: list[Substation], final_pos: dict, params: DrawingParams
-):
-    """Calculates final drawing coordinates after layout adjustments and snapping."""
-    substation_map = {sub.name: sub for sub in substations}
-
-    min_x_pos = min(pos[0] for pos in final_pos.values())
-    max_x_pos = max(pos[0] for pos in final_pos.values())
-    min_y_pos = min(pos[1] for pos in final_pos.values())
-    max_y_pos = max(pos[1] for pos in final_pos.values())
-
-    x_pos_range = max_x_pos - min_x_pos
-    y_pos_range = max_y_pos - min_y_pos
-
-    print("\nNormalizing coordinates to MAP_DIMSxMAP_DIMS area")
-    for name, coords in final_pos.items():
-        sub = substation_map[name]
-
-        norm_x = (coords[0] - min_x_pos) / x_pos_range if x_pos_range > 0 else 0.5
-        norm_y = (coords[1] - min_y_pos) / y_pos_range if y_pos_range > 0 else 0.5
-
-        _15 = MAP_DIMS * 0.15
-        _90 = MAP_DIMS * 0.9
-        raw_x = norm_x * (_90 - _15) + _15
-        raw_y = norm_y * (_90 - _15) + _15
-
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-
-        # Find the first busbar position (y=0 in local coordinates)
-        first_busbar_y = 0
-
-        # Calculate where the first busbar should be in global coordinates
-        target_busbar_global_y = round(raw_y / params.grid_step) * params.grid_step
-
-        # Calculate the substation's use coordinates to place first busbar at target
-        sub.scaled_x = round(raw_x / params.grid_step) * params.grid_step
-        sub.scaled_y = target_busbar_global_y - first_busbar_y
-
-    print("\nFinal SVG coordinates after network balancing:")
-    for sub in substations:
-        print(f"{sub.name}: ({sub.scaled_x:.1f}, {sub.scaled_y:.1f})")
-
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-        width = max_x - min_x
-        height = max_y - min_y
-
-        use_x = sub.scaled_x - (min_x + width / 2)
-        use_y = (MAP_DIMS - sub.scaled_y) - (min_y + height / 2)
-        sub.use_x = use_x
-        sub.use_y = use_y
-
-    # Re-snap positions to ensure first busbar aligns to grid
-    for sub in substations:
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-
-        # Find the first busbar position (y=0 in local coordinates)
-        first_busbar_local_y = 0
-
-        # Calculate current global position of first busbar
-        current_busbar_global_y = sub.use_y + first_busbar_local_y
-
-        # Snap to grid
-        snapped_busbar_global_y = (
-            round(current_busbar_global_y / params.grid_step) * params.grid_step
-        )
-        snapped_x = round((sub.use_x + min_x) / params.grid_step) * params.grid_step
-
-        # Update use coordinates
-        sub.use_x = snapped_x - min_x
-        sub.use_y = snapped_busbar_global_y - first_busbar_local_y
-
-
-# --- Main Drawing Orchestration ---
-def populate_pathfinding_grid(
-    substations: list[Substation], points: list[list], params: DrawingParams
-):
-    """Populates the global pathfinding grid with points from all substations."""
-    num_steps = len(points)
-    step = params.grid_step
-    for sub in substations:
-        # First, calculate all global grid points for the substation to find its bounding box
-        sub_global_grid_points = {}
-        min_gx, min_gy = num_steps, num_steps
-        max_gx, max_gy = -1, -1
-
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-        center_x = (min_x + max_x) / 2
-        center_y = (min_y + max_y) / 2
-        rotation_rad = math.radians(sub.rotation)
-
-        for local_x, local_y in sub.grid_points:
-            rel_x = local_x - center_x
-            rel_y = local_y - center_y
-            rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(rotation_rad)
-            rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
-            rotated_local_x = rotated_x + center_x
-            rotated_local_y = rotated_y + center_y
-
-            global_x = sub.use_x + rotated_local_x
-            global_y = sub.use_y + rotated_local_y
-
-            grid_x = int(round(global_x / step))
-            grid_y = int(round(global_y / step))
-
-            if 0 <= grid_x < num_steps and 0 <= grid_y < num_steps:
-                weight = sub.grid_points.get((local_x, local_y))
-                sub_global_grid_points[(grid_x, grid_y)] = weight
-                min_gx = min(min_gx, grid_x)
-                max_gx = max(max_gx, grid_x)
-                min_gy = min(min_gy, grid_y)
-                max_gy = max(max_gy, grid_y)
-
-        # Apply a penalty in the expanded bounding box of the substation
-        if min_gx <= max_gx:  # Check if any points were found
-            expanded_min_gx = max(0, min_gx - 2)
-            expanded_max_gx = min(num_steps - 1, max_gx + 2)
-            expanded_min_gy = max(0, min_gy - 2)
-            expanded_max_gy = min(num_steps - 1, max_gy + 2)
-
-            for gx in range(expanded_min_gx, expanded_max_gx + 1):
-                for gy in range(expanded_min_gy, expanded_max_gy + 1):
-                    if points[gx][gy] == 0:  # Only apply to empty space
-                        points[gx][gy] = NEAR_SUB_WEIGHT
-
-        # Place the substation's own points on the grid, overwriting the penalty
-        for (grid_x, grid_y), weight in sub_global_grid_points.items():
-            points[grid_x][grid_y] = weight
 
 
 def calculate_connection_points(
-    substations: list[Substation], params: DrawingParams
-) -> dict:
+    substations: list[Substation],
+    params: DrawingParams,
+    bboxes: dict[str, tuple[float, float, float, float]],
+) -> dict[str, list[dict]]:
     """Calculates global coordinates for all connection points."""
-    all_connections = {}
+    all_connections: dict[str, list[dict]] = {}
     for sub in substations:
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
+        min_x, min_y, max_x, max_y = bboxes[sub.name]
         center_x = (min_x + max_x) / 2
         center_y = (min_y + max_y) / 2
+
+        # Snap rotation center to the nearest grid point to match get_substation_group
+        grid_step = params.grid_step
+        center_x = round(center_x / grid_step) * grid_step
+        center_y = round(center_y / grid_step) * grid_step
+
         rotation_rad = math.radians(sub.rotation)
 
-        for linedef, local_coords in sub.connection_points.items():
+        for linedef, local_coords_list in sub.connection_points.items():
             if not linedef:
                 continue
 
-            local_x, local_y = local_coords
-            rel_x = local_x - center_x
-            rel_y = local_y - center_y
-            rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(rotation_rad)
-            rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
-            rotated_local_x = rotated_x + center_x
-            rotated_local_y = rotated_y + center_y
+            for local_coords in local_coords_list:
+                local_x, local_y = local_coords
+                rel_x = local_x - center_x
+                rel_y = local_y - center_y
+                rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(
+                    rotation_rad
+                )
+                rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                    rotation_rad
+                )
+                rotated_local_x = rotated_x + center_x
+                rotated_local_y = rotated_y + center_y
 
-            global_coords = (sub.use_x + rotated_local_x, sub.use_y + rotated_local_y)
-            connection_data = {"coords": global_coords, "voltage": sub.voltage_kv}
-            all_connections.setdefault(linedef, []).append(connection_data)
+                global_coords = (
+                    sub.use_x + rotated_local_x,
+                    sub.use_y + rotated_local_y,
+                )
+                connection_data = {"coords": global_coords, "voltage": sub.voltage_kv}
+                all_connections.setdefault(linedef, []).append(connection_data)
     return all_connections
 
 
@@ -1462,80 +1424,184 @@ def draw_connections(
             print(f"Error finding path: {e}")
 
 
+def _draw_text_in_clear_area(
+    drawing: draw.Drawing,
+    points: list[list],
+    text_lines: list[str],
+    font_size: float,
+    center_gx: int,
+    center_gy: int,
+    step: int,
+    max_search_radius_grid: int,
+    is_info_text: bool = False,
+) -> bool:
+    """Finds a clear area and draws centered text."""
+    num_steps = len(points)
+    line_height = font_size * 1.2
+    max_line_width = max(len(line) for line in text_lines) if text_lines else 0
+
+    text_width_px = max_line_width * font_size * 0.6
+    text_height_px = len(text_lines) * line_height
+
+    # Use smaller padding for info text bounding box
+    padding = 0 if is_info_text else 1
+    text_width_grid = int(math.ceil(text_width_px / step)) + padding
+    text_height_grid = int(math.ceil(text_height_px / step)) + padding
+
+    found_spot = False
+    for r_grid in range(1, max_search_radius_grid + 1):
+        for angle_deg in range(0, 360, 15):
+            angle_rad = math.radians(angle_deg)
+            gx = center_gx + int(r_grid * math.cos(angle_rad))
+            gy = center_gy + int(r_grid * math.sin(angle_rad))
+
+            is_clear = True
+            # Check area for text block, anchored at top-center
+            check_start_gx = gx - text_width_grid // 2
+            check_start_gy = gy
+
+            for i in range(text_width_grid):
+                for j in range(text_height_grid):
+                    check_gx, check_gy = check_start_gx + i, check_start_gy + j
+                    if not (
+                        0 <= check_gx < num_steps
+                        and 0 <= check_gy < num_steps
+                        and points[check_gx][check_gy] == 0
+                    ):
+                        is_clear = False
+                        break
+                if not is_clear:
+                    break
+
+            if is_clear:
+                title_x, title_y = check_start_gx * step, check_start_gy * step
+                # Draw the multi-line text
+                for idx, line in enumerate(text_lines):
+                    line_y_pos = title_y + (idx * line_height)
+                    drawing.append(
+                        draw.Text(
+                            line,
+                            font_size=font_size,
+                            x=title_x + text_width_px / 2,
+                            y=line_y_pos,
+                            text_anchor="middle",
+                            dominant_baseline="hanging",
+                            fill="black",
+                        )
+                    )
+
+                # Mark grid as used
+                for i in range(text_width_grid):
+                    for j in range(text_height_grid):
+                        mark_gx, mark_gy = check_start_gx + i, check_start_gy + j
+                        if 0 <= mark_gx < num_steps and 0 <= mark_gy < num_steps:
+                            points[mark_gx][mark_gy] = 1
+                found_spot = True
+                break
+        if found_spot:
+            break
+    return found_spot
+
+
 def draw_titles(
     drawing: draw.Drawing,
     substations: list[Substation],
     points: list[list],
     params: DrawingParams,
+    bboxes: dict[str, tuple[float, float, float, float]],
 ):
-    """Draws titles for each substation in a clear area."""
+    """Draws titles for each substation and info text for generators."""
     num_steps = len(points)
     step = params.grid_step
     max_search_radius_grid = TITLE_MAX_SEARCH_RADIUS_PX // step
 
     for sub in substations:
-        if not sub.title:
-            continue
+        # --- Draw Main Substation Title ---
+        if sub.title:
+            min_x, min_y, max_x, max_y = bboxes[sub.name]
+            local_center_x = (min_x + max_x) / 2
+            local_center_y = (min_y + max_y) / 2
+            center_x = sub.use_x + local_center_x
+            center_y = sub.use_y + local_center_y
+            center_gx = int(round(center_x / step))
+            center_gy = int(round(center_y / step))
 
-        text_width_px = len(sub.title) * TITLE_FONT_SIZE * 0.6
-        text_height_px = TITLE_FONT_SIZE
-        text_width_grid = int(math.ceil(text_width_px / step)) + 1
-        text_height_grid = int(math.ceil(text_height_px / step)) + 1
-
-        min_x, min_y, max_x, max_y = sub.get_drawing_bbox(params)
-        local_center_x = (min_x + max_x) / 2
-        local_center_y = (min_y + max_y) / 2
-        center_x = sub.use_x + local_center_x
-        center_y = sub.use_y + local_center_y
-        center_gx = int(round(center_x / step))
-        center_gy = int(round(center_y / step))
-
-        found_spot = False
-        for r_grid in range(1, max_search_radius_grid + 1):
-            for angle_deg in range(0, 360, 15):
-                angle_rad = math.radians(angle_deg)
-                gx = center_gx + int(r_grid * math.cos(angle_rad))
-                gy = center_gy + int(r_grid * math.sin(angle_rad))
-
-                is_clear = True
-                for i in range(text_width_grid):
-                    for j in range(text_height_grid):
-                        check_gx, check_gy = gx + i, gy - j
-                        if not (
-                            0 <= check_gx < num_steps
-                            and 0 <= check_gy < num_steps
-                            and points[check_gx][check_gy] == 0
-                        ):
-                            is_clear = False
-                            break
-                    if not is_clear:
-                        break
-
-                if is_clear:
-                    title_x, title_y = gx * step, gy * step
-                    drawing.append(
-                        draw.Text(
-                            sub.title,
-                            font_size=TITLE_FONT_SIZE,
-                            x=title_x,
-                            y=title_y,
-                            fill="black",
-                        )
-                    )
-                    for i in range(text_width_grid):
-                        for j in range(text_height_grid):
-                            mark_gx, mark_gy = gx + i, gy - j
-                            if 0 <= mark_gx < num_steps and 0 <= mark_gy < num_steps:
-                                points[mark_gx][mark_gy] = 1
-                    found_spot = True
-                    break
-            if found_spot:
-                break
-
-        if not found_spot:
-            print(
-                f"Warning: Could not find a free spot for title of substation {sub.name}"
+            found_spot = _draw_text_in_clear_area(
+                drawing,
+                points,
+                [sub.title],
+                TITLE_FONT_SIZE,
+                center_gx,
+                center_gy,
+                step,
+                max_search_radius_grid,
             )
+
+            if not found_spot:
+                print(
+                    f"Warning: Could not find a free spot for title of substation {sub.name}"
+                )
+
+        # --- Draw Info Text for Gen Objects ---
+        for obj in sub.objects:
+            if obj.get("type") == "gen" and "info" in obj.get("metadata", {}):
+                info_text = obj["metadata"]["info"].strip()
+                if not info_text:
+                    continue
+
+                # Calculate the object's global center for text placement
+                radius = 2 * params.grid_step / 3
+                origin_x = -params.grid_step
+                origin_y = 0
+                local_obj_x = origin_x + obj["rel_x"] * params.grid_step
+                local_obj_y = origin_y + obj["rel_y"] * params.grid_step
+                local_center_x = local_obj_x
+                local_center_y = (local_obj_y - params.grid_step) - radius
+
+                sub_min_x, sub_min_y, sub_max_x, sub_max_y = bboxes[sub.name]
+                sub_center_x = (sub_min_x + sub_max_x) / 2
+                sub_center_y = (sub_min_y + sub_max_y) / 2
+
+                # Snap rotation center to match get_substation_group
+                grid_step = params.grid_step
+                sub_center_x = round(sub_center_x / grid_step) * grid_step
+                sub_center_y = round(sub_center_y / grid_step) * grid_step
+
+                rotation_rad = math.radians(sub.rotation)
+
+                rel_x = local_center_x - sub_center_x
+                rel_y = local_center_y - sub_center_y
+                rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(
+                    rotation_rad
+                )
+                rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                    rotation_rad
+                )
+                rotated_local_x = rotated_x + sub_center_x
+                rotated_local_y = rotated_y + sub_center_y
+
+                global_x = sub.use_x + rotated_local_x
+                global_y = sub.use_y + rotated_local_y
+
+                center_gx = int(round(global_x / step))
+                center_gy = int(round(global_y / step))
+
+                found_info_spot = _draw_text_in_clear_area(
+                    drawing,
+                    points,
+                    info_text.split("\n"),
+                    TITLE_FONT_SIZE / 2,
+                    center_gx,
+                    center_gy,
+                    step,
+                    max_search_radius_grid,
+                    is_info_text=True,
+                )
+
+                if not found_info_spot:
+                    print(
+                        f"Warning: Could not find a free spot for info text of gen object in {sub.name}"
+                    )
 
 
 def render_substation_svg(
@@ -1556,7 +1622,7 @@ def render_substation_svg(
         params = DrawingParams()
 
     # Get the bounding box of the substation
-    min_x, min_y, max_x, max_y = substation.get_drawing_bbox(params)
+    min_x, min_y, max_x, max_y = get_substation_bbox_from_svg(substation, params)
 
     # Add some padding around the substation
     padding = 2 * params.grid_step
@@ -1590,8 +1656,9 @@ def render_substation_svg(
     temp_sub.use_y = padding - min_y
 
     # Generate the substation group
+    bbox = (min_x, min_y, max_x, max_y)
     substation_group = get_substation_group(
-        temp_sub, params, rotation=substation.rotation
+        temp_sub, params, bbox, rotation=substation.rotation
     )
 
     # Add the substation to the drawing
@@ -1782,51 +1849,206 @@ def main():
     calculate_initial_scaled_positions(substations)
 
     # 3. Apply network layout adjustments
-    final_pos = apply_spring_layout(substations)
+    print("Calculating substation bounding boxes...")
+    sub_bboxes = {
+        sub.name: get_substation_bbox_from_svg(sub, params) for sub in substations
+    }
+
+    # Snap rotations and calculate rotated bboxes for spacing
+    rotated_sub_bboxes = {}
+    for sub in substations:
+        sub.rotation = round(sub.rotation / 90) * 90
+        rotated_sub_bboxes[sub.name] = get_rotated_bbox(
+            sub_bboxes[sub.name], sub.rotation
+        )
+
+    initial_rects = []
+    for sub in substations:
+        min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
+        width = max_x - min_x
+        height = max_y - min_y
+        center_x = sub.scaled_x
+        center_y = sub.scaled_y
+        x1 = center_x - width / 2
+        y1 = center_y - height / 2
+        x2 = center_x + width / 2
+        y2 = center_y + height / 2
+        initial_rects.append((x1, y1, x2, y2))
+
+    shifts = space_rectangles(
+        rectangles=initial_rects,
+        grid_size=params.grid_step,
+        debug_images=True,
+        padding_steps=PADDING_STEPS,
+    )
 
     # 4. Calculate final drawing positions (use_x, use_y)
-    calculate_final_positions(substations, final_pos, params)
+    for i, sub in enumerate(substations):
+        shift_x, shift_y = shifts[i]
+        sub.use_x = sub.scaled_x + shift_x
+        # Invert the Y shift to match SVG coordinate system (0,0 is top-left)
+        sub.use_y = sub.scaled_y + shift_y
+
+    # snap to the nearest 25px grid
+    for sub in substations:
+        sub.use_x = round(sub.use_x / params.grid_step) * params.grid_step
+        sub.use_y = round(sub.use_y / params.grid_step) * params.grid_step
 
     # 5. Create substation drawing groups
     substation_groups = {
-        sub.name: get_substation_group(sub, params, rotation=sub.rotation)
+        sub.name: get_substation_group(
+            sub, params, sub_bboxes[sub.name], rotation=sub.rotation
+        )
         for sub in substations
     }
 
     # 6. Draw substations onto the main canvas
     drawing = draw.Drawing(MAP_DIMS, MAP_DIMS, origin=(0, 0))
     for sub in substations:
+        # Use direct coordinates without inversion
         drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
 
     # 7. Prepare for and draw connections
     num_steps = MAP_DIMS // GRID_STEP + 1
     points = [[0 for _ in range(num_steps)] for _ in range(num_steps)]
 
-    populate_pathfinding_grid(substations, points, params)
-    all_connections = calculate_connection_points(substations, params)
-    draw_connections(drawing, all_connections, points, GRID_STEP)
+    # Mark all grid points occupied by substations
+    for sub in substations:
+        min_x, min_y, max_x, max_y = sub_bboxes[sub.name]
+        box_margin = 50  # Extra margin around boxes for better path finding
 
-    # draw red circules on grid keep out areas for debugging
-    for i in range(num_steps):
-        for j in range(num_steps):
-            if points[i][j] < 1:
-                col = "grey"
-            elif points[i][j] > 10:
+        # The bounding box needs to be rotated to correctly mark the grid
+        rotation_rad = math.radians(sub.rotation)
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+
+        # Snap rotation center to match get_substation_group
+        grid_step = params.grid_step
+        center_x = round(center_x / grid_step) * grid_step
+        center_y = round(center_y / grid_step) * grid_step
+
+        corners = [
+            (min_x, min_y),
+            (max_x, min_y),
+            (max_x, max_y),
+            (min_x, max_y),
+        ]
+        rotated_corners = []
+        for x, y in corners:
+            rel_x = x - center_x
+            rel_y = y - center_y
+            rot_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(rotation_rad)
+            rot_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
+            rotated_corners.append((rot_x + center_x, rot_y + center_y))
+
+        rotated_xs = [pt[0] for pt in rotated_corners]
+        rotated_ys = [pt[1] for pt in rotated_corners]
+        rot_min_x, rot_max_x = min(rotated_xs), max(rotated_xs)
+        rot_min_y, rot_max_y = min(rotated_ys), max(rotated_ys)
+
+        grid_min_x = max(0, int((sub.use_x + rot_min_x - box_margin) / GRID_STEP))
+        grid_min_y = max(0, int((sub.use_y + rot_min_y - box_margin) / GRID_STEP))
+        grid_max_x = min(
+            num_steps - 1, int((sub.use_x + rot_max_x + box_margin) / GRID_STEP)
+        )
+        grid_max_y = min(
+            num_steps - 1, int((sub.use_y + rot_max_y + box_margin) / GRID_STEP)
+        )
+
+        # Mark grid cells as occupied (1)
+        for grid_y in range(grid_min_y, grid_max_y + 1):
+            for grid_x in range(grid_min_x, grid_max_x + 1):
+                points[grid_y][grid_x] = 1  # Mark as occupied
+    # all_connections: dict[str, list[dict]] = calculate_connection_points(
+    #     substations, params, sub_bboxes
+    # )
+    # draw_connections(drawing, all_connections, points, GRID_STEP)
+
+    # Draw bounding boxes with safety margin for each substation to debug overlaps
+    for sub in substations:
+        min_x, min_y, max_x, max_y = sub_bboxes[sub.name]
+
+        # The drawing group for the substation is already rotated.
+        # To draw the bounding box correctly, we need to wrap it in the same rotation.
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+        rotation = sub.rotation
+
+        # Create a group for the bounding boxes and apply the same transform as the substation
+        # The substation group is just `Use(group, x, y)`. The group itself has the rotation.
+        # So I need to apply the same transform to my bbox group.
+        sub_group_transform = substation_groups[sub.name].args.get("transform")
+        bbox_group = draw.Group(
+            transform=sub_group_transform,
+        )
+
+        # Draw actual bounding box (local coordinates, will be transformed by group)
+        bbox_group.append(
+            draw.Rectangle(
+                min_x,
+                min_y,
+                max_x - min_x,
+                max_y - min_y,
+                fill="none",
+                stroke="red",
+                stroke_width=2,
+                stroke_dasharray="5,5",
+            )
+        )
+
+        # Draw safety margin bounding box (local coordinates)
+        bbox_group.append(
+            draw.Rectangle(
+                min_x - 25,
+                min_y - 25,
+                (max_x - min_x) + PADDING_STEPS * 25,
+                (max_y - min_y) + PADDING_STEPS * 25,
+                fill="none",
+                stroke="orange",
+                stroke_width=1,
+                stroke_dasharray="3,3",
+            )
+        )
+        # The bbox group needs to be placed at the same spot as the substation group
+        drawing.append(draw.Use(bbox_group, sub.use_x, sub.use_y))
+
+        # Draw center point for reference - this should be the final, global center of the bbox
+        # 1. Bbox center in local coords (snapped to grid)
+        local_center_x = (min_x + max_x) / 2
+        local_center_y = (min_y + max_y) / 2
+        grid_step = params.grid_step
+        local_center_x = round(local_center_x / grid_step) * grid_step
+        local_center_y = round(local_center_y / grid_step) * grid_step
+
+        # 2. The group is rotated around the snapped local center and then translated by (use_x, use_y).
+        # The snapped center point itself does not move during rotation.
+        # So its final global position is the translation offset + its local position.
+        global_center_x = sub.use_x + local_center_x
+        global_center_y = sub.use_y + local_center_y
+        # drawing.append(draw.Circle(global_center_x, global_center_y, 5, fill="blue"))
+
+    # draw a grey dot at each grid point
+    for y in range(num_steps):
+        for x in range(num_steps):
+            weight = points[y][x]
+            if weight == 0:
+                col = "green"
+            elif weight > 20:
                 col = "red"
             else:
                 col = "orange"
-            drawing.append(draw.Circle(i * GRID_STEP, j * GRID_STEP, 1, fill=col))
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 1, fill=col))
 
     # Draw circles at connection points for debugging
-    for connection in all_connections.values():
-        for point in connection:
-            coords = point["coords"]
-            voltage = point["voltage"]
-            colour = COLOUR_MAP.get(voltage, "black")
-            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
+    # for connection in all_connections.values():
+    #     for point in connection:
+    #         coords = point["coords"]
+    #         voltage = point["voltage"]
+    #         colour = COLOUR_MAP.get(voltage, "black")
+    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 8. Draw titles
-    draw_titles(drawing, substations, points, params)
+    draw_titles(drawing, substations, points, params, sub_bboxes)
 
     # 9. Generate output files
     generate_output_files(drawing, substations)
