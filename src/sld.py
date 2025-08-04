@@ -110,7 +110,6 @@ class Substation:
     scaled_y: float = 0
     x: float = 0.0
     y: float = 0.0
-    title: str = ""
     use_x: float = 0.0  # Final drawing coordinate
     use_y: float = 0.0  # Final drawing coordinate
 
@@ -591,7 +590,6 @@ def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
         # Create substation
         substation = Substation(
             name=sub_data["name"],
-            title=sub_data.get("title", sub_data["name"]),
             lat=sub_data["lat"],
             long=sub_data["long"],
             voltage_kv=sub_data["voltage_kv"],
@@ -1477,7 +1475,7 @@ def get_substation_group(
     title_y = min_y - (1.5 * params.grid_step)
     dg.append(
         draw.Text(
-            sub.title,
+            sub.name,
             font_size=TITLE_FONT_SIZE,
             x=title_x,
             y=title_y,
@@ -1490,7 +1488,7 @@ def get_substation_group(
 
     # Mark grid points under the title to prevent line crossovers
     # Approximate text width. A common heuristic is num_chars * font_size * 0.6
-    text_width = len(sub.title) * TITLE_FONT_SIZE * 0.6
+    text_width = len(sub.name) * TITLE_FONT_SIZE * 0.6
     start_x = title_x - text_width / 2
     end_x = title_x + text_width / 2
 

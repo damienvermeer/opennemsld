@@ -905,8 +905,7 @@ substations:
             31.05 MW
         rel_x: 5
         rel_y: 8
-  - name: BSSP
-    title: Bannerton Solar Park
+  - name: Bannerton Solar Park (BSSP)
     lat: -34.6881867
     long: 142.7807748
     voltage_kv: 66
@@ -941,8 +940,7 @@ substations:
             110 MW
         rel_x: 3
         rel_y: 4
-  - name: RVL
-    title: Robinvale
+  - name: Robinvale (RVL)
     lat: -34.6217676
     long: 142.7661335
     voltage_kv: 66
@@ -957,8 +955,7 @@ substations:
     connections:
       1: VIC-66-BSP-RVL
       2: VIC-66-RVL-KSF
-  - name: KSF
-    title: Karadoc Solar Farm
+  - name: Karadoc Solar Farm (KSF)
     lat: -34.4156052
     long: 142.2520746
     voltage_kv: 66
@@ -983,8 +980,7 @@ substations:
             90 MW
         rel_x: 1
         rel_y: 4
-  - name: SHL
-    title: Swan Hill
+  - name: Swan Hill (SHL)
     lat: -35.3455287
     long: 143.5222635
     voltage_kv: 66
@@ -997,8 +993,7 @@ substations:
       1: ""
     connections:
       1: VIC-66-GSF-SHL
-  - name: GSF
-    title: Gannawarra (GSF/GESS)
+  - name: Gannawarra (GSF/GESS)
     lat: -35.7330445
     long: 143.7804412
     voltage_kv: 66
@@ -1180,8 +1175,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-BLTS
-  - name: NPSD
-    title: Newport
+  - name: Newport (NPSD)
     lat: -37.840536
     long: 144.894214
     voltage_kv: 220
@@ -1256,8 +1250,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-RTS
-  - name: ADTS
-    title: Axedale
+  - name: Axedale (ADTS)
     lat: -36.725225
     long: 144.54545
     voltage_kv: 220
@@ -1270,8 +1263,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-ADTS
-  - name: BBTS
-    title: Berrybank
+  - name: Berrybank (BBTS)
     lat: -37.885608
     long: 143.45285
     voltage_kv: 220
@@ -1284,8 +1276,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-BBTS
-  - name: CBTS
-    title: Cranbourne
+  - name: Cranbourne (CBTS)
     lat: -38.085633
     long: 145.266433
     voltage_kv: 220
@@ -1298,8 +1289,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-CBTS
-  - name: CPTS
-    title: Carwarp
+  - name: Carwarp (CPTS)
     lat: -34.499106
     long: 142.234786
     voltage_kv: 220
@@ -1312,8 +1302,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-CPTS
-  - name: CRTS
-    title: Cressy
+  - name: Cressy (CRTS)
     lat: -37.999733
     long: 143.752064
     voltage_kv: 220
@@ -1326,8 +1315,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-CRTS
-  - name: DDTS
-    title: Dederang
+  - name: Dederang (DDTS)
     lat: -36.454286
     long: 146.990814
     voltage_kv: 220
@@ -1340,8 +1328,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-DDTS
-  - name: EPS
-    title: Eildon PS
+  - name: Eildon PS (EPS)
     lat: -37.223708
     long: 145.920919
     voltage_kv: 220
@@ -1354,8 +1341,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-EPS
-  - name: ERTS
-    title: East Rowville
+  - name: East Rowville (ERTS)
     lat: -37.940958
     long: 145.236342
     voltage_kv: 220
@@ -1368,8 +1354,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-ERTS
-  - name: GETS
-    title: Goorambat East
+  - name: Goorambat East (GETS)
     lat: -36.426831
     long: 145.925653
     voltage_kv: 220
@@ -1382,8 +1367,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-GETS
-  - name: GPTS
-    title: Golden Plains
+  - name: Golden Plains (GPTS)
     lat: -37.971694
     long: 143.776722
     voltage_kv: 220
@@ -1396,8 +1380,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-GPTS
-  - name: GWTS
-    title: Gnarwarre
+  - name: Gnarwarre (GWTS)
     lat: -38.146925
     long: 144.126603
     voltage_kv: 220
@@ -1410,8 +1393,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-GWTS
-  - name: HTS
-    title: Heatherton
+  - name: Heatherton (HTS)
     lat: -37.941128
     long: 145.078233
     voltage_kv: 220
@@ -1424,8 +1406,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-HTS
-  - name: HWPS
-    title: Hazelwood PS
+  - name: Hazelwood PS (HWPS)
     lat: -38.273103
     long: 146.392264
     voltage_kv: 220
@@ -1438,8 +1419,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-HWPS
-  - name: HWTS
-    title: Hazelwood
+  - name: Hazelwood (HWTS)
     lat: -38.281172
     long: 146.428342
     voltage_kv: 220
@@ -1452,8 +1432,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-HWTS
-  - name: HYTS
-    title: Heywood
+  - name: Heywood (HYTS)
     lat: -38.180772
     long: 141.639092
     voltage_kv: 220
@@ -1466,8 +1445,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-HYTS
-  - name: JLTS
-    title: Jeeralang
+  - name: Jeeralang (JLTS)
     lat: -38.276922
     long: 146.424483
     voltage_kv: 220
@@ -1480,8 +1458,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-JLTS
-  - name: KOTS
-    title: Koorangie
+  - name: Koorangie (KOTS)
     lat: -35.73
     long: 143.753333
     voltage_kv: 220
@@ -1494,8 +1471,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-KOTS
-  - name: LYPS
-    title: Loy Yang PS
+  - name: Loy Yang PS (LYPS)
     lat: -38.256497
     long: 146.573861
     voltage_kv: 220
@@ -1508,8 +1484,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-LYPS
-  - name: MTS
-    title: Malvern
+  - name: Malvern (MTS)
     lat: -37.877828
     long: 145.084433
     voltage_kv: 220
@@ -1522,8 +1497,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-MTS
-  - name: MBTS
-    title: Mount Beauty
+  - name: Mount Beauty (MBTS)
     lat: -36.743886
     long: 147.165861
     voltage_kv: 220
@@ -1536,8 +1510,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-MBTS
-  - name: MWTS
-    title: Morwell
+  - name: Morwell (MWTS)
     lat: -38.257164
     long: 146.420847
     voltage_kv: 220
@@ -1550,8 +1523,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-MWTS
-  - name: PLTS
-    title: Pine Lodge
+  - name: Pine Lodge (PLTS)
     lat: -36.341389
     long: 145.570008
     voltage_kv: 220
@@ -1564,8 +1536,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-PLTS
-  - name: PRTS
-    title: Plumpton
+  - name: Plumpton (PRTS)
     lat: -37.674203
     long: 144.734453
     voltage_kv: 220
@@ -1578,8 +1549,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-PRTS
-  - name: ROTS
-    title: Rowville
+  - name: Rowville (ROTS)
     lat: -37.929281
     long: 145.227283
     voltage_kv: 220
@@ -1592,8 +1562,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-ROTS
-  - name: SMTS
-    title: South Morang
+  - name: South Morang (SMTS)
     lat: -37.644483
     long: 145.078436
     voltage_kv: 220
@@ -1606,8 +1575,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-SMTS
-  - name: SVTS
-    title: Springvale
+  - name: Springvale (SVTS)
     lat: -37.928183
     long: 145.1461
     voltage_kv: 220
@@ -1620,8 +1588,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-SVTS
-  - name: TBTS
-    title: Tyabb
+  - name: Tyabb (TBTS)
     lat: -38.267861
     long: 145.201553
     voltage_kv: 220
@@ -1634,8 +1601,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-TBTS
-  - name: TSTS
-    title: Templestowe
+  - name: Templestowe (TSTS)
     lat: -37.748069
     long: 145.170536
     voltage_kv: 220
@@ -1648,8 +1614,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-TSTS
-  - name: TTS
-    title: Thomastown
+  - name: Thomastown (TTS)
     lat: -37.6937
     long: 145.009928
     voltage_kv: 220
@@ -1662,8 +1627,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-TTS
-  - name: WOTS
-    title: Wodonga
+  - name: Wodonga (WOTS)
     lat: -36.154814
     long: 146.950147
     voltage_kv: 220
@@ -1676,8 +1640,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-WOTS
-  - name: YPS
-    title: Yallourn
+  - name: Yallourn (YPS)
     lat: -38.174139
     long: 146.349914
     voltage_kv: 220
@@ -1690,8 +1653,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-YPS
-  - name: JLA
-    title: John Lysaght
+  - name: John Lysaght (JLA)
     lat: -38.282032
     long: 145.207282
     voltage_kv: 220
@@ -1704,8 +1666,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-JLA
-  - name: WDPN
-    title: WDP Northern Reactive Station
+  - name: WDP Northern Reactive Station (WDPN)
     lat: -38.125762
     long: 145.38783
     voltage_kv: 220
@@ -1718,8 +1679,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-WDPN
-  - name: WDPS
-    title: WDP Southern Reactive Station
+  - name: WDP Southern Reactive Station (WDPS)
     lat: -38.3377199
     long: 145.5588388
     voltage_kv: 220
@@ -1732,8 +1692,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-WDPS
-  - name: WDP
-    title: Wonthaggi Desalination Plant
+  - name: Wonthaggi Desalination Plant (WDP)
     lat: -38.5854383
     long: 145.5252322
     voltage_kv: 220
@@ -1746,8 +1705,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-WDP
-  - name: BLLC
-    title: Loy Yang HVDC Converter station
+  - name: Loy Yang HVDC Converter station (BLLC)
     lat: -38.262699
     long: 146.607929
     voltage_kv: 500
@@ -1760,8 +1718,7 @@ substations:
       1: ""
     connections:
       1: VIC-500-BLLC
-  - name: WKPS
-    title: West Kiewa Power Station
+  - name: West Kiewa Power Station (WKPS)
     lat: -36.7598216
     long: 147.1857268
     voltage_kv: 220
@@ -1784,8 +1741,7 @@ substations:
             74 MW
         rel_x: 1
         rel_y: 4
-  - name: BGPS
-    title: Bogong Power Station
+  - name: Bogong Power Station (BGPS)
     lat: -36.8051893
     long: 147.227913
     voltage_kv: 220
@@ -1808,8 +1764,7 @@ substations:
             140 MW
         rel_x: 1
         rel_y: 4
-  - name: MCPS
-    title: McKay Creek power station
+  - name: McKay Creek power station (MCPS)
     lat: -36.8583086
     long: 147.2337226
     voltage_kv: 220
@@ -1832,8 +1787,7 @@ substations:
             150 MW
         rel_x: 1
         rel_y: 4
-  - name: DPS
-    title: Dartmouth Power station
+  - name: Dartmouth Power station (DPS)
     lat: -36.5564405
     long: 147.5196251
     voltage_kv: 220
