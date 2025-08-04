@@ -7,16 +7,85 @@ substations:
     tags:
       - KMTS
     def: |
-      |/1x2x||
+      |/1x2x||d5
       |x3x4x||
     buses:
       1: '?'
       2: '?'
     connections:
       1: VIC-220-MRTS-KMTS-1
-      2: KIAMAL-SF1
+      2: VIC-220-KIAMALSF-TX1
       3: VIC-220-RCTS-KMTS-1
-      4: KIAMAL-SC
+      4: VIC-220-KIAMALSC
+      5: VIC-220-KIAMALSF-TX2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: -1
+        rel_y: 12
+        connections:
+          1: VIC-220-KIAMALSF-TX1
+          2: VIC-33-KIAMALSF-BUS1
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 1
+        rel_y: 12
+        connections:
+          1: VIC-220-KIAMALSF-TX2
+          2: VIC-33-KIAMALSF-BUS2
+      - type: tx-lr
+        metadata:
+          w1: 220
+          w2: 1
+        rel_x: 4
+        rel_y: 6
+        connections:
+          1: VIC-220-KIAMALSC
+      - type: gen
+        metadata:
+          voltage: 1
+          text: SC
+          info: |
+            Kiamal Synchronous Condenser
+            190 MVAr
+        rel_x: 9
+        rel_y: 6
+    child_definitions:
+      - def: |
+          1dsx
+          3dsx
+        voltage_kv: 33
+        rel_x: -2
+        rel_y: 19
+        connections:
+          1: VIC-33-KIAMALSF-BUS1
+          3: VIC-33-KIAMALSF-BUS2
+        objects:
+          - type: gen
+            metadata:
+              voltage: 33
+              text: SF
+              info: |
+                Kiamal Solar Farm
+                200 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 33
+              text: SF
+              info: |
+                Kiamal Solar Farm
+                200 MW
+            rel_x: 3
+            rel_y: 4
+
+
+
   - name: ARTS
     lat: -37.163788
     long: 143.245555
