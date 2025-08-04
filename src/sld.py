@@ -120,19 +120,24 @@ class Substation:
         self.objects = []  # Store objects associated with this substation
 
     def draw_objects(
-        self, parent_group: draw.Group, params: DrawingParams = DrawingParams()
+        self,
+        parent_group: draw.Group,
+        objects_to_draw: list,
+        params: DrawingParams = DrawingParams(),
+        x_offset: float = 0,
+        y_offset: float = 0,
     ) -> draw.Group:
         """Draw all objects associated with the substation."""
         import math  # Import at the top for rotation calculations
 
         conn_points = {}  # Initialize conn_points here
-        for obj in self.objects:
+        for obj in objects_to_draw:
             # The origin for objects is the leftmost point of the first busbar.
             # The first busbar starts at x = -grid_step and y = 0.
             origin_x = -params.grid_step
             origin_y = 0
-            obj_x = origin_x + obj["rel_x"] * params.grid_step
-            obj_y = origin_y + obj["rel_y"] * params.grid_step
+            obj_x = origin_x + obj["rel_x"] * params.grid_step + x_offset
+            obj_y = origin_y + obj["rel_y"] * params.grid_step + y_offset
             rotation = obj.get("rotation", 0)
 
             # Create a group for this object
@@ -1385,7 +1390,7 @@ def get_substation_group(
 
     # Draw objects after bays
     if sub.objects:
-        dg = sub.draw_objects(parent_group=dg, params=params)
+        dg = sub.draw_objects(parent_group=dg, objects_to_draw=sub.objects, params=params)
 
     # Draw child definitions
     if sub.child_definitions:
@@ -1445,6 +1450,20 @@ def get_substation_group(
                     params=params,
                     previous_bay_elements=child_previous_bay_elements,
                     y_offset=y_offset,
+                )
+
+            # Draw child objects
+            if "objects" in child_def and child_def["objects"]:
+                bay_width = 2 * params.grid_step
+                child_x_offset = child_def["rel_x"] * params.grid_step
+                child_x_offset = round(child_x_offset / bay_width) * bay_width
+                child_y_offset = child_def["rel_y"] * params.grid_step
+                dg = sub.draw_objects(
+                    parent_group=dg,
+                    objects_to_draw=child_def["objects"],
+                    params=params,
+                    x_offset=child_x_offset,
+                    y_offset=child_y_offset,
                 )
         sub.voltage_kv = original_voltage
         sub.connections = original_connections

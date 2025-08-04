@@ -171,13 +171,52 @@ substations:
     tags:
       - MRTS
     def: |
-      x|d1
-      /|/2
+      E|x3
+      1d|/2
     buses:
       1: '1 MRTS'
     connections:
       1: VIC-220-MRTS-KMTS-1
       2: VIC-220-MRTS-HOTS-1
+      3: VIC-220-MRTS-MMWF-TX-220
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: -3
+        rel_y: 3
+        connections:
+          1: VIC-220-MRTS-MMWF-TX-220
+          2: VIC-220-MRTS-MMWF-TX-33
+    child_definitions:
+      - def: |
+          1dsx
+          sx
+        voltage_kv: 33
+        rel_x: -3
+        rel_y: 10
+        connections:
+          1: VIC-220-MRTS-MMWF-TX-33
+        objects:
+          - type: gen
+            metadata:
+              voltage: 33
+              text: WF
+              info: |
+                Murra Warra Wind Farm 1
+                226 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 33
+              text: WF
+              info: |
+                Murra Warra Wind Farm 2
+                209 MW
+            rel_x: 3
+            rel_y: 4
   - name: HOTS
     lat: -36.722307
     long: 142.247224
@@ -219,24 +258,19 @@ substations:
           2: HOTS-B3-TX-66
     child_definitions:
       - def: |
-          1x|x
-          |x
-          |x
-          |x3
+          1x|x3
           t
-          |x4
-          2x|x
-          |x
-          |x
-          |x
+          2x|x4
+          |x5
         voltage_kv: 66
         rel_x: -3
-        rel_y: 14
+        rel_y: 15
         connections:
           1: HOTS-B2-TX-66
           2: HOTS-B3-TX-66
-          3: VIC-66-HOTS-STL1
-          4: VIC-66-HOTS-STL2
+          3: VIC-66-HOTS-STL2
+          4: VIC-66-HOTS-STL1
+          5: VIC-66-HOTS-KWF
   - name: RCTS
     lat: -34.292682
     long: 142.238698
@@ -497,51 +531,43 @@ substations:
     long: 141.7477619
     voltage_kv: 66
     tags:
-      - BGR
+      - KWF
     def: |
-      d|x
-      t
       x|x
+      t
+      1d|x
     buses:
       1: '1'
     connections:
-      1: VIC-66-HOTS66-KWF
-      2: VIC-66-KWF-NHILL
-  - name: Nhill
-    lat: -36.3518182
-    long: 141.6331072
-    voltage_kv: 66
-    tags:
-      - BGR
-    def: |
-      ?|
-    buses:
-      1: '1'
-    connections:
-      1: VIC-66-KWF-NHILL
-  - name: Horsham (HSM)
-    lat: -36.7348671
-    long: 142.2062468
-    voltage_kv: 66
-    tags:
-      - HSM
-    def: |
-      ?|
-      ?|
-    buses:
-      1: '1'
-    connections:
-      1: VIC-66-HOTS66-HSM-1
-      2: VIC-66-HOTS66-HSM-2
-  - name: Charam  (CHM)
-    lat: -36.9947069
-    long: 141.5493409
-    voltage_kv: 66
-    tags:
-      - CHM
-    def: |
-      ?|
-    buses:
-      1: '1'
-    connections:
-      1: VIC-66-HOTS66-CHM-1
+      1: VIC-66-HOTS-KWF
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Kiata Wind Farm
+            31.05 MW
+        rel_x: 1
+        rel_y: 8
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 5
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Kiata Wind Farm
+            31.05 MW
+        rel_x: 5
+        rel_y: 8
