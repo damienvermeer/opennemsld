@@ -72,8 +72,8 @@ substations:
         metadata:
           w1: 66
           w2: 220
-        rel_x: 0
-        rel_y: -6
+        rel_x: 1
+        rel_y: -5
         rotation: 0
       - type: gen
         metadata:
@@ -82,22 +82,22 @@ substations:
           info: |
             Waubra Wind Farm
             192 MW
-        rel_x: 0
-        rel_y: -7
+        rel_x: 01
+        rel_y: -6
         rotation: 0
       - type: tx
         metadata:
           w1: 66
           w2: 220
-        rel_x: 2
-        rel_y: -6
+        rel_x: 3
+        rel_y: -5
         rotation: 0
       - type: gen
         metadata:
           voltage: 66
           text: WF
-        rel_x: 2
-        rel_y: -7
+        rel_x: 3
+        rel_y: -6
         rotation: 0
   - name: CWTS
     lat: -37.120842
