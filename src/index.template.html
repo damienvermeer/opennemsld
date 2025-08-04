@@ -21,6 +21,27 @@
             padding: 0;
             background-color: #f0f0f0;
         }
+    
+    .location-popup .leaflet-popup-content-wrapper,
+    .object-popup .leaflet-popup-content-wrapper {
+        background: rgba(255, 255, 255, 1);
+        border-radius: 4px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    }
+    
+    .location-popup .leaflet-popup-content,
+    .object-popup .leaflet-popup-content {
+        margin: 5px 10px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+    }
+    
+    .location-popup .leaflet-popup-tip,
+    .object-popup .leaflet-popup-tip {
+        background: rgba(255, 255, 255, 0.1);
+    }
     </style>
 </head>
 <body>
@@ -39,7 +60,7 @@
 
 
     // Define the bounds to match the SVG dimensions (5000x5000)
-    var bounds = [[0, 0], [5000, 5000]];
+    var bounds = [[0, 0], [7000, 7000]];
     
     // Create SVG element - This is where you would paste your pre-prepared SVG content
     var svgString = `%%SVG_CONTENT%%`;
@@ -54,11 +75,51 @@
     
     // Fit the map to the bounds
     map.fitBounds(bounds);
+    
+    // --- Object popups for generators ---
+    // This will be filled by the Python script
+    var objectPopups = %%OBJECT_POPUPS%%;
 
     // --- Search functionality ---
 
     // Data for searchable locations (substations)
     var locations = %%LOCATIONS_DATA%%;
+
+    // Add popups for generator objects if available
+    if (objectPopups && objectPopups.length > 0) {
+        objectPopups.forEach(function(obj) {
+            // Invert Y coordinate
+            var objY = obj.coords[0]; // Invert y-axis
+            var objX = obj.coords[1];
+            var objLatLng = [objY, objX]; 
+            
+            var objMarker = L.circleMarker(objLatLng, {
+                radius: 10,
+                color: '#44cc44',
+                fillColor: '#44cc44',
+                fillOpacity: 0.2,
+                weight: 1,
+                opacity: 0.8,
+                interactive: true
+            });
+            
+            objMarker.bindPopup(obj.info, {
+                closeButton: false,
+                offset: L.point(0, -3),
+                className: 'object-popup'
+            });
+            
+            objMarker.on('mouseover', function(e) {
+                this.openPopup();
+            });
+            
+            objMarker.on('mouseout', function(e) {
+                this.closePopup();
+            });
+            
+            objMarker.addTo(map);
+        });
+    }
 
     // Convert locations to GeoJSON features for the search plugin
     var features = locations.map(function(loc) {

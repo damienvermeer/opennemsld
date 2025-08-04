@@ -1600,16 +1600,71 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
     drawing.save_svg(OUTPUT_SVG)
 
     locations_data = []
+    object_popups_data = []
+
     for sub in substations:
         title = sub.name if sub.name else sub.name
-        leaflet_y = MAP_DIMS - sub.use_y
+        # Use original y-coordinate for data export (will be inverted in JavaScript)
+        leaflet_y = sub.use_y
         leaflet_x = sub.use_x
         locations_data.append(
             f'{{ title: "{title}", coords: [{leaflet_y}, {leaflet_x}] }}'
         )
 
+        # Collect generator objects with info fields
+        if hasattr(sub, "objects") and sub.objects:
+            for obj in sub.objects:
+                if (
+                    obj.get("type") == "gen"
+                    and "metadata" in obj
+                    and "info" in obj["metadata"]
+                ):
+                    # Calculate global coordinates for this object
+                    rel_x = obj.get("rel_x", 0)
+                    rel_y = obj.get("rel_y", 0)
+
+                    # Convert relative coordinates to global
+                    # Need to account for substation rotation
+                    rotation_rad = math.radians(
+                        sub.rotation if hasattr(sub, "rotation") and sub.rotation else 0
+                    )
+                    cos_r = math.cos(rotation_rad)
+                    sin_r = math.sin(rotation_rad)
+
+                    # Calculate rotated relative coordinates
+                    rot_rel_x = rel_x * cos_r - rel_y * sin_r
+                    rot_rel_y = rel_x * sin_r + rel_y * cos_r
+
+                    # Convert to global grid coordinates
+                    obj_x = sub.use_x + rot_rel_x * GRID_STEP
+                    obj_y = sub.use_y + rot_rel_y * GRID_STEP
+
+                    # Apply y-axis inversion to match Leaflet coordinates
+                    # MAP_DIMS is 5000 (the height of the canvas)
+                    leaflet_x = obj_x
+                    leaflet_y = MAP_DIMS - obj_y  # Invert y-axis
+
+                    # Escape special characters in the info text
+                    info_text = obj["metadata"]["info"]
+                    info_text = info_text.replace('"', '\\"')
+                    info_text = info_text.replace("\n", "<br>")
+
+                    # Add to object_popups_data
+                    # All transformations are handled in Python
+                    # Leaflet will use these coordinates directly
+                    object_popups_data.append(
+                        f'{{ info: "{info_text}", coords: [{leaflet_y}, {leaflet_x}] }}'
+                    )
+
+    # Create JSON strings
     locations_json_string = (
         "[\n        " + ",\n        ".join(locations_data) + "\n    ]"
+    )
+
+    object_popups_json_string = (
+        ("[\n        " + ",\n        ".join(object_popups_data) + "\n    ]")
+        if object_popups_data
+        else "[]"
     )
 
     with open(OUTPUT_SVG, "r", encoding="utf-8") as f:
@@ -1621,6 +1676,7 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
     svg_content_escaped = svg_content.replace("`", "\\`")
     html_content = template_content.replace("%%SVG_CONTENT%%", svg_content_escaped)
     html_content = html_content.replace("%%LOCATIONS_DATA%%", locations_json_string)
+    html_content = html_content.replace("%%OBJECT_POPUPS%%", object_popups_json_string)
 
     with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
         f.write(html_content)
@@ -1806,10 +1862,10 @@ def main():
 
             if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
                 points[grid_y][grid_x] = weight
-    all_connections: dict[str, list[dict]] = calculate_connection_points(
-        substations, params, sub_bboxes
-    )
-    draw_connections(drawing, all_connections, points, GRID_STEP)
+    # all_connections: dict[str, list[dict]] = calculate_connection_points(
+    #     substations, params, sub_bboxes
+    # )
+    # draw_connections(drawing, all_connections, points, GRID_STEP)
 
     # Draw bounding boxes with safety margin for each substation to debug overlaps
     for sub in substations:
@@ -1862,24 +1918,24 @@ def main():
         # drawing.append(draw.Circle(global_center_x, global_center_y, 5, fill="blue"))
 
     # draw a grey dot at each grid point
-    for y in range(num_steps):
-        for x in range(num_steps):
-            weight = points[y][x]
-            if weight == 0:
-                col = "green"
-            elif weight > 10:
-                col = "red"
-            else:
-                col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
+    # for y in range(num_steps):
+    # for x in range(num_steps):
+    #     weight = points[y][x]
+    #     if weight == 0:
+    #         col = "green"
+    #     elif weight > 10:
+    #         col = "red"
+    #     else:
+    #         col = "orange"
+    #     drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
 
     # Draw circles at connection points for debugging
-    for connection in all_connections.values():
-        for point in connection:
-            coords = point["coords"]
-            voltage = point["voltage"]
-            colour = COLOUR_MAP.get(voltage, "black")
-            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
+    # for connection in all_connections.values():
+    #     for point in connection:
+    #         coords = point["coords"]
+    #         voltage = point["voltage"]
+    #         colour = COLOUR_MAP.get(voltage, "black")
+    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 9. Generate output files
     generate_output_files(drawing, substations)
