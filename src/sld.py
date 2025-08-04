@@ -337,8 +337,34 @@ class Substation:
                     )
                 )
 
-                # Mark grid point for the circle center
-                mark_grid_point(self, circle_center_x, circle_center_y)
+                # Mark grid point for the circle center and perimeter
+                mark_grid_point(
+                    self, circle_center_x, circle_center_y, weight=ELEMENT_WEIGHT
+                )
+                mark_grid_point(
+                    self,
+                    circle_center_x,
+                    circle_center_y - params.grid_step,
+                    weight=ELEMENT_WEIGHT,
+                )
+                mark_grid_point(
+                    self,
+                    circle_center_x,
+                    circle_center_y + params.grid_step,
+                    weight=ELEMENT_WEIGHT,
+                )
+                mark_grid_point(
+                    self,
+                    circle_center_x - params.grid_step,
+                    circle_center_y,
+                    weight=ELEMENT_WEIGHT,
+                )
+                mark_grid_point(
+                    self,
+                    circle_center_x + params.grid_step,
+                    circle_center_y,
+                    weight=ELEMENT_WEIGHT,
+                )
 
             # Apply rotation if specified
             if rotation != 0 and obj["type"] not in ["gen", "tx-ud", "tx-lr"]:
