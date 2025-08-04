@@ -295,9 +295,9 @@ class Substation:
                         # Translate to origin
                         tx = px - obj_x
                         ty = py - obj_y
-                        # Rotate
-                        rx = tx * math.cos(rotation_rad) - ty * math.sin(rotation_rad)
-                        ry = tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
+                        # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+                        rx = tx * math.cos(rotation_rad) + ty * math.sin(rotation_rad)
+                        ry = -tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
                         # Translate back
                         rotated_x = rx + obj_x
                         rotated_y = ry + obj_y
@@ -337,9 +337,9 @@ class Substation:
                     # Translate to origin for rotation
                     tx = text_x - obj_x
                     ty = text_y - obj_y
-                    # Rotate
-                    rx = tx * math.cos(rotation_rad) - ty * math.sin(rotation_rad)
-                    ry = tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
+                    # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+                    rx = tx * math.cos(rotation_rad) + ty * math.sin(rotation_rad)
+                    ry = -tx * math.sin(rotation_rad) + ty * math.cos(rotation_rad)
                     # Translate back
                     text_x = rx + obj_x
                     text_y = ry + obj_y
@@ -489,9 +489,9 @@ def get_rotated_bbox(
         # Translate to origin for rotation
         rel_x = x - center_x
         rel_y = y - center_y
-        # Rotate
-        rotated_x = rel_x * cos_r - rel_y * sin_r
-        rotated_y = rel_x * sin_r + rel_y * cos_r
+        # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+        rotated_x = rel_x * cos_r + rel_y * sin_r
+        rotated_y = -rel_x * sin_r + rel_y * cos_r
         # Translate back
         rotated_corners.append((rotated_x + center_x, rotated_y + center_y))
 
@@ -1334,10 +1334,11 @@ def calculate_connection_points(
                 local_x, local_y = local_coords
                 rel_x = local_x - center_x
                 rel_y = local_y - center_y
-                rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(
+                # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+                rotated_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(
                     rotation_rad
                 )
-                rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                rotated_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(
                     rotation_rad
                 )
                 rotated_local_x = rotated_x + center_x
@@ -1571,10 +1572,11 @@ def draw_titles(
 
                 rel_x = local_center_x - sub_center_x
                 rel_y = local_center_y - sub_center_y
-                rotated_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(
+                # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+                rotated_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(
                     rotation_rad
                 )
-                rotated_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                rotated_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(
                     rotation_rad
                 )
                 rotated_local_x = rotated_x + sub_center_x
@@ -1941,8 +1943,9 @@ def main():
         for x, y in corners:
             rel_x = x - center_x
             rel_y = y - center_y
-            rot_x = rel_x * math.cos(rotation_rad) - rel_y * math.sin(rotation_rad)
-            rot_y = rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
+            # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+            rot_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(rotation_rad)
+            rot_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
             rotated_corners.append((rot_x + center_x, rot_y + center_y))
 
         rotated_xs = [pt[0] for pt in rotated_corners]
@@ -1959,10 +1962,31 @@ def main():
             num_steps - 1, int((sub.use_y + rot_max_y + box_margin) / GRID_STEP)
         )
 
-        # Mark grid cells as occupied (1)
+        # Mark grid cells within the bounding box as generally occupied.
         for grid_y in range(grid_min_y, grid_max_y + 1):
             for grid_x in range(grid_min_x, grid_max_x + 1):
                 points[grid_y][grid_x] = 1  # Mark as occupied
+
+        # Overwrite with specific weights from the substation's grid_points to allow
+        # for correct pathfinding costs through elements.
+        cos_r = math.cos(rotation_rad)
+        sin_r = math.sin(rotation_rad)
+        for (local_x, local_y), weight in sub.grid_points.items():
+            # Transform local point to global coordinates
+            rel_x = local_x - center_x
+            rel_y = local_y - center_y
+            # Rotate (for Y-down coordinate system, this is a clockwise rotation)
+            rotated_x = rel_x * cos_r + rel_y * sin_r
+            rotated_y = -rel_x * sin_r + rel_y * cos_r
+
+            global_x = sub.use_x + (rotated_x + center_x)
+            global_y = sub.use_y + (rotated_y + center_y)
+
+            grid_x = int(round(global_x / GRID_STEP))
+            grid_y = int(round(global_y / GRID_STEP))
+
+            if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
+                points[grid_y][grid_x] = weight
     all_connections: dict[str, list[dict]] = calculate_connection_points(
         substations, params, sub_bboxes
     )
@@ -2024,11 +2048,11 @@ def main():
             weight = points[y][x]
             if weight == 0:
                 col = "green"
-            elif weight > 20:
+            elif weight > 10:
                 col = "red"
             else:
                 col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 1, fill=col))
+            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 5, fill=col))
 
     # Draw circles at connection points for debugging
     # for connection in all_connections.values():

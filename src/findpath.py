@@ -150,6 +150,6 @@ def run_gridsearch(
         # print(f"Path length: {len(path) - 1} steps.")
         # print("Updating 'points' grid with the new path...")
         for r, c in path:
-            points[r][c] = path_weight  # Mark path as used in the grid
+            points[c][r] = path_weight  # Mark path as used in the grid
 
     return path, points, graph
