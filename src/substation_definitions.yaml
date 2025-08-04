@@ -6,7 +6,6 @@ substations:
     voltage_kv: 220
     tags:
       - KMTS
-    rotation: -90
     def: |
       |/1x2x||
       |x3x4x||
@@ -24,7 +23,6 @@ substations:
     voltage_kv: 220
     tags:
       - ARTS
-    rotation: 0
     def: |
       |xd2x||
       |/3x4/||
@@ -61,7 +59,6 @@ substations:
     voltage_kv: 220
     tags:
       - WBTS
-    rotation: 0
     def: |
       x|/1
       x|/2
@@ -108,7 +105,6 @@ substations:
     voltage_kv: 220
     tags:
       - CWTS
-    rotation: 0
     def: |
       |x3x1x||
       |xd2x||
@@ -145,7 +141,6 @@ substations:
     voltage_kv: 220
     tags:
       - BATS
-    rotation: 0
     def: |
       |/1x||
       |x/||
@@ -166,7 +161,6 @@ substations:
     voltage_kv: 220
     tags:
       - BGTS
-    rotation: 90
     def: |
       1/|x
       2/|x
@@ -181,7 +175,6 @@ substations:
     voltage_kv: 220
     tags:
       - MRTS
-    rotation: 0
     def: |
       x|d1
       /|/2
@@ -196,7 +189,6 @@ substations:
     voltage_kv: 220
     tags:
       - HOTS
-    rotation: 0
     def: |
       |Ex||
       |x1x||
@@ -215,7 +207,6 @@ substations:
     voltage_kv: 220
     tags:
       - RCTS
-    rotation: 0
     def: |
       |dx||
       |Ex1||
@@ -237,7 +228,6 @@ substations:
     voltage_kv: 220
     tags:
       - wemen terminal station
-    rotation: 180
     def: |
       1/|
       |x3
@@ -253,7 +243,6 @@ substations:
     voltage_kv: 220
     tags:
       - kerang terminal station
-    rotation: 0
     def: |
       |xE||
       |xx||
@@ -273,7 +262,6 @@ substations:
     voltage_kv: 220
     tags:
       - bendigo terminal station
-    rotation: 0
     def: |
       |x1x||
       |Ex||
@@ -295,7 +283,6 @@ substations:
     voltage_kv: 220
     tags:
       - fosterville terminal station
-    rotation: 0
     def: |
       1ds
       sx3
@@ -311,7 +298,6 @@ substations:
     voltage_kv: 220
     tags:
       - shepparton terminal station
-    rotation: 0
     def: |
       |x1x||
       |x2x||
@@ -333,7 +319,6 @@ substations:
     voltage_kv: 220
     tags:
       - glenrowan terminal station
-    rotation: 90
     def: |
       |x1x2x||
       |x3x4x||
@@ -352,7 +337,6 @@ substations:
     voltage_kv: 66
     tags:
       - STL
-    rotation: 0
     def: |
       1x|x2
       3x|E
@@ -368,7 +352,6 @@ substations:
     voltage_kv: 66
     tags:
       - ART
-    rotation: 0
     def: |
       1x|x2
     buses:
@@ -382,7 +365,6 @@ substations:
     voltage_kv: 66
     tags:
       - BGR
-    rotation: 0
     def: |
       1/|
       t
@@ -398,7 +380,6 @@ substations:
     voltage_kv: 66
     tags:
       - BAN
-    rotation: 0
     def: |
       x|xx||x2
       3x|x1
@@ -415,7 +396,6 @@ substations:
     voltage_kv: 500
     tags:
       - TRTS
-    rotation: 0
     def: |
       |x1x2x||
       |/d3/|
@@ -432,7 +412,6 @@ substations:
     voltage_kv: 500
     tags:
       - MOPS
-    rotation: -90
     def: |
       |/x1x2|
       |x3dx||x4
@@ -450,7 +429,6 @@ substations:
     voltage_kv: 500
     tags:
       - HGTS
-    rotation: 90
     def: |
       |x1x2x||
       3/|/d/||
@@ -467,7 +445,6 @@ substations:
     voltage_kv: 500
     tags:
       - MLTS
-    rotation: 0
     def: |
       |xEE||
       |xdx||
@@ -485,7 +462,6 @@ substations:
     voltage_kv: 66
     tags:
       - BGR
-    rotation: 0
     def: |
       d|x
       t
@@ -501,7 +477,6 @@ substations:
     voltage_kv: 66
     tags:
       - BGR
-    rotation: 0
     def: |
       ?|
     buses:
@@ -514,7 +489,6 @@ substations:
     voltage_kv: 66
     tags:
       - HSM
-    rotation: 0
     def: |
       ?|
       ?|
@@ -529,7 +503,6 @@ substations:
     voltage_kv: 66
     tags:
       - CHM
-    rotation: 0
     def: |
       ?|
     buses:
