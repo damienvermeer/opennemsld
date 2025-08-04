@@ -1850,9 +1850,15 @@ def main():
 
     # 3. Apply network layout adjustments
     print("Calculating substation bounding boxes...")
-    sub_bboxes = {
-        sub.name: get_substation_bbox_from_svg(sub, params) for sub in substations
-    }
+    sub_bboxes = {}
+    for sub in substations:
+        min_x, min_y, max_x, max_y = get_substation_bbox_from_svg(sub, params)
+        # Snap to closest grid point
+        min_x = round(min_x / params.grid_step) * params.grid_step
+        min_y = round(min_y / params.grid_step) * params.grid_step
+        max_x = round(max_x / params.grid_step) * params.grid_step
+        max_y = round(max_y / params.grid_step) * params.grid_step
+        sub_bboxes[sub.name] = (min_x, min_y, max_x, max_y)
 
     # Snap rotations and calculate rotated bboxes for spacing
     rotated_sub_bboxes = {}
@@ -1867,18 +1873,16 @@ def main():
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
         width = max_x - min_x
         height = max_y - min_y
-        center_x = sub.scaled_x
-        center_y = sub.scaled_y
-        x1 = center_x - width / 2
-        y1 = center_y - height / 2
-        x2 = center_x + width / 2
-        y2 = center_y + height / 2
+        x1 = sub.scaled_x - width / 2
+        y1 = sub.scaled_y - height / 2
+        x2 = sub.scaled_x + width / 2
+        y2 = sub.scaled_y + height / 2
         initial_rects.append((x1, y1, x2, y2))
 
     shifts = space_rectangles(
         rectangles=initial_rects,
         grid_size=params.grid_step,
-        debug_images=True,
+        debug_images=False,
         padding_steps=PADDING_STEPS,
     )
 
@@ -1959,10 +1963,10 @@ def main():
         for grid_y in range(grid_min_y, grid_max_y + 1):
             for grid_x in range(grid_min_x, grid_max_x + 1):
                 points[grid_y][grid_x] = 1  # Mark as occupied
-    # all_connections: dict[str, list[dict]] = calculate_connection_points(
-    #     substations, params, sub_bboxes
-    # )
-    # draw_connections(drawing, all_connections, points, GRID_STEP)
+    all_connections: dict[str, list[dict]] = calculate_connection_points(
+        substations, params, sub_bboxes
+    )
+    draw_connections(drawing, all_connections, points, GRID_STEP)
 
     # Draw bounding boxes with safety margin for each substation to debug overlaps
     for sub in substations:
@@ -1996,19 +2000,6 @@ def main():
             )
         )
 
-        # Draw safety margin bounding box (local coordinates)
-        bbox_group.append(
-            draw.Rectangle(
-                min_x - 25,
-                min_y - 25,
-                (max_x - min_x) + PADDING_STEPS * 25,
-                (max_y - min_y) + PADDING_STEPS * 25,
-                fill="none",
-                stroke="orange",
-                stroke_width=1,
-                stroke_dasharray="3,3",
-            )
-        )
         # The bbox group needs to be placed at the same spot as the substation group
         drawing.append(draw.Use(bbox_group, sub.use_x, sub.use_y))
 

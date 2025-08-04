@@ -3,9 +3,7 @@ Bespoke algorithm to space rectangles in 2D space to guarantee no overlap/inters
 """
 
 import math
-import numpy as np
 from shapely.geometry import Polygon
-from shapely.ops import unary_union
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from typing import List, Tuple, Optional
@@ -272,45 +270,11 @@ def _generate_debug_image(
             fontsize=12,
             fontweight="bold",
         )
-
     ax.set_aspect("equal")
     ax.grid(True, alpha=0.3)
     ax.set_title(f"Rectangle Positions - Iteration {iteration}")
-    # Auto SCALE TIGHT
     ax.autoscale_view()
     plt.savefig(
         f"rectangles_iteration_{iteration:03d}.png", dpi=150, bbox_inches="tight"
     )
     plt.close()
-
-
-def example_usage():
-    """Example demonstrating the rectangle spacing algorithm with 4 overlapping rectangles."""
-    # Define 4 overlapping rectangles near each other
-    rectangles = [
-        (50, 50, 150, 100),  # Rectangle 0
-        (100, 75, 200, 125),  # Rectangle 1 - overlaps with 0
-        (75, 25, 175, 75),  # Rectangle 2 - overlaps with 0 and 1
-        (125, 50, 225, 100),  # Rectangle 3 - overlaps with 1 and 2
-    ]
-
-    print("Original rectangles:")
-    for i, rect in enumerate(rectangles):
-        print(f"  Rectangle {i}: {rect}")
-
-    # Run the spacing algorithm with debug images
-    shifts = space_rectangles(rectangles, grid_size=25, debug_images=True)
-
-    print("\nShifts applied:")
-    for i, shift in enumerate(shifts):
-        print(f"  Rectangle {i}: shifted by {shift}")
-
-    print("\nFinal rectangles:")
-    for i, (rect, shift) in enumerate(zip(rectangles, shifts)):
-        x1, y1, x2, y2 = rect
-        final_rect = (x1 + shift[0], y1 + shift[1], x2 + shift[0], y2 + shift[1])
-        print(f"  Rectangle {i}: {final_rect}")
-
-
-if __name__ == "__main__":
-    example_usage()

@@ -92,10 +92,10 @@ def find_shortest_path(
             graph, start_node, end_node, weight="weight", heuristic=manhattan_distance
         )
         end_time = time.time()
-        print(f"Path found in: {end_time - start_time:.4f} seconds.")
+        # print(f"Path found in: {end_time - start_time:.4f} seconds.")
         return path
     except nx.NetworkXNoPath:
-        print(f"No path could be found from {start_node} to {end_node}.")
+        # print(f"No path could be found from {start_node} to {end_node}.")
         return []
 
 
@@ -106,7 +106,7 @@ def run_gridsearch(
     start_node: Tuple[int, int],
     end_node: Tuple[int, int],
     points: List[List[int]],
-    graph: nx.Graph = None,
+    path_weight: int = 10,
 ) -> Tuple[List[Tuple[int, int]], List[List[int]], nx.Graph]:
     """
     Orchestrates the grid-based pathfinding process.
@@ -118,11 +118,13 @@ def run_gridsearch(
         start_node: The starting coordinate (row, col).
         end_node: The ending coordinate (row, col).
         points: The 2D grid with traversal costs.
+        path_weight: The weight to assign to cells in the found path.
 
     Returns:
         A tuple containing:
         - The found path as a list of coordinates.
         - The updated grid with the path marked as high-penalty.
+        - The graph used for pathfinding (note: it will be stale after points are updated).
     """
     # --- 1. Validate Inputs ---
     if points[start_node[0]][start_node[1]] >= 25:
@@ -130,33 +132,24 @@ def run_gridsearch(
     if points[end_node[0]][end_node[1]] >= 25:
         raise ValueError(f"End node {end_node} is on a high-penalty obstacle!")
 
-    # --- 2. Create or Update Graph ---
-    if graph is None:
-        print("No graph provided, creating new one from grid...")
-        start_time = time.time()
-        graph = create_graph_from_grid(points)
-        end_time = time.time()
-        print(f"Graph creation took: {end_time - start_time:.4f} seconds.")
-        print(
-            f"Graph has {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges."
-        )
-    else:
-        # If graph is provided, we assume it's the right size and just update weights
-        # This is much faster than rebuilding the graph.
-        # We only need to update the weights of the nodes that have changed (the new path).
-        # The find_shortest_path function will use the updated weights.
-        pass  # No need to update weights here, as the path logic will use the graph's state
+    # --- 2. Create Graph ---
+    # Always create a new graph from the potentially updated points grid to ensure
+    # pathfinding uses the latest weights.
+    # print("Creating new graph from grid for pathfinding...")
+    start_time = time.time()
+    graph = create_graph_from_grid(points)
+    end_time = time.time()
+    # print(f"Graph creation took: {end_time - start_time:.4f} seconds.")
 
     # --- 3. Find Path ---
-    print(f"\nFinding shortest path from {start_node} to {end_node} using A*...")
+    # print(f"\nFinding shortest path from {start_node} to {end_node} using A*...")
     path = find_shortest_path(graph, start_node, end_node)
 
     # --- 4. Update Grid and Return ---
     if path:
-        print(f"Path length: {len(path) - 1} steps.")
-        print("Updating 'points' grid and graph with the new path...")
+        # print(f"Path length: {len(path) - 1} steps.")
+        # print("Updating 'points' grid with the new path...")
         for r, c in path:
-            points[r][c] = 25  # Mark path as used in the grid
-            graph.nodes[(r, c)]["weight"] = 25  # Update weight in the graph
+            points[r][c] = path_weight  # Mark path as used in the grid
 
     return path, points, graph
