@@ -394,20 +394,68 @@ substations:
     tags:
       - RCTS
     def: |
-      |dx||
-      |Ex1||
-      |Ex||
-      |x2E||
-      |xx||
-      |x/||
-      |xx||
-      |xx||
+      |x1x||
+      |x2x||
+      |/3x||x
+      |E4x||
+      6x|x5E||
+      |xd||
     buses:
-      1: '1 RCTS'
-      2: '2'
+      1: '2'
+      2: '1'
     connections:
-      1: VIC-220-RCTS-KMTS-1
-      2: VIC-220-RCTS-WETS-1
+      1: VIC-220-RCTS-TX3
+      2: VIC-220-RCTS-MLRC
+      3: VIC-220-RCTS-OX1
+      4: VIC-220-RCTS-WETS-1
+      5: VIC-220-RCTS-TX1B
+      6: VIC-220-RCTS-KMTS-1
+      7: VIC-220-RCTS-TX2B
+    objects:
+    - type: tx-ud # TX3
+      metadata:
+        w1: 220
+        w2: 66
+      rel_x: 1
+      rel_y: 9
+      connections:
+        1: VIC-220-RCTS-TX3
+        2: VIC-66-RCTS-TX3
+    - type: tx-ud # TX2B
+      metadata:
+        w1: 220
+        w2: 66
+      rel_x: 5
+      rel_y: 9
+      connections:
+        1: VIC-220-RCTS-TX2B
+        2: VIC-66-RCTS-TX2B
+    - type: tx-ud # TX1B
+      metadata:
+        w1: 220
+        w2: 66
+      rel_x: 9
+      rel_y: 9
+      connections:
+        1: VIC-220-RCTS-TX1B
+        2: VIC-66-RCTS-TX1B
+    child_definitions:
+      - def: |
+          1x|
+          i
+          2x|
+          t
+          3x|x4
+        voltage_kv: 66
+        rel_x: 0
+        rel_y: 17
+        connections:
+          1: VIC-66-RCTS-TX3
+          2: VIC-66-RCTS-TX2B
+          3: VIC-66-RCTS-TX1B
+          4: VIC-66-RCTS-KSF
+
+
   - name: WETS
     lat: -34.786893
     long: 142.524842
@@ -415,14 +463,78 @@ substations:
     tags:
       - wemen terminal station
     def: |
-      1/|
-      |x3
       2/|
+      |x
+      1/|
     buses:
       1: '1 WETS'
     connections:
       1: VIC-220-WETS-KGTS-1
       2: VIC-220-RCTS-WETS-1
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 1
+        rel_y: 6
+        connections: {}
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 5
+        rel_y: 6
+        connections: {}
+    child_definitions:
+      - def: |
+          s
+          s
+          s
+        voltage_kv: 220
+        rel_x: 0
+        rel_y: 3
+        connections: {}
+      - def: |
+          x|x1
+          i
+          x|x2
+        voltage_kv: 66
+        rel_x: 0
+        rel_y: 10
+        connections:
+          2: VIC-66-WEMENSF
+          1: VIC-66-WETS-BSP
+  - name: Wemen Solar Farm
+    lat: -34.7882127
+    long: 142.5414514
+    voltage_kv: 66
+    tags:
+      - wemen solar farm
+    def: |
+      1x|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-WEMENSF
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 0
+        connections: {}
+      - type: gen
+        metadata:
+          voltage: 33
+          text: SF
+          info: |
+            Wemen Solar Farm
+            97.5 MW
+        rel_x: 1
+        rel_y: 5
+        connections: {}
   - name: KGTS
     lat: -35.771646
     long: 143.933867
@@ -477,7 +589,16 @@ substations:
     connections:
       1: VIC-220-BETS-FVTS-1
       2: VIC-220-SHTS-FVTS-1
-      3: FVTS-LOAd
+      3: FVTS-Load
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 3
+        rel_y: 4
+        connections:
+          1: FVTS-Load
   - name: SHTS
     lat: -36.342772
     long: 145.414431
@@ -575,7 +696,7 @@ substations:
         metadata:
           w1: 66
           w2: 33
-        rel_x: 3
+        rel_x: 5
         rel_y: 3
         connections:
           1: VIC-66-CHWF2
@@ -584,7 +705,7 @@ substations:
           voltage: 33
           text: WF
           info: |
-            Challicum Hills
+            Challicum Hills Wind Farm
             53 MW
         rel_x: 1
         rel_y: 8
@@ -593,7 +714,7 @@ substations:
           voltage: 33
           text: WF
           info: |
-            Challicum Hills
+            Challicum Hills Wind Farm
             53 MW
         rel_x: 5
         rel_y: 8
@@ -724,3 +845,82 @@ substations:
             31.05 MW
         rel_x: 5
         rel_y: 8
+  - name: BSSP
+    title: Bannerton Solar Park
+    lat: -34.6881867
+    long: 142.7807748
+    voltage_kv: 66
+    tags:
+      - BSSP
+      - BSP
+      - Bannerton Solar Park
+    def: |
+      1ds/
+      3xs/
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-WETS-BSP
+      3: VIC-66-BSP-RVL
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: SP
+          info: |
+            Bannerton Solar Park
+            110 MW
+        rel_x: 1
+        rel_y: 4
+      - type: gen
+        metadata:
+          voltage: 66
+          text: SP
+          info: |
+            Bannerton Solar Park
+            110 MW
+        rel_x: 3
+        rel_y: 4
+  - name: RVL
+    title: Robinvale
+    lat: -34.6217676
+    long: 142.7661335
+    voltage_kv: 66
+    tags:
+      - RVL
+    def: |
+      2dsxs
+      tsEts
+      1dsxs
+    buses:
+      1: 
+    connections:
+      1: VIC-66-BSP-RVL
+      2: VIC-66-RVL-KSF
+  - name: KSF
+    title: Karadoc Solar Farm
+    lat: -34.4156052
+    long: 142.2520746
+    voltage_kv: 66
+    tags:
+      - KSF
+      - Karadoc Solar Farm
+    def: |
+      1/s
+      3xsx
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-RVL-KSF
+      3: VIC-66-RCTS-KSF
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: SF
+          info: |
+            Karadoc Solar Farm
+            90 MW
+        rel_x: 3
+        rel_y: 4
+  

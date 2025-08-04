@@ -44,7 +44,7 @@ import findpath
 from rectangle_spacing import space_rectangles
 
 # --- Constants ---
-MAP_DIMS = 7000
+MAP_DIMS = 9000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -60,7 +60,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "example.svg"
 OUTPUT_HTML = "index.html"
-PADDING_STEPS = 3
+PADDING_STEPS = 5
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -1390,7 +1390,9 @@ def get_substation_group(
 
     # Draw objects after bays
     if sub.objects:
-        dg = sub.draw_objects(parent_group=dg, objects_to_draw=sub.objects, params=params)
+        dg = sub.draw_objects(
+            parent_group=dg, objects_to_draw=sub.objects, params=params
+        )
 
     # Draw child definitions
     if sub.child_definitions:
@@ -1498,9 +1500,12 @@ def get_substation_group(
     grid_start_x_idx = math.floor(start_x / params.grid_step)
     grid_end_x_idx = math.ceil(end_x / params.grid_step)
 
-    for i in range(grid_start_x_idx, grid_end_x_idx + 1):
-        grid_x = i * params.grid_step
-        mark_grid_point(sub, grid_x, grid_y, weight=ELEMENT_WEIGHT)
+    # Mark the grid row of the title, and the rows above and below it
+    for y_offset in [-params.grid_step, 0, params.grid_step]:
+        current_grid_y = grid_y + y_offset
+        for i in range(grid_start_x_idx, grid_end_x_idx + 1):
+            grid_x = i * params.grid_step
+            mark_grid_point(sub, grid_x, current_grid_y, weight=ELEMENT_WEIGHT)
 
     return dg
 
