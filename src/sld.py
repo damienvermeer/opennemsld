@@ -1394,29 +1394,35 @@ def draw_connections(
             max(0, min(end_coord[1], num_steps - 1)),
         )
 
-        points[start_coord[0]][start_coord[1]] = 0
-        points[end_coord[0]][end_coord[1]] = 0
+        # The pathfinder uses (row, col) which is (y, x). Our coords are (x, y).
+        start_node = (start_coord[1], start_coord[0])
+        end_node = (end_coord[1], end_coord[0])
 
-        print(f"Finding path from {start_coord} to {end_coord}")
+        # Ensure start/end points are clear for pathfinding
+        points[start_node[0]][start_node[1]] = 0
+        points[end_node[0]][end_node[1]] = 0
+
+        print(f"Finding path from {start_node} to {end_node}")
         try:
             # The grid is updated with path weights after each run.
             # A new graph is created from the grid on each call.
             path, points, _ = findpath.run_gridsearch(
-                start_coord,
-                end_coord,
+                start_node,
+                end_node,
                 points,
                 path_weight=LINE_CROSS_WEIGHT,
             )
             if len(path) > 1:
                 print(f"Drawing path with {len(path)} points")
+                # The path is returned as (row, col) tuples. Drawing needs (x, y).
                 for i in range(len(path) - 1):
-                    start, end = path[i], path[i + 1]
+                    start_rc, end_rc = path[i], path[i + 1]
                     drawing.append(
                         draw.Line(
-                            start[0] * step,
-                            start[1] * step,
-                            end[0] * step,
-                            end[1] * step,
+                            start_rc[1] * step,  # x = col
+                            start_rc[0] * step,  # y = row
+                            end_rc[1] * step,
+                            end_rc[0] * step,
                             stroke=colour,
                             stroke_width=2,
                         )
