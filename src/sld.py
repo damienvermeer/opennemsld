@@ -726,6 +726,10 @@ def draw_bay_from_string(
             elements.append({"type": "element", "subtype": "cb"})
             char_index += 1
 
+        elif char == "?":
+            elements.append({"type": "element", "subtype": "unknown"})
+            char_index += 1
+
         elif char == "/":
             elements.append({"type": "element", "subtype": "isolator"})
             char_index += 1
@@ -1088,6 +1092,51 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
         )
         mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
 
+    elif subtype == "unknown":
+        # Unknown switch: 25px line + '?' + 25px line
+        # First vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos,
+                xoff,
+                y_pos + params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # Question mark (centered in middle grid step)
+        q_mark_center_y = y_pos + params.grid_step + (params.grid_step // 2)
+        parent_group.append(
+            draw.Text(
+                "?",
+                font_size=params.grid_step,
+                x=xoff,
+                y=q_mark_center_y,
+                text_anchor="middle",
+                dominant_baseline="central",
+                fill=colour,
+                stroke_width=0,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+
+        # Second vertical line (exactly 25px)
+        parent_group.append(
+            draw.Line(
+                xoff,
+                y_pos + 2 * params.grid_step,
+                xoff,
+                y_pos + 3 * params.grid_step,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+
     elif subtype == "isolator":
         # Isolator: 25px line + 45° line + 25px line
         # First vertical line (exactly 25px)
@@ -1202,6 +1251,10 @@ def parse_bay_elements(bay_def: str) -> list:
         # Handle element objects
         elif char == "x":
             elements.append({"type": "element", "subtype": "cb"})
+            char_index += 1
+
+        elif char == "?":
+            elements.append({"type": "element", "subtype": "unknown"})
             char_index += 1
 
         elif char == "/":
@@ -1924,10 +1977,10 @@ def main():
 
             if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
                 points[grid_y][grid_x] = weight
-    # all_connections: dict[str, list[dict]] = calculate_connection_points(
-    #     substations, params, sub_bboxes
-    # )
-    # draw_connections(drawing, all_connections, points, GRID_STEP)
+    all_connections: dict[str, list[dict]] = calculate_connection_points(
+        substations, params, sub_bboxes
+    )
+    draw_connections(drawing, all_connections, points, GRID_STEP)
 
     # Draw bounding boxes with safety margin for each substation to debug overlaps
     for sub in substations:
@@ -1980,24 +2033,24 @@ def main():
         # drawing.append(draw.Circle(global_center_x, global_center_y, 5, fill="blue"))
 
     # draw a grey dot at each grid point
-    for y in range(num_steps):
-        for x in range(num_steps):
-            weight = points[y][x]
-            if weight == 0:
-                col = "green"
-            elif weight > 10:
-                col = "red"
-            else:
-                col = "orange"
-            drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
+    # for y in range(num_steps):
+    #     for x in range(num_steps):
+    #         weight = points[y][x]
+    #         if weight == 0:
+    #             col = "green"
+    #         elif weight > 10:
+    #             col = "red"
+    #         else:
+    #             col = "orange"
+    #         drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
 
-    # # Draw circles at connection points for debugging
-    # for connection in all_connections.values():
-    #     for point in connection:
-    #         coords = point["coords"]
-    #         voltage = point["voltage"]
-    #         colour = COLOUR_MAP.get(voltage, "black")
-    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
+    # Draw circles at connection points for debugging
+    for connection in all_connections.values():
+        for point in connection:
+            coords = point["coords"]
+            voltage = point["voltage"]
+            colour = COLOUR_MAP.get(voltage, "black")
+            drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 9. Generate output files
     generate_output_files(drawing, substations)
