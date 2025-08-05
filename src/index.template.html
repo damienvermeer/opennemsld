@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SLD Viewer</title>
+    <title>NEMSLD</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -147,8 +147,16 @@
         };
     });
 
-    // Create a GeoJSON layer for searching, but don't add it to the map
-    var featuresLayer = L.geoJSON(features);
+    // Create a GeoJSON layer for searching, but don't add it to the map and make it invisible
+    var featuresLayer = L.geoJSON(features, {
+        pointToLayer: function(feature, latlng) {
+            // Create an invisible marker
+            return L.marker(latlng, {
+                opacity: 0,  // Make marker completely transparent
+                interactive: true  // Keep it interactive for search functionality
+            });
+        }
+    });
 
     // Initialize the search control
     var searchControl = new L.Control.Search({
@@ -156,6 +164,11 @@
         propertyName: 'title',
         initial: false,
         marker: false, // Do not show a marker on the map
+        markerLocation: false, // Do not show the circle when location found
+        moveToLocation: function(latlng, title, map) {
+            map.setView(latlng, 0); // Move to location without showing any marker
+            // You could add custom behavior here when location is found
+        },
         textPlaceholder: 'e.g. ARTS',
         textErr: 'Location not found',
         title: 'Search Substations',

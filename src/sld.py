@@ -52,7 +52,7 @@ TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
 BUSBAR_WEIGHT = 8
 NEAR_SUB_WEIGHT = 4
-ELEMENT_WEIGHT = 50
+ELEMENT_WEIGHT = 500
 GRID_STEP = 25
 PATHFINDING_ITERATIONS = 5
 CONGESTION_PENALTY = 500
@@ -845,7 +845,26 @@ def draw_bay_from_string(
                 next_element_idx += 1
 
         elif element["type"] == "connection":
-            draw_connection_object(element, xoff, y_pos, parent_group, sub, colour)
+            should_draw_dot = False
+            if i > 0 and i < len(elements) - 1:
+                prev_element = elements[i - 1]
+                next_element = elements[i + 1]
+                if (
+                    prev_element["type"] == "element"
+                    and prev_element["subtype"] != "empty"
+                    and next_element["type"] == "element"
+                    and next_element["subtype"] != "empty"
+                ):
+                    should_draw_dot = True
+            draw_connection_object(
+                element,
+                xoff,
+                y_pos,
+                parent_group,
+                sub,
+                colour,
+                draw_dot=should_draw_dot,
+            )
 
     return parent_group
 
@@ -1310,7 +1329,9 @@ def parse_bay_elements(bay_def: str) -> list:
     return elements
 
 
-def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
+def draw_connection_object(
+    element, xoff, y_pos, parent_group, sub, colour, draw_dot: bool = False
+):
     """Draw a connection object at the specified position."""
     conn_id = element["id"]
     connection_name = sub.connections.get(conn_id)
@@ -1320,12 +1341,10 @@ def draw_connection_object(element, xoff, y_pos, parent_group, sub, colour):
         connection_data = {"coords": (xoff, y_pos), "voltage": sub.voltage_kv}
         sub.connection_points.setdefault(connection_name, []).append(connection_data)
         mark_grid_point(
-            sub, xoff, y_pos, weight=ELEMENT_WEIGHT * 2
-        )  # Connection points have weight 2x ELEMENT_WEIGHT
-        # ... this is to prevent other lines using this point as a path
-    else:
-        # Draw an unused connection circle
-        parent_group.append(draw.Circle(xoff, y_pos, 4, fill=colour, stroke="none"))
+            sub, xoff, y_pos, weight=ELEMENT_WEIGHT
+        )  # Connection points are now handled by pathfinder logic
+    if draw_dot:
+        parent_group.append(draw.Circle(xoff, y_pos, 5, fill=colour, stroke="none"))
 
 
 def get_substation_group(
@@ -1626,6 +1645,7 @@ def draw_connections(
 
     path_requests = []
     path_metadata = []
+    all_connection_nodes = set()
 
     for _, connection_points in sorted_connections:
         start_coord_px = connection_points[0]["coords"]
@@ -1657,6 +1677,9 @@ def draw_connections(
         start_node = (start_coord[1], start_coord[0])
         end_node = (end_coord[1], end_coord[0])
 
+        all_connection_nodes.add(start_node)
+        all_connection_nodes.add(end_node)
+
         # Ensure start/end points are clear for pathfinding
         points[start_node[0]][start_node[1]] = 0
         points[end_node[0]][end_node[1]] = 0
@@ -1669,8 +1692,8 @@ def draw_connections(
         all_paths = findpath.run_all_gridsearches(
             path_requests,
             points,
-            iterations=PATHFINDING_ITERATIONS,
             congestion_penalty_increment=CONGESTION_PENALTY,
+            all_connection_nodes=all_connection_nodes,
         )
 
         for i, path in enumerate(all_paths):
@@ -1865,7 +1888,9 @@ def generate_substation_documentation_svgs(
     print(f"Documentation SVGs saved to {output_dir}/")
 
 
-def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
+def generate_output_files(
+    drawing: draw.Drawing, substations: list[Substation], sub_bboxes: dict
+):
     """Saves the SVG and generates the final HTML file."""
     drawing.save_svg(OUTPUT_SVG)
 
@@ -1874,9 +1899,17 @@ def generate_output_files(drawing: draw.Drawing, substations: list[Substation]):
 
     for sub in substations:
         title = sub.name if sub.name else sub.name
+
+        min_x, min_y, max_x, max_y = sub_bboxes[sub.name]
+        local_center_x = (min_x + max_x) / 2
+        local_center_y = (min_y + max_y) / 2
+
+        global_center_x = sub.use_x + local_center_x
+        global_center_y = sub.use_y + local_center_y
+
         # Invert y-axis for Leaflet coordinates
-        leaflet_y = MAP_DIMS - sub.use_y
-        leaflet_x = sub.use_x
+        leaflet_y = MAP_DIMS - global_center_y
+        leaflet_x = global_center_x
         locations_data.append(
             f'{{ title: "{title}", coords: [{leaflet_y}, {leaflet_x}] }}'
         )
@@ -2172,7 +2205,7 @@ def main():
     #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
 
     # 9. Generate output files
-    generate_output_files(drawing, substations)
+    generate_output_files(drawing, substations, sub_bboxes)
 
 
 if __name__ == "__main__":

@@ -112,33 +112,53 @@ def find_shortest_path(
 def run_all_gridsearches(
     path_requests: List[Tuple[Tuple[int, int], Tuple[int, int]]],
     points: List[List[int]],
-    iterations: int = 5,
+    iterations: int = 15,
     congestion_penalty_increment: float = 2.0,
+    all_connection_nodes: set = None,
 ) -> List[List[Tuple[int, int]]]:
     """
     Finds paths for a series of requests, aiming to minimize total congestion.
-    It iteratively finds paths, penalizes congested segments, and re-routes
-    using a sequential rip-up and reroute strategy on a single graph instance
-    for performance.
+
+    This is an enhanced version of a sequential rip-up and reroute algorithm.
+    Key features:
+    1.  **Longest Path First**: It prioritizes routing longer paths first, as
+        they are typically harder to place.
+    2.  **Iterative Refinement**: It iteratively refines paths. In each
+        iteration, it reroutes each path one by one on a graph that is
+        penalized by the congestion caused by all other paths.
+    3.  **Increasing Penalty**: The penalty for congestion increases
+        quadratically with each iteration. It starts very low to allow
+        for more chaotic path exploration and ramps up aggressively towards
+        the end to force convergence on a low-congestion solution.
 
     Args:
         path_requests: A list of (start_node, end_node) tuples.
         points: The initial 2D grid with traversal costs.
         iterations: The number of times to iterate the pathfinding process.
-        congestion_penalty_increment: The penalty added to a graph edge for
-                                      each path crossing it.
+        congestion_penalty_increment: The base penalty added to a graph edge
+                                      for each path crossing it. This value
+                                      is scaled up with each iteration.
 
     Returns:
-        A list of paths, where each path is a list of coordinates.
+        A list of paths, where each path is a list of coordinates, in the
+        same order as the input path_requests.
     """
     # Create the graph once from the base grid.
     print("Pathfinding: Creating base graph...")
     graph = create_graph_from_grid(points)
 
-    # Initial routing of all paths on the base graph.
-    print("Pathfinding: Starting initial routing...")
+    # --- Sort requests to route longest paths first ---
+    indexed_requests = [
+        (i, req, manhattan_distance(req[0], req[1]))
+        for i, req in enumerate(path_requests)
+    ]
+    indexed_requests.sort(key=lambda x: x[2], reverse=True)
+    sorted_requests = [req for i, req, _ in indexed_requests]
+
+    # Initial routing of all paths on the base graph, in sorted order.
+    print("Pathfinding: Starting initial routing (longest paths first)...")
     all_paths = [
-        find_shortest_path(graph, start, end) for start, end in path_requests
+        find_shortest_path(graph, start, end) for start, end in sorted_requests
     ]
     print("Pathfinding: Initial routing complete.")
 
@@ -146,8 +166,23 @@ def run_all_gridsearches(
     # that is penalized by the existence of all other paths.
     for i in range(iterations):
         print(f"Pathfinding: Starting iteration {i + 1}/{iterations}...")
-        for req_idx in range(len(path_requests)):
-            start_node, end_node = path_requests[req_idx]
+        # The penalty is scaled quadratically. It starts low to allow for more
+        # "chaotic" pathfinding and increases sharply in later iterations to
+        # force convergence to a low-congestion state.
+        if iterations > 1:
+            # Use a quadratic scaling factor from 0 to 1.
+            scaling_factor = (i / (iterations - 1)) ** 2
+            # The max penalty multiplier is set to be aggressive in the final iterations.
+            max_penalty_multiplier = 50.0
+            current_penalty = (
+                congestion_penalty_increment * max_penalty_multiplier * scaling_factor
+            )
+        else:
+            # For a single iteration, use the base penalty.
+            current_penalty = congestion_penalty_increment
+
+        for req_idx in range(len(sorted_requests)):
+            start_node, end_node = sorted_requests[req_idx]
 
             # Calculate edge usage from all *other* paths.
             edge_usage = {}
@@ -165,14 +200,34 @@ def run_all_gridsearches(
             # Temporarily apply penalties to the graph for shared edges.
             penalized_edges = []
             for edge, count in edge_usage.items():
-                penalty = count * congestion_penalty_increment
+                penalty = count * current_penalty
                 if graph.has_edge(*edge):
                     graph.edges[edge]["weight"] += penalty
                     penalized_edges.append((edge, penalty))
 
+            # --- Temporarily block other connection points ---
+            blocked_edges = []
+            if all_connection_nodes:
+                nodes_to_block = all_connection_nodes - {start_node, end_node}
+                for node in nodes_to_block:
+                    if graph.has_node(node):
+                        # Block all edges connected to this node
+                        for neighbor in list(graph.neighbors(node)):
+                            edge_tuple = tuple(sorted((node, neighbor)))
+                            if graph.has_edge(*edge_tuple):
+                                original_weight = graph.edges[edge_tuple]["weight"]
+                                blocked_edges.append((edge_tuple, original_weight))
+                                graph.edges[edge_tuple]["weight"] = float("inf")
+
             # Reroute the current path on the penalized graph.
             new_path = find_shortest_path(graph, start_node, end_node)
-            all_paths[req_idx] = new_path
+            if new_path:  # Only update if a path was found
+                all_paths[req_idx] = new_path
+
+            # --- Unblock connection points before removing penalties ---
+            for edge, original_weight in blocked_edges:
+                if graph.has_edge(*edge):
+                    graph.edges[edge]["weight"] = original_weight
 
             # Remove the temporary penalties to prepare for the next path.
             for edge, penalty in penalized_edges:
@@ -181,7 +236,15 @@ def run_all_gridsearches(
 
         print(f"Pathfinding: Iteration {i + 1} complete.")
 
-    return all_paths
+    # --- Re-sort paths back to original order ---
+    # Associate original indices with the final paths
+    indexed_paths = list(zip([item[0] for item in indexed_requests], all_paths))
+    # Sort by original index
+    indexed_paths.sort(key=lambda x: x[0])
+    # Extract paths in original order
+    final_paths = [path for i, path in indexed_paths]
+
+    return final_paths
 
 
 def run_gridsearch(
