@@ -61,6 +61,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "example.svg"
 OUTPUT_HTML = SCRIPT_DIR / "public" / "index.html"
+os.makedirs(os.path.dirname(OUTPUT_HTML), exist_ok=True)
 PADDING_STEPS = 6
 
 # below colours from AEMO NEM SLD pdf for consistency
