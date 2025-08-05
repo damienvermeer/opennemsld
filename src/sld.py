@@ -59,7 +59,7 @@ import pathlib
 SCRIPT_DIR = pathlib.Path(__file__).parent
 SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
-OUTPUT_SVG = "example.svg"
+OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
 PADDING_STEPS = 6
 
