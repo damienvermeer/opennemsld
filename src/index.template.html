@@ -10,9 +10,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-fusesearch@1.1.0/dist/leaflet.fusesearch.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-fusesearch@1.1.0/dist/leaflet.fusesearch.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.css" />
+    <script src="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
     <style>
         html, body, #map {
             height: 100%;
@@ -42,6 +41,12 @@
     .object-popup .leaflet-popup-tip {
         background: rgba(255, 255, 255, 0.1);
     }
+
+    /* Align search control with zoom control */
+    .leaflet-control-search:not(.search-exp) {
+        width: 34px;
+        height: 34px;
+    }
     </style>
 </head>
 <body>
@@ -56,7 +61,11 @@
         maxZoom: 2,  // Allow zooming in
         zoomDelta: 0.02, // Smaller zoom steps
         zoomSnap: 0, // Snap to smaller increments
+        zoomControl: false
     });
+
+    // Add zoom control to the bottom right
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 
     // Define the bounds to match the SVG dimensions (5000x5000)
@@ -101,7 +110,8 @@
                     iconSize: [20, 20],
                     iconAnchor: [10, 10]
                 }),
-                interactive: true
+                interactive: true,
+                opacity: 0
             });
             
             objMarker.bindPopup(obj.info, {
@@ -137,44 +147,30 @@
         };
     });
 
-    // Initialize the fuzzy search control
-    var searchControl = new L.Control.FuseSearch({
-        position: 'topright',
+    // Create a GeoJSON layer for searching, but don't add it to the map
+    var featuresLayer = L.geoJSON(features);
+
+    // Initialize the search control
+    var searchControl = new L.Control.Search({
+        layer: featuresLayer,
+        propertyName: 'title',
+        initial: false,
+        marker: false, // Do not show a marker on the map
+        textPlaceholder: 'e.g. ARTS',
+        textErr: 'Location not found',
         title: 'Search Substations',
-        placeholder: 'e.g. ARTS',
-        maxResultLength: 10,
-        showResultFct: function (feature, container) {
-            // Display the title in the search results
-            container.innerHTML = feature.properties.title;
-        },
-        // Fuse.js options for fuzzy matching
-        fuse: {
-            keys: ['properties.title'],
-            threshold: 0.3, // Lower is more strict
-        }
+        zoom: 4,
+        position: 'bottomright'
     });
     map.addControl(searchControl);
 
-    // Index the location features
-    searchControl.indexFeatures(features);
-
-    // Handle search result selection to pan/zoom without adding a marker
-    map.on('search:locationfound', function (e) {
-        // The plugin adds a marker to e.layer. We'll clear it to keep the map clean.
-        if (e.layer) {
-            e.layer.clearLayers();
-        }
-        // Pan and zoom to the found location
-        map.setView(e.latlng, 4);
-    });
-
     // Override Enter key to select the first result
-    var searchInput = document.querySelector('.leaflet-fusesearch-input');
+    var searchInput = document.querySelector('.search-input');
     if (searchInput) {
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                var firstResult = document.querySelector('.search-results-item');
+                var firstResult = document.querySelector('.search-tooltip a');
                 if (firstResult) {
                     firstResult.click();
                 }
@@ -186,9 +182,19 @@
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
             e.preventDefault();
-            var searchInput = document.querySelector('.leaflet-fusesearch-input');
-            if (searchInput) {
-                searchInput.focus();
+            var searchContainer = document.querySelector('.leaflet-control-search');
+            if (searchContainer && !searchContainer.classList.contains('search-exp')) {
+                // If collapsed, click the button to expand and focus
+                var searchButton = searchContainer.querySelector('.search-button');
+                if (searchButton) {
+                    searchButton.click();
+                }
+            } else {
+                // If already expanded, just focus the input
+                var searchInput = document.querySelector('.search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                }
             }
         }
     });

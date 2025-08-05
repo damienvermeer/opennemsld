@@ -39,6 +39,7 @@ import utm
 import yaml
 import svgelements
 import os
+import networkx as nx
 
 # Local application/library specific imports
 import findpath
@@ -50,10 +51,11 @@ BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
 BUSBAR_WEIGHT = 8
-LINE_CROSS_WEIGHT = 15
 NEAR_SUB_WEIGHT = 4
 ELEMENT_WEIGHT = 50
 GRID_STEP = 25
+PATHFINDING_ITERATIONS = 5
+CONGESTION_PENALTY = 500
 import pathlib
 
 SCRIPT_DIR = pathlib.Path(__file__).parent
@@ -61,7 +63,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
-PADDING_STEPS = 6
+PADDING_STEPS = 7
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -510,7 +512,9 @@ def get_substation_bbox_from_svg(
     # Generate the substation group (unrotated)
     # We pass a dummy bbox to get_substation_group as it's not used for drawing, only for rotation center.
     # Since we render unrotated, the center is not important here.
-    substation_group = get_substation_group(temp_sub, params, (0, 0, 0, 0), rotation=0)
+    substation_group = get_substation_group(
+        temp_sub, params, (0, 0, 0, 0), rotation=0, draw_title=False
+    )
 
     temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
 
@@ -1329,6 +1333,7 @@ def get_substation_group(
     params: DrawingParams,
     bbox: tuple[float, float, float, float],
     rotation=0,
+    draw_title: bool = True,
 ):
     min_x, min_y, max_x, max_y = bbox
     center_x = (min_x + max_x) / 2
@@ -1469,42 +1474,43 @@ def get_substation_group(
         sub.voltage_kv = original_voltage
         sub.connections = original_connections
 
-    # Add title centered above the substation
-    min_x, min_y, max_x, _ = bbox
-    title_x = (min_x + max_x) / 2
-    # Place title one and a half grid steps above the top of the bounding box
-    title_y = min_y - (1.5 * params.grid_step)
-    dg.append(
-        draw.Text(
-            sub.name,
-            font_size=TITLE_FONT_SIZE,
-            x=title_x,
-            y=title_y,
-            text_anchor="middle",
-            dominant_baseline="text-after-edge",
-            fill="black",
-            stroke_width=0,
+    if draw_title:
+        # Add title centered above the substation
+        min_x, min_y, max_x, _ = bbox
+        title_x = (min_x + max_x) / 2
+        # Place title one and a half grid steps above the top of the bounding box
+        title_y = min_y - (1.5 * params.grid_step)
+        dg.append(
+            draw.Text(
+                sub.name,
+                font_size=TITLE_FONT_SIZE,
+                x=title_x,
+                y=title_y,
+                text_anchor="middle",
+                dominant_baseline="text-after-edge",
+                fill="black",
+                stroke_width=0,
+            )
         )
-    )
 
-    # Mark grid points under the title to prevent line crossovers
-    # Approximate text width. A common heuristic is num_chars * font_size * 0.6
-    text_width = len(sub.name) * TITLE_FONT_SIZE * 0.6
-    start_x = title_x - text_width / 2
-    end_x = title_x + text_width / 2
+        # Mark grid points under the title to prevent line crossovers
+        # Approximate text width. A common heuristic is num_chars * font_size * 0.6
+        text_width = len(sub.name) * TITLE_FONT_SIZE * 0.6
+        start_x = title_x - text_width / 2
+        end_x = title_x + text_width / 2
 
-    # Find the grid points that this text spans
-    grid_y = round(title_y / params.grid_step) * params.grid_step
+        # Find the grid points that this text spans
+        grid_y = round(title_y / params.grid_step) * params.grid_step
 
-    grid_start_x_idx = math.floor(start_x / params.grid_step)
-    grid_end_x_idx = math.ceil(end_x / params.grid_step)
+        grid_start_x_idx = math.floor(start_x / params.grid_step)
+        grid_end_x_idx = math.ceil(end_x / params.grid_step)
 
-    # Mark the grid row of the title, and the row above it
-    for y_offset in [-params.grid_step, 0]:
-        current_grid_y = grid_y + y_offset
-        for i in range(grid_start_x_idx, grid_end_x_idx + 1):
-            grid_x = i * params.grid_step
-            mark_grid_point(sub, grid_x, current_grid_y, weight=ELEMENT_WEIGHT)
+        # Mark the grid row of the title, and the row above it
+        for y_offset in [-params.grid_step, 0]:
+            current_grid_y = grid_y + y_offset
+            for i in range(grid_start_x_idx, grid_end_x_idx + 1):
+                grid_x = i * params.grid_step
+                mark_grid_point(sub, grid_x, current_grid_y, weight=ELEMENT_WEIGHT)
 
     return dg
 
@@ -1618,6 +1624,9 @@ def draw_connections(
         key=lambda item: _distance(item[1][0]["coords"], item[1][1]["coords"]),
     )
 
+    path_requests = []
+    path_metadata = []
+
     for _, connection_points in sorted_connections:
         start_coord_px = connection_points[0]["coords"]
         end_coord_px = connection_points[1]["coords"]
@@ -1652,21 +1661,25 @@ def draw_connections(
         points[start_node[0]][start_node[1]] = 0
         points[end_node[0]][end_node[1]] = 0
 
-        print(f"Finding path from {start_node} to {end_node}")
-        try:
-            # The grid is updated with path weights after each run.
-            # A new graph is created from the grid on each call.
-            path, points, _ = findpath.run_gridsearch(
-                start_node,
-                end_node,
-                points,
-                path_weight=LINE_CROSS_WEIGHT,
-            )
+        path_requests.append((start_node, end_node))
+        path_metadata.append({"colour": colour})
+
+    print(f"Finding {len(path_requests)} paths collectively...")
+    try:
+        all_paths = findpath.run_all_gridsearches(
+            path_requests,
+            points,
+            iterations=PATHFINDING_ITERATIONS,
+            congestion_penalty_increment=CONGESTION_PENALTY,
+        )
+
+        for i, path in enumerate(all_paths):
             if len(path) > 0:
-                print(f"Drawing path with {len(path)} points")
+                colour = path_metadata[i]["colour"]
+                # print(f"Drawing path with {len(path)} points")
                 # The path is returned as (row, col) tuples. Drawing needs (x, y).
-                for i in range(len(path) - 1):
-                    start_rc, end_rc = path[i], path[i + 1]
+                for j in range(len(path) - 1):
+                    start_rc, end_rc = path[j], path[j + 1]
                     drawing.append(
                         draw.Line(
                             start_rc[1] * step,  # x = col
@@ -1677,8 +1690,8 @@ def draw_connections(
                             stroke_width=2,
                         )
                     )
-        except Exception as e:
-            print(f"Error finding path: {e}")
+    except Exception as e:
+        print(f"Error finding paths: {e}")
 
 
 def render_substation_svg(

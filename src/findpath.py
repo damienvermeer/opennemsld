@@ -33,18 +33,18 @@ def create_graph_from_grid(grid: List[List[int]]) -> nx.Graph:
     for r in range(rows):
         for c in range(cols):
             node_id = (r, c)
-            G.add_node(node_id, weight=grid[r][c])
+            G.add_node(node_id)
 
             # Add edge to the right neighbor
             if c + 1 < cols:
                 right_neighbor_id = (r, c + 1)
-                edge_weight = (grid[r][c] + grid[r][c + 1]) / 2
+                edge_weight = 1 + (grid[r][c] + grid[r][c + 1]) / 2
                 G.add_edge(node_id, right_neighbor_id, weight=edge_weight)
 
             # Add edge to the bottom neighbor
             if r + 1 < rows:
                 bottom_neighbor_id = (r + 1, c)
-                edge_weight = (grid[r][c] + grid[r + 1][c]) / 2
+                edge_weight = 1 + (grid[r][c] + grid[r + 1][c]) / 2
                 G.add_edge(node_id, bottom_neighbor_id, weight=edge_weight)
     return G
 
@@ -72,24 +72,31 @@ def manhattan_distance(a: Tuple[int, int], b: Tuple[int, int]) -> float:
 
 
 def find_shortest_path(
-    graph: nx.Graph, start_node: Tuple[int, int], end_node: Tuple[int, int]
+    graph: nx.Graph,
+    start_node: Tuple[int, int],
+    end_node: Tuple[int, int],
+    heuristic=None,
 ) -> List[Tuple[int, int]]:
     """
     Finds the shortest path in a graph using the A* algorithm.
 
     Args:
         graph: The NetworkX graph to search.
-        start_node: The starting node (row, col).
-        end_node: The target node (row, col).
+        start_node: The starting node.
+        end_node: The target node.
+        heuristic: The heuristic function for A*. Defaults to Manhattan distance.
 
     Returns:
         A list of nodes representing the shortest path, or an empty list
         if no path is found.
     """
+    if heuristic is None:
+        heuristic = manhattan_distance
+
     try:
         start_time = time.time()
         path = nx.astar_path(
-            graph, start_node, end_node, weight="weight", heuristic=manhattan_distance
+            graph, start_node, end_node, weight="weight", heuristic=heuristic
         )
         end_time = time.time()
         # print(f"Path found in: {end_time - start_time:.4f} seconds.")
@@ -100,6 +107,81 @@ def find_shortest_path(
 
 
 # --- Main Orchestration ---
+
+
+def run_all_gridsearches(
+    path_requests: List[Tuple[Tuple[int, int], Tuple[int, int]]],
+    points: List[List[int]],
+    iterations: int = 5,
+    congestion_penalty_increment: float = 2.0,
+) -> List[List[Tuple[int, int]]]:
+    """
+    Finds paths for a series of requests, aiming to minimize total congestion.
+    It iteratively finds paths, penalizes congested segments, and re-routes
+    using a sequential rip-up and reroute strategy on a single graph instance
+    for performance.
+
+    Args:
+        path_requests: A list of (start_node, end_node) tuples.
+        points: The initial 2D grid with traversal costs.
+        iterations: The number of times to iterate the pathfinding process.
+        congestion_penalty_increment: The penalty added to a graph edge for
+                                      each path crossing it.
+
+    Returns:
+        A list of paths, where each path is a list of coordinates.
+    """
+    # Create the graph once from the base grid.
+    print("Pathfinding: Creating base graph...")
+    graph = create_graph_from_grid(points)
+
+    # Initial routing of all paths on the base graph.
+    print("Pathfinding: Starting initial routing...")
+    all_paths = [
+        find_shortest_path(graph, start, end) for start, end in path_requests
+    ]
+    print("Pathfinding: Initial routing complete.")
+
+    # Iteratively refine paths by re-routing each one on a graph
+    # that is penalized by the existence of all other paths.
+    for i in range(iterations):
+        print(f"Pathfinding: Starting iteration {i + 1}/{iterations}...")
+        for req_idx in range(len(path_requests)):
+            start_node, end_node = path_requests[req_idx]
+
+            # Calculate edge usage from all *other* paths.
+            edge_usage = {}
+            for other_req_idx, other_path in enumerate(all_paths):
+                if req_idx == other_req_idx:
+                    continue
+                if not other_path:
+                    continue
+                for j in range(len(other_path) - 1):
+                    u, v = other_path[j], other_path[j + 1]
+                    # Normalize edge to be order-independent for the undirected graph.
+                    edge = tuple(sorted((u, v)))
+                    edge_usage[edge] = edge_usage.get(edge, 0) + 1
+
+            # Temporarily apply penalties to the graph for shared edges.
+            penalized_edges = []
+            for edge, count in edge_usage.items():
+                penalty = count * congestion_penalty_increment
+                if graph.has_edge(*edge):
+                    graph.edges[edge]["weight"] += penalty
+                    penalized_edges.append((edge, penalty))
+
+            # Reroute the current path on the penalized graph.
+            new_path = find_shortest_path(graph, start_node, end_node)
+            all_paths[req_idx] = new_path
+
+            # Remove the temporary penalties to prepare for the next path.
+            for edge, penalty in penalized_edges:
+                if graph.has_edge(*edge):
+                    graph.edges[edge]["weight"] -= penalty
+
+        print(f"Pathfinding: Iteration {i + 1} complete.")
+
+    return all_paths
 
 
 def run_gridsearch(
@@ -124,20 +206,13 @@ def run_gridsearch(
         A tuple containing:
         - The found path as a list of coordinates.
         - The updated grid with the path marked as high-penalty.
-        - The graph used for pathfinding (note: it will be stale after points are updated).
+        - The graph used for pathfinding.
     """
 
     # --- 2. Create Graph ---
-    # Always create a new graph from the potentially updated points grid to ensure
-    # pathfinding uses the latest weights.
-    # print("Creating new graph from grid for pathfinding...")
-    start_time = time.time()
     graph = create_graph_from_grid(points)
-    end_time = time.time()
-    # print(f"Graph creation took: {end_time - start_time:.4f} seconds.")
 
     # --- 3. Find Path ---
-    # print(f"\nFinding shortest path from {start_node} to {end_node} using A*...")
     path = find_shortest_path(graph, start_node, end_node)
 
     # --- 4. Update Grid and Return ---
