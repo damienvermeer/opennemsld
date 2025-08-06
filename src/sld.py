@@ -1421,9 +1421,11 @@ def get_substation_group(
     if sub.child_definitions:
         original_voltage = sub.voltage_kv
         original_connections = sub.connections
+        original_buses = sub.buses
         for child_def in sub.child_definitions:
             sub.voltage_kv = child_def["voltage_kv"]
             sub.connections = child_def.get("connections", {})
+            sub.buses = child_def.get("buses", {})
 
             child_bay_defs = child_def["def"].strip().split("\n")
             child_parsed_bays = [
@@ -1471,7 +1473,7 @@ def get_substation_group(
                     dg,
                     bay_def,
                     sub,
-                    is_first_bay=False,  # Child bays never get bus labels
+                    is_first_bay=(i == 0),  # Child bays can now have bus labels
                     params=params,
                     previous_bay_elements=child_previous_bay_elements,
                     y_offset=y_offset,
@@ -1492,6 +1494,7 @@ def get_substation_group(
                 )
         sub.voltage_kv = original_voltage
         sub.connections = original_connections
+        sub.buses = original_buses
 
     if draw_title:
         # Add title centered above the substation
@@ -1694,6 +1697,7 @@ def draw_connections(
             points,
             congestion_penalty_increment=CONGESTION_PENALTY,
             all_connection_nodes=all_connection_nodes,
+            busbar_weight=BUSBAR_WEIGHT,
         )
 
         for i, path in enumerate(all_paths):

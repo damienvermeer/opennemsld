@@ -264,6 +264,7 @@ def run_all_gridsearches(
     iterations: int = 5,
     congestion_penalty_increment: float = 2.0,
     all_connection_nodes: set = None,
+    busbar_weight: int = None,
 ) -> List[List[Tuple[int, int]]]:
     """
     Finds paths for a series of requests, aiming to minimize total congestion.
@@ -330,11 +331,22 @@ def run_all_gridsearches(
             # For a single iteration, use the base penalty.
             current_penalty = congestion_penalty_increment
 
+        # Pre-calculate busbar edges to avoid recalculating for each path.
+        busbar_edges = set()
+        if busbar_weight is not None:
+            for u, v in graph.edges():
+                if (
+                    points[u[0]][u[1]] == busbar_weight
+                    and points[v[0]][v[1]] == busbar_weight
+                ):
+                    busbar_edges.add(tuple(sorted((u, v))))
+
         for req_idx in range(len(sorted_requests)):
             start_node, end_node = sorted_requests[req_idx]
 
             # Calculate edge and node usage from all *other* paths.
-            edge_usage = {}
+            # Pre-populate with busbar edges to penalize using them.
+            edge_usage = {edge: 1 for edge in busbar_edges}
             node_usage = {}
             for other_req_idx, other_path in enumerate(all_paths):
                 if req_idx == other_req_idx:
