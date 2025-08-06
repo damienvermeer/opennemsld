@@ -1154,29 +1154,91 @@ substations:
       - GTS
       - Geelong
     def: |
-      NE|x0EN
-      1x|Ex0||
+      1x|EE||x0
       |x3x||
       |E4x||
       |x5x||
       |x6E||
       |x7x||
       |x8E||
-      |x9EN
+      NE9||
     buses:
       1: '1'
       2: '2'
     connections:
-      # 0 are the old PTH lines
+      0: VIC-220-GTS-TX-B4
       1: VIC-220-MLTS-GTS-2
-      2: VIC-220-GTS2
-      3: b3 tx
+      3: VIC-220-GTS-TX-B3
       4: VIC-220-MLTS-GTS-1
-      5: b2 tx
-      6: b1 tx
+      5: VIC-220-GTS-TX-B2
+      6: VIC-220-GTS-TX-B1
       7: VIC-220-GTS-KTS3
       8: VIC-220-GTS-KTS1
       9: VIC-220-GTS-DPTS
+    child_definitions:
+      - def: |
+          x|E||
+          tE||
+          x|||E||
+          tE||
+          x||||E||
+          tE||
+          x|||||x||
+        buses:
+          1: "1"
+          2: "5"
+          3: "2"
+          4: "3"
+          5: "4"
+        voltage_kv: 66
+        rel_x: 2
+        rel_y: 19
+    objects:
+      - type: tx-ud # b5 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 13
+        connections:
+          1: VIC-220-GTS-TX-B5
+          2: VIC-66-GTS-TX-B5
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 13
+        connections:
+          1: VIC-220-GTS-TX-B4
+          2: VIC-66-GTS-TX-B4
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 13
+        connections:
+          1: VIC-220-GTS-TX-B3
+          2: VIC-66-GTS-TX-B3
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 14
+        rel_y: 13
+        connections:
+          1: VIC-220-GTS-TX-B2
+          2: VIC-66-GTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 18
+        rel_y: 13
+        connections:
+          1: VIC-220-GTS-TX-B1
+          2: VIC-66-GTS-TX-B1
   - name: APD (Alcoa Portland)
     lat: -38.386731
     long: 141.624475
@@ -1463,7 +1525,7 @@ substations:
       2: VIC-220-BTS-TX-B1
       3: VIC-220-BTS-TTS-1
       4: VIC-220-BTS-TX-B2
-      5: bts-rts
+      5: VIC-220-BTS-RTS
       6: VIC-220-BTS-TX-B3
     objects:
       - type: tx-ud # b1 tx
@@ -1505,7 +1567,7 @@ substations:
           2: "2"
           3: "3"
         voltage_kv: 66
-        rel_x: 2
+        rel_x: 0
         rel_y: 19
         connections:
           1: VIC-66-BTS-TIE
@@ -1518,11 +1580,78 @@ substations:
       - RTS
       - Richmond
     def: |
-      1?|
+      |x1x2x||
+      |x3x4x||
+      |x5x6x||
+      NEEENEEs/14
+      s/10EEEE11s
+      9s/|||/8EEs/12
+      NEEEs/13
+      NEEEs/14
+      
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-RTS
+      1: VIC-220-RTS-ROTS-1
+      2: l1 tx rts
+      3: VIC-220-RTS-TIE-LINE-L1/B1/B2/B4
+      4: VIC-220-BTS-RTS
+      5: VIC-220-RTS-TX-B5
+      6: VIC-220-RTS-TIE-LINE-ROTS4
+      8: VIC-220-RTS-TX-B3
+      9: VIC-220-ROTS-RTS-4 todo
+      10: VIC-220-RTS-TIE-LINE-ROTS4
+      11: VIC-220-RTS-TIE-LINE-L1/B1/B2/B4
+      12: VIC-220-RTS-TX-B2
+      13: VIC-220-RTS-TX-B4
+      14: VIC-220-RTS-TX-B1
+    objects:
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 13
+        connections:
+          1: VIC-220-RTS-TX-B1
+          2: VIC-66-RTS-TX-B1
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 13
+        connections:
+          1: VIC-220-RTS-TX-B3
+          2: VIC-66-RTS-TX-B3
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 13
+        connections:
+          1: VIC-220-RTS-TX-B4
+          2: VIC-66-RTS-TX-B4
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 14
+        rel_y: 13
+        connections:
+          1: VIC-220-RTS-TX-B2
+          2: VIC-66-RTS-TX-B2
+      - type: tx-ud # b5 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 18
+        rel_y: 13
+        connections:
+          1: VIC-220-RTS-TX-B5
+          2: VIC-66-RTS-TX-B5
   # - name: Axedale (ADTS)
   #   lat: -36.725225
   #   long: 144.54545
@@ -1638,7 +1767,7 @@ substations:
           2: ""
           3: ""
         voltage_kv: 66
-        rel_x: 6
+        rel_x: 5
         rel_y: 21
   - name: Ringwood (RWTS)
     lat: -37.821359
@@ -2247,7 +2376,7 @@ substations:
           2: ""
           3: ""
         voltage_kv: 66
-        rel_x: 2
+        rel_x: 1
         rel_y: 19
     objects:
       - type: tx-ud # b1 tx
@@ -2298,7 +2427,7 @@ substations:
       - TTS
       - Thomastown
     def: |
-      |xd1dx|||
+      |xd1Ndx|||
       |E2x||EE|||
       |x3E||EE|||
       |EE||E4x|||
