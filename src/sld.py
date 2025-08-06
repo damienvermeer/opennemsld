@@ -1701,6 +1701,22 @@ def draw_connections(
             busbar_weight=BUSBAR_WEIGHT,
         )
 
+        # Build a map of nodes to the orientation of paths passing through them.
+        node_orientations = {}
+        for path_idx, path in enumerate(all_paths):
+            if not path:
+                continue
+            for j in range(len(path) - 1):
+                p1, p2 = path[j], path[j + 1]
+                is_vertical = p1[1] == p2[1]
+                for node in (p1, p2):
+                    if node not in node_orientations:
+                        node_orientations[node] = {"v": set(), "h": set()}
+                    if is_vertical:
+                        node_orientations[node]["v"].add(path_idx)
+                    else:
+                        node_orientations[node]["h"].add(path_idx)
+
         for i, path in enumerate(all_paths):
             if len(path) > 1:
                 colour = path_metadata[i]["colour"]
@@ -1713,20 +1729,31 @@ def draw_connections(
                 for j in range(1, len(path)):
                     p_curr = path[j]
                     p_prev = path[j - 1]
-
-                    p_curr_is_bus = points[p_curr[0]][p_curr[1]] == BUSBAR_WEIGHT
-                    p_prev_is_bus = points[p_prev[0]][p_prev[1]] == BUSBAR_WEIGHT
                     is_vertical = p_curr[1] == p_prev[1]
 
-                    # Check for vertical crossings of busbars to add a visual gap.
-                    if is_vertical and p_curr_is_bus and not p_prev_is_bus:
-                        # Path is entering a busbar node from a non-busbar node.
-                        # Shorten the line to create a gap before the busbar.
+                    # A barrier is a busbar or another path that is horizontal.
+                    # Vertical paths should break when crossing a horizontal barrier.
+                    orientations_curr = node_orientations.get(p_curr, {"h": set()})
+                    is_h_path_curr = bool(orientations_curr["h"] - {i})
+                    p_curr_is_barrier = (
+                        points[p_curr[0]][p_curr[1]] == BUSBAR_WEIGHT
+                    ) or is_h_path_curr
+
+                    orientations_prev = node_orientations.get(p_prev, {"h": set()})
+                    is_h_path_prev = bool(orientations_prev["h"] - {i})
+                    p_prev_is_barrier = (
+                        points[p_prev[0]][p_prev[1]] == BUSBAR_WEIGHT
+                    ) or is_h_path_prev
+
+                    # Check for vertical crossings of horizontal barriers to add a visual gap.
+                    if is_vertical and p_curr_is_barrier and not p_prev_is_barrier:
+                        # Path is entering a barrier node from a non-barrier node.
+                        # Shorten the line to create a gap before the barrier.
                         direction = p_curr[0] - p_prev[0]
                         path_data += f" L {p_curr[1] * step} {p_curr[0] * step - (7 * direction)}"
-                    elif is_vertical and not p_curr_is_bus and p_prev_is_bus:
-                        # Path is leaving a busbar node to a non-busbar node.
-                        # Start the new line with a gap after the busbar.
+                    elif is_vertical and not p_curr_is_barrier and p_prev_is_barrier:
+                        # Path is leaving a barrier node to a non-barrier node.
+                        # Start the new line with a gap after the barrier.
                         direction = p_curr[0] - p_prev[0]
                         path_data += f" M {p_prev[1] * step} {p_prev[0] * step + (7 * direction)}"
                         path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
@@ -1774,6 +1801,7 @@ def render_substation_svg(
 
     # Create the drawing with appropriate size
     drawing = draw.Drawing(svg_width, svg_height, origin=(0, 0))
+    drawing.append(draw.Rectangle(0, 0, svg_width, svg_height, fill="#e0e0e0"))
 
     # Create a temporary copy of the substation with adjusted use coordinates
     # to center it in the SVG with padding
@@ -2081,6 +2109,7 @@ def main():
 
     # 6. Draw substations onto the main canvas
     drawing = draw.Drawing(MAP_DIMS, MAP_DIMS, origin=(0, 0))
+    drawing.append(draw.Rectangle(0, 0, MAP_DIMS, MAP_DIMS, fill="#e0e0e0"))
     for sub in substations:
         # Use direct coordinates without inversion
         drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
