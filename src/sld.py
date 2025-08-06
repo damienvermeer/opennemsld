@@ -932,9 +932,10 @@ def draw_busbar_object(
                 draw.Text(
                     bus_name,
                     x=xoff - params.grid_step - 5,
-                    y=y_pos - 8,
+                    y=y_pos,
                     font_size=BUS_LABEL_FONT_SIZE,
                     text_anchor="end",
+                    dominant_baseline="central",
                     stroke_width=0,
                 )
             )
@@ -1710,8 +1711,28 @@ def draw_connections(
 
                 # Add "Line to" commands for the rest of the path.
                 for j in range(1, len(path)):
-                    node = path[j]
-                    path_data += f" L {node[1] * step} {node[0] * step}"
+                    p_curr = path[j]
+                    p_prev = path[j - 1]
+
+                    p_curr_is_bus = points[p_curr[0]][p_curr[1]] == BUSBAR_WEIGHT
+                    p_prev_is_bus = points[p_prev[0]][p_prev[1]] == BUSBAR_WEIGHT
+                    is_vertical = p_curr[1] == p_prev[1]
+
+                    # Check for vertical crossings of busbars to add a visual gap.
+                    if is_vertical and p_curr_is_bus and not p_prev_is_bus:
+                        # Path is entering a busbar node from a non-busbar node.
+                        # Shorten the line to create a gap before the busbar.
+                        direction = p_curr[0] - p_prev[0]
+                        path_data += f" L {p_curr[1] * step} {p_curr[0] * step - (7 * direction)}"
+                    elif is_vertical and not p_curr_is_bus and p_prev_is_bus:
+                        # Path is leaving a busbar node to a non-busbar node.
+                        # Start the new line with a gap after the busbar.
+                        direction = p_curr[0] - p_prev[0]
+                        path_data += f" M {p_prev[1] * step} {p_prev[0] * step + (7 * direction)}"
+                        path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
+                    else:
+                        # Default behavior: draw a continuous line segment.
+                        path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
 
                 # Create a single, consolidated path element.
                 drawing.append(
