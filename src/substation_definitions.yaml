@@ -1,6 +1,6 @@
 
 substations:
-  - name: KMTS
+  - name: Kiamal (KMTS)
     lat: -35.029758
     long: 142.293822
     voltage_kv: 220
@@ -86,7 +86,7 @@ substations:
 
 
 
-  - name: ARTS
+  - name: Ararat (ARTS)
     lat: -37.163597
     long: 143.245636
     voltage_kv: 220
@@ -120,7 +120,7 @@ substations:
             240 MW
         rel_x: 10
         rel_y: 3
-  - name: WBTS
+  - name: Waubra (WBTS)
     lat: -37.355981
     long: 143.605914
     voltage_kv: 220
@@ -165,7 +165,7 @@ substations:
             192 MW
         rel_x: 3
         rel_y: -8
-  - name: CWTS
+  - name: Crowlands (CWTS)
     lat: -37.120567
     long: 143.154603
     voltage_kv: 220
@@ -275,7 +275,7 @@ substations:
         rel_x: 3
         rel_y: 8
 
-  - name: MRTS
+  - name: Murra Warra (MRTS)
     lat: -36.432683
     long: 142.319606
     voltage_kv: 220
@@ -328,7 +328,7 @@ substations:
                 209 MW
             rel_x: 3
             rel_y: 4
-  - name: HOTS
+  - name: Horsham (HOTS)
     lat: -36.722206
     long: 142.247589
     voltage_kv: 220
@@ -391,7 +391,7 @@ substations:
           3: VIC-66-HOTS-STL2
           4: VIC-66-HOTS-STL1
           5: VIC-66-HOTS-KWF
-  - name: RCTS
+  - name: Red Cliffs (RCTS)
     lat: -34.291842
     long: 142.239322
     voltage_kv: 220
@@ -460,7 +460,7 @@ substations:
           4: VIC-66-RCTS-KSF
 
 
-  - name: WETS
+  - name: Wemen (WETS)
     lat: -34.784858
     long: 142.521461
     voltage_kv: 220
@@ -539,7 +539,7 @@ substations:
         rel_x: 1
         rel_y: 5
         connections: {}
-  - name: KGTS
+  - name: Kerang (KGTS)
     lat: -35.771467
     long: 143.933994
     voltage_kv: 220
@@ -618,7 +618,7 @@ substations:
 
 
 
-  - name: BETS
+  - name: Bendigo (BETS)
     lat: -36.784025
     long: 144.253589
     voltage_kv: 220
@@ -639,7 +639,7 @@ substations:
       1: VIC-220-BETS-KGTS-1
       2: VIC-220-BETS-FVTS-1
       3: VIC-220-BETS-BATS-1
-  - name: FVTS
+  - name: Fosterville (FVTS)
     lat: -36.738255
     long: 144.510622
     voltage_kv: 220
@@ -663,7 +663,7 @@ substations:
         rel_y: 4
         connections:
           1: FVTS-Load
-  - name: SHTS
+  - name: Shepparton (SHTS)
     lat: -36.342814
     long: 145.414578
     voltage_kv: 220
@@ -684,7 +684,7 @@ substations:
       2: VIC-220-SHTS-DDTS-1
       3: VIC-220-SHTS-GNTS-1
       4: VIC-220-SHTS-GNTS-3
-  - name: GNTS
+  - name: Glenrowan (GNTS)
     lat: -36.493503
     long: 146.131972
     voltage_kv: 220
@@ -1121,8 +1121,8 @@ substations:
       1: tgts tx1
       2: VIC-220-TGTS-BATS
       3: tgts tx2
-      4: tgts-mlts
-  - name: ELTS (Elaine)
+      4: VIC-220-MLTS-TGTS
+  - name: Elaine (ELTS)
     lat: -37.729953
     long: 144.011536
     voltage_kv: 220
@@ -1315,7 +1315,7 @@ substations:
           14: VIC-220-KTS-WMTS2
           15: kts tts1
           16: VIC-220-KTS-WMTS1
-  - name: ATS (Altona)
+  - name: Altona (ATS)
     lat: -37.838847
     long: 144.789381
     voltage_kv: 220
@@ -1390,7 +1390,7 @@ substations:
             500 MW
         rel_x: 1
         rel_y: 4
-  - name: FBTS (Fishermens Bend)
+  - name: Fishermens Bend (FBTS)
     lat: -37.825192
     long: 144.929431
     voltage_kv: 220
@@ -1413,7 +1413,7 @@ substations:
       5: b4 tx fbts
       6: b3 tx fbts
       7: b2 tx fbts
-  - name: WMTS (West Melbourne)
+  - name: West Melbourne (WMTS)
     lat: -37.800342
     long: 144.934853
     voltage_kv: 220
@@ -1444,7 +1444,7 @@ substations:
       6: VIC-220-FBTS-WMTS1
       7: VIC-220-KTS-WMTS1
       8: b1 tx wmts
-  - name: BTS (Brunswick)
+  - name: Brunswick (BTS)
     lat: -37.772669
     long: 144.984333
     voltage_kv: 220
@@ -1457,7 +1457,7 @@ substations:
       1: ""
     connections:
       1: VIC-220-BTS
-  - name: RTS (Richmond)
+  - name: Richmond (RTS)
     lat: -37.831136
     long: 145.001581
     voltage_kv: 220
@@ -1470,32 +1470,32 @@ substations:
       1: ""
     connections:
       1: VIC-220-RTS
-  - name: Axedale (ADTS)
-    lat: -36.725225
-    long: 144.54545
-    voltage_kv: 220
-    tags:
-      - ADTS
-      - Axedale
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-ADTS
-  - name: Berrybank (BBTS)
-    lat: -37.885608
-    long: 143.45285
-    voltage_kv: 220
-    tags:
-      - BBTS
-      - Berrybank
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-BBTS
+  # - name: Axedale (ADTS)
+  #   lat: -36.725225
+  #   long: 144.54545
+  #   voltage_kv: 220
+  #   tags:
+  #     - ADTS
+  #     - Axedale
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-ADTS
+  # - name: Berrybank (BBTS)
+  #   lat: -37.885608
+  #   long: 143.45285
+  #   voltage_kv: 220
+  #   tags:
+  #     - BBTS
+  #     - Berrybank
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-BBTS
   - name: Cranbourne (CBTS)
     lat: -38.085633
     long: 145.266433
@@ -1509,32 +1509,32 @@ substations:
       1: ""
     connections:
       1: VIC-220-CBTS
-  - name: Carwarp (CPTS)
-    lat: -34.499106
-    long: 142.234786
-    voltage_kv: 220
-    tags:
-      - CPTS
-      - Carwarp
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-CPTS
-  - name: Cressy (CRTS)
-    lat: -37.999733
-    long: 143.752064
-    voltage_kv: 220
-    tags:
-      - CRTS
-      - Cressy
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-CRTS
+  # - name: Carwarp (CPTS)
+  #   lat: -34.499106
+  #   long: 142.234786
+  #   voltage_kv: 220
+  #   tags:
+  #     - CPTS
+  #     - Carwarp
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-CPTS
+  # - name: Cressy (CRTS)
+  #   lat: -37.999733
+  #   long: 143.752064
+  #   voltage_kv: 220
+  #   tags:
+  #     - CRTS
+  #     - Cressy
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-CRTS
   - name: Dederang (DDTS)
     lat: -36.454286
     long: 146.990814
@@ -1574,45 +1574,45 @@ substations:
       1: ""
     connections:
       1: VIC-220-ERTS
-  - name: Goorambat East (GETS)
-    lat: -36.426831
-    long: 145.925653
-    voltage_kv: 220
-    tags:
-      - GETS
-      - Goorambat East
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-GETS
-  - name: Golden Plains (GPTS)
-    lat: -37.971694
-    long: 143.776722
-    voltage_kv: 220
-    tags:
-      - GPTS
-      - Golden Plains
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-GPTS
-  - name: Gnarwarre (GWTS)
-    lat: -38.146925
-    long: 144.126603
-    voltage_kv: 220
-    tags:
-      - GWTS
-      - Gnarwarre
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-GWTS
+  # - name: Goorambat East (GETS)
+  #   lat: -36.426831
+  #   long: 145.925653
+  #   voltage_kv: 220
+  #   tags:
+  #     - GETS
+  #     - Goorambat East
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-GETS
+  # - name: Golden Plains (GPTS)
+  #   lat: -37.971694
+  #   long: 143.776722
+  #   voltage_kv: 220
+  #   tags:
+  #     - GPTS
+  #     - Golden Plains
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-GPTS
+  # - name: Gnarwarre (GWTS)
+  #   lat: -38.146925
+  #   long: 144.126603
+  #   voltage_kv: 220
+  #   tags:
+  #     - GWTS
+  #     - Gnarwarre
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-GWTS
   - name: Heatherton (HTS)
     lat: -37.941128
     long: 145.078233
@@ -1743,32 +1743,32 @@ substations:
       1: ""
     connections:
       1: VIC-220-MWTS
-  - name: Pine Lodge (PLTS)
-    lat: -36.341389
-    long: 145.570008
-    voltage_kv: 220
-    tags:
-      - PLTS
-      - Pine Lodge
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-PLTS
-  - name: Plumpton (PRTS)
-    lat: -37.674203
-    long: 144.734453
-    voltage_kv: 220
-    tags:
-      - PRTS
-      - Plumpton
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-PRTS
+  # - name: Pine Lodge (PLTS)
+  #   lat: -36.341389
+  #   long: 145.570008
+  #   voltage_kv: 220
+  #   tags:
+  #     - PLTS
+  #     - Pine Lodge
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-PLTS
+  # - name: Plumpton (PRTS)
+  #   lat: -37.674203
+  #   long: 144.734453
+  #   voltage_kv: 220
+  #   tags:
+  #     - PRTS
+  #     - Plumpton
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-PRTS
   - name: Rowville (ROTS)
     lat: -37.929281
     long: 145.227283
