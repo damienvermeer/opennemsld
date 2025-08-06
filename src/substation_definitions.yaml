@@ -1311,9 +1311,9 @@ substations:
           10: VIC-220-KTS-TX-A2
           11: VIC-220-ATS-KTS
           12: VIC-220-BLTS-KTS
-          13: kts tts2
+          13: VIC-220-KTS-TTS-2
           14: VIC-220-KTS-WMTS2
-          15: kts tts1
+          15: VIC-220-KTS-TTS-1
           16: VIC-220-KTS-WMTS1
   - name: Altona (ATS)
     lat: -37.838847
@@ -1452,11 +1452,64 @@ substations:
       - BTS
       - Brunswick
     def: |
-      1?|
+      |x1x2x||
+      |x3x4x||
+      |x5x6x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-BTS
+      1: VIC-220-BTS-TTS-3
+      2: VIC-220-BTS-TX-B1
+      3: VIC-220-BTS-TTS-1
+      4: VIC-220-BTS-TX-B2
+      5: bts-rts
+      6: VIC-220-BTS-TX-B3
+    objects:
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 13
+        connections:
+          1: VIC-220-BTS-TX-B1
+          2: VIC-66-BTS-TX-B1
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 13
+        connections:
+          1: VIC-220-BTS-TX-B2
+          2: VIC-66-BTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 13
+        connections:
+          1: VIC-220-BTS-TX-B3
+          2: VIC-66-BTS-TX-B3
+    child_definitions:
+      - def: |
+          x|d2
+          tE
+          x|E
+          tE
+          x|x1
+        buses:
+          1: "1"
+          2: "2"
+          3: "3"
+        voltage_kv: 66
+        rel_x: 2
+        rel_y: 19
+        connections:
+          1: VIC-66-BTS-TIE
+          2: VIC-66-BTS-TIE
   - name: Richmond (RTS)
     lat: -37.831136
     long: 145.001581
@@ -1537,8 +1590,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 2
-        rel_y: 13
+        rel_x: 6
+        rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B3
           2: VIC-66-CBTS-TX-B3
@@ -1546,8 +1599,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
-        rel_y: 13
+        rel_x: 10
+        rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B2
           2: VIC-66-CBTS-TX-B2
@@ -1555,8 +1608,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
-        rel_y: 13
+        rel_x: 14
+        rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B1
           2: VIC-66-CBTS-TX-B1
@@ -1573,6 +1626,46 @@ substations:
           1: VIC-500-CBTS-TX-A1
           2: VIC-500-CBTS-HWTS-4 todo connect
           3: VIC-500-CBTS-ROTS-4 todo connect
+    child_definitions:
+      - def: |
+          x|
+          t
+          x|
+          t
+          x|
+        buses:
+          1: ""
+          2: ""
+          3: ""
+        voltage_kv: 66
+        rel_x: 6
+        rel_y: 21
+  - name: Ringwood (RWTS)
+    lat: -37.821359
+    long: 145.21517
+    voltage_kv: 220
+    tags:
+      - RWTS
+      - Ringwood
+    def: |
+      |x1N
+      |x2x||
+      |x3x||
+      |x4x||
+      |x5E||
+      |x6x||x7
+    buses:
+      1: "1"
+      2: "2"
+    connections:
+      1: L3 tx 220
+      2: VIC-220-RWTS-TTS
+      3: B1 tx
+      4: B2 tx
+      5: B4 TX
+      6: RWTS-ROTS
+      7: B3 TX
+
   # - name: Carwarp (CPTS)
   #   lat: -34.499106
   #   long: 142.234786
@@ -1737,7 +1830,7 @@ substations:
         rel_x: 2
         rel_y: 3
         connections:
-          1: eps tts 220
+          1: VIC-220-EPS-TTS
           2: EPS-TIE
           3: EPS-TIE
   - name: East Rowville (ERTS)
@@ -1938,11 +2031,47 @@ substations:
       - MTS
       - Malvern
     def: |
-      1?|
+      |x1x||
+      |2EE3||
+      |x4x||
     buses:
       1: ""
+      2: ""
     connections:
-      1: VIC-220-MTS
+      1: VIC-220-ROTS-MTS-1
+      2: VIC-220-MTS-TX-B1
+      3: VIC-220-MTS-TX-B2
+      4: VIC-220-ROTS-MTS-3
+    objects:
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 1
+        rel_y: 8
+        connections:
+          1: VIC-220-MTS-TX-B2
+          2: VIC-66-MTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 5
+        rel_y: 8
+        connections:
+          1: VIC-220-MTS-TX-B1
+          2: VIC-66-MTS-TX-B1
+    child_definitions:
+      - def: |
+          x|
+          t
+          x|
+        buses:
+          1: ""
+          2: ""
+        voltage_kv: 66
+        rel_x: 0
+        rel_y: 14
   - name: Mount Beauty (MBTS)
     lat: -36.743886
     long: 147.165861
@@ -2106,6 +2235,20 @@ substations:
       5: VIC-220-JLA-TBTS-1
       6: VIC-220-CBTS-TBTS-2
       7: VIC-220-JLA-TBTS-2
+    child_definitions:
+      - def: |
+          x|
+          t
+          x|
+          t
+          x|
+        buses:
+          1: ""
+          2: ""
+          3: ""
+        voltage_kv: 66
+        rel_x: 2
+        rel_y: 19
     objects:
       - type: tx-ud # b1 tx
         metadata:
@@ -2155,11 +2298,100 @@ substations:
       - TTS
       - Thomastown
     def: |
-      1?|
+      |xd1dx|||
+      |E2x||EE|||
+      |x3E||EE|||
+      |EE||E4x|||
+      5x|EE||x6E|||
+      |EE||x7x|||
+      |x9x||x8x|||x10
+      |x11x||x12E|||x13
+      |x14x||EE|||
+      |xd15dx|||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
     connections:
-      1: VIC-220-TTS
+      1: VIC-220-KTS-TTS-1
+      2: VIC-220-KTS-TTS-2
+      3: VIC-220-TTS-TX-B4
+      4: tts smts2
+      5: tts smts1
+      6: VIC-220-TTS-TX-B3
+      7: VIC-220-TTS-TX-B5
+      8: VIC-220-EPS-TTS
+      9: tts ROTS
+      10: VIC-220-TTS-TX-B2
+      11: VIC-220-TTS-TX-B1
+      12: VIC-220-BTS-TTS-3
+      13: VIC-220-BTS-TTS-1
+      14: VIC-220-RWTS-TTS
+      15: tsts tts
+    child_definitions:
+      - def: |
+          x|
+          t
+          x|
+          t
+          x|
+          t
+          x|
+          t
+          x|
+        buses:
+          1: ""
+          2: ""
+          3: ""
+        voltage_kv: 66
+        rel_x: 2
+        rel_y: 24
+    objects:
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 18
+        connections:
+          1: VIC-220-TTS-TX-B4
+          2: VIC-66-TTS-TX-B4
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 18
+        connections:
+          1: VIC-220-TTS-TX-B3
+          2: VIC-66-TTS-TX-B3
+      - type: tx-ud # b5 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 18
+        connections:
+          1: VIC-220-TTS-TX-B5
+          2: VIC-66-TTS-TX-B5
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 14
+        rel_y: 18
+        connections:
+          1: VIC-220-TTS-TX-B2
+          2: VIC-66-TTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 18
+        rel_y: 18
+        connections:
+          1: VIC-220-TTS-TX-B1
+          2: VIC-66-TTS-TX-B1
   - name: Wodonga (WOTS)
     lat: -36.154814
     long: 146.950147
