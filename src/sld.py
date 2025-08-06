@@ -1627,13 +1627,21 @@ def calculate_connection_points(
                     sub.use_x + rotated_local_x,
                     sub.use_y + rotated_local_y,
                 )
-                new_connection_data = {"coords": global_coords, "voltage": voltage}
+                new_connection_data = {
+                    "coords": global_coords,
+                    "voltage": voltage,
+                    "substation": sub.name,
+                }
                 all_connections.setdefault(linedef, []).append(new_connection_data)
     return all_connections
 
 
 def draw_connections(
-    drawing: draw.Drawing, all_connections: dict, points: list[list], step: int
+    drawing: draw.Drawing,
+    all_connections: dict,
+    points: list[list],
+    grid_owners: list[list],
+    step: int,
 ):
     """Finds paths and draws connections between substations."""
     num_steps = len(points)
@@ -1654,6 +1662,9 @@ def draw_connections(
     for _, connection_points in sorted_connections:
         start_coord_px = connection_points[0]["coords"]
         end_coord_px = connection_points[1]["coords"]
+
+        sub1_name = connection_points[0]["substation"]
+        sub2_name = connection_points[1]["substation"]
 
         voltage1 = connection_points[0]["voltage"]
         voltage2 = connection_points[1]["voltage"]
@@ -1688,17 +1699,25 @@ def draw_connections(
         points[start_node[0]][start_node[1]] = 0
         points[end_node[0]][end_node[1]] = 0
 
-        path_requests.append((start_node, end_node))
+        path_requests.append(
+            {
+                "start": start_node,
+                "end": end_node,
+                "substations": {sub1_name, sub2_name},
+            }
+        )
         path_metadata.append({"colour": colour})
 
     print(f"Finding {len(path_requests)} paths collectively...")
     try:
         all_paths = findpath.run_all_gridsearches(
-            path_requests,
-            points,
+            path_requests=path_requests,
+            points=points,
+            grid_owners=grid_owners,
             congestion_penalty_increment=CONGESTION_PENALTY,
             all_connection_nodes=all_connection_nodes,
             busbar_weight=BUSBAR_WEIGHT,
+            busbar_crossing_penalty=100000,
         )
 
         # Build a map of nodes to the orientation of paths passing through them.
@@ -2117,6 +2136,7 @@ def main():
     # 7. Prepare for and draw connections
     num_steps = MAP_DIMS // GRID_STEP + 1
     points = [[0 for _ in range(num_steps)] for _ in range(num_steps)]
+    grid_owners = [[None for _ in range(num_steps)] for _ in range(num_steps)]
 
     # Mark all grid points occupied by substations
     for sub in substations:
@@ -2166,6 +2186,7 @@ def main():
         for grid_y in range(grid_min_y, grid_max_y + 1):
             for grid_x in range(grid_min_x, grid_max_x + 1):
                 points[grid_y][grid_x] = 1  # Mark as occupied
+                grid_owners[grid_y][grid_x] = sub.name
 
         # Overwrite with specific weights from the substation's grid_points to allow
         # for correct pathfinding costs through elements.
@@ -2187,10 +2208,11 @@ def main():
 
             if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
                 points[grid_y][grid_x] = weight
+                grid_owners[grid_y][grid_x] = sub.name
     all_connections: dict[str, list[dict]] = calculate_connection_points(
         substations, params, sub_bboxes
     )
-    draw_connections(drawing, all_connections, points, GRID_STEP)
+    draw_connections(drawing, all_connections, points, grid_owners, GRID_STEP)
 
     # Draw bounding boxes with safety margin for each substation to debug overlaps
     for sub in substations:

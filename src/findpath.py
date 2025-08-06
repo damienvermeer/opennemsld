@@ -259,12 +259,14 @@ def _straighten_paths(
 
 
 def run_all_gridsearches(
-    path_requests: List[Tuple[Tuple[int, int], Tuple[int, int]]],
+    path_requests: List[dict],
     points: List[List[int]],
+    grid_owners: List[List[str]],
     iterations: int = 5,
     congestion_penalty_increment: float = 2.0,
     all_connection_nodes: set = None,
     busbar_weight: int = None,
+    busbar_crossing_penalty: int = 100000,
 ) -> List[List[Tuple[int, int]]]:
     """
     Finds paths for a series of requests, aiming to minimize total congestion.
@@ -299,7 +301,7 @@ def run_all_gridsearches(
 
     # --- Sort requests to route longest paths first ---
     indexed_requests = [
-        (i, req, manhattan_distance(req[0], req[1]))
+        (i, req, manhattan_distance(req["start"], req["end"]))
         for i, req in enumerate(path_requests)
     ]
     indexed_requests.sort(key=lambda x: x[2], reverse=True)
@@ -308,7 +310,7 @@ def run_all_gridsearches(
     # Initial routing of all paths on the base graph, in sorted order.
     print("Pathfinding: Starting initial routing (longest paths first)...")
     all_paths = [
-        find_shortest_path(graph, start, end) for start, end in sorted_requests
+        find_shortest_path(graph, req["start"], req["end"]) for req in sorted_requests
     ]
     print("Pathfinding: Initial routing complete.")
 
@@ -331,22 +333,36 @@ def run_all_gridsearches(
             # For a single iteration, use the base penalty.
             current_penalty = congestion_penalty_increment
 
-        # Pre-calculate busbar edges to avoid recalculating for each path.
-        busbar_edges = set()
+        # Pre-calculate busbar edges and their owners to avoid recalculating for each path.
+        busbar_edges = {}  # dict: edge -> owner
         if busbar_weight is not None:
             for u, v in graph.edges():
                 if (
                     points[u[0]][u[1]] == busbar_weight
                     and points[v[0]][v[1]] == busbar_weight
                 ):
-                    busbar_edges.add(tuple(sorted((u, v))))
+                    edge = tuple(sorted((u, v)))
+                    # Assume owner is same for both ends of a busbar segment
+                    owner = grid_owners[u[0]][u[1]]
+                    busbar_edges[edge] = owner
 
         for req_idx in range(len(sorted_requests)):
-            start_node, end_node = sorted_requests[req_idx]
+            current_request = sorted_requests[req_idx]
+            start_node, end_node = current_request["start"], current_request["end"]
+            allowed_substations = current_request["substations"]
 
             # Calculate edge and node usage from all *other* paths.
-            # Pre-populate with busbar edges to penalize using them.
-            edge_usage = {edge: 1 for edge in busbar_edges}
+            # Apply penalties for busbar crossings.
+            edge_usage = {}
+            for edge, owner in busbar_edges.items():
+                if owner and owner not in allowed_substations:
+                    # Penalize crossing busbars of unrelated substations heavily.
+                    edge_usage[edge] = (
+                        edge_usage.get(edge, 0) + busbar_crossing_penalty
+                    )
+                else:
+                    # Apply a base penalty for crossing own or unowned busbars.
+                    edge_usage[edge] = edge_usage.get(edge, 0) + 1
             node_usage = {}
             for other_req_idx, other_path in enumerate(all_paths):
                 if req_idx == other_req_idx:
