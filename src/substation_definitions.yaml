@@ -336,7 +336,7 @@ substations:
       - HOTS
     def: |
       |xEN
-      |x1EN
+      |x1E||
       |x3x||
       |x2x||
       NEE||x4
@@ -355,14 +355,14 @@ substations:
           text: SVC
           info: |
             Horsham SVC
-            - 50 MVAr / +25 MVAr
+            +25 MVAr / -50 MVAr
         rel_x: 1
         rel_y: 4
       - type: tx-ud
         metadata:
           w1: 220
           w2: 66
-        rel_x: -3
+        rel_x: -2
         rel_y: 8
         connections:
           1: HOTS-B2-TX-220
@@ -372,7 +372,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 9
-        rel_y: 8
+        rel_y: 6
         connections:
           1: HOTS-B3-TX-220
           2: HOTS-B3-TX-66
@@ -452,7 +452,7 @@ substations:
           3x|x4
         voltage_kv: 66
         rel_x: 0
-        rel_y: 17
+        rel_y: 16
         connections:
           1: VIC-66-RCTS-TX3
           2: VIC-66-RCTS-TX2B
@@ -467,11 +467,11 @@ substations:
     tags:
       - wemen terminal station
     def: |
-      2/|
-      |x
       1/|
+      |x
+      2/|
     buses:
-      1: '1 WETS'
+      1: ??
     connections:
       1: VIC-220-WETS-KGTS-1
       2: VIC-220-RCTS-WETS-1
@@ -567,7 +567,7 @@ substations:
           text: SVC
           info: |
             Kerang SVC
-            - 50 MVAr / +25 MVAr
+            +25 MVAr / -50 MVAr
         rel_x: 9
         rel_y: 4
       - type: tx-ud # TX1
@@ -863,9 +863,9 @@ substations:
       1: '1'
       2: '2'
     connections:
-      1: VIC-500-MLTS-SYTS1
+      1: VIC-500-MLTS-SYTS-1
       2: VIC-500-MLTS1-HGTS
-      3: VIC-500-MLTS-SYTS2
+      3: VIC-500-MLTS-SYTS-2
       4: VIC-500-MLTS2-MOPS
       5: VIC-500-MLTS-TX-A1
       6: VIC-500-MLTS-TX-A2
@@ -975,7 +975,7 @@ substations:
       - type: gen
         metadata:
           voltage: 66
-          text: SP
+          text: SF
           info: |
             Bannerton Solar Park
             110 MW
@@ -984,7 +984,7 @@ substations:
       - type: gen
         metadata:
           voltage: 66
-          text: SP
+          text: SF
           info: |
             Bannerton Solar Park
             110 MW
@@ -1285,10 +1285,10 @@ substations:
       1: "1"
       2: "2"
     connections:
-      1: VIC-500-SMTS-SYTS1
-      2: VIC-500-MLTS-SYTS1
-      3: VIC-500-SMTS-SYTS2
-      4: VIC-500-MLTS-SYTS2
+      1: VIC-500-SMTS-SYTS-1
+      2: VIC-500-MLTS-SYTS-1
+      3: VIC-500-SMTS-SYTS-2
+      4: VIC-500-MLTS-SYTS-2
       5: VIC-500-KTS-SYTS
   - name: Keilor (KTS)
     lat: -37.738239
@@ -1308,7 +1308,7 @@ substations:
       1: VIC-500-KTS-SYTS
       2: VIC-500-KTS-TX-A4
       3: VIC-500-KTS-TX-A3
-      4: kts smts 500 
+      4: VIC-500-KTS-ROTS
       5: VIC-500-KTS-TX-A2
     objects:
       - type: tx-ud # A4 tx
@@ -1567,7 +1567,7 @@ substations:
           2: "2"
           3: "3"
         voltage_kv: 66
-        rel_x: 0
+        rel_x: 1
         rel_y: 19
         connections:
           1: VIC-66-BTS-TIE
@@ -1583,12 +1583,10 @@ substations:
       |x1x2x||
       |x3x4x||
       |x5x6x||
-      NEEENEEs/14
-      s/10EEEE11s
-      9s/|||/8EEs/12
-      NEEEs/13
-      NEEEs/14
-      
+      NEEEN
+      NEEEN
+      s/10
+      9s/|||/8
     buses:
       1: "1"
       2: "2"
@@ -1600,19 +1598,15 @@ substations:
       5: VIC-220-RTS-TX-B5
       6: VIC-220-RTS-TIE-LINE-ROTS4
       8: VIC-220-RTS-TX-B3
-      9: VIC-220-ROTS-RTS-4 todo
+      9: VIC-220-ROTS-RTS-4
       10: VIC-220-RTS-TIE-LINE-ROTS4
-      11: VIC-220-RTS-TIE-LINE-L1/B1/B2/B4
-      12: VIC-220-RTS-TX-B2
-      13: VIC-220-RTS-TX-B4
-      14: VIC-220-RTS-TX-B1
     objects:
       - type: tx-ud # b1 tx
         metadata:
           w1: 220
           w2: 66
-        rel_x: 2
-        rel_y: 13
+        rel_x: 6
+        rel_y: 15
         connections:
           1: VIC-220-RTS-TX-B1
           2: VIC-66-RTS-TX-B1
@@ -1620,8 +1614,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
-        rel_y: 13
+        rel_x: 10
+        rel_y: 15
         connections:
           1: VIC-220-RTS-TX-B3
           2: VIC-66-RTS-TX-B3
@@ -1629,8 +1623,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
-        rel_y: 13
+        rel_x: 14
+        rel_y: 15
         connections:
           1: VIC-220-RTS-TX-B4
           2: VIC-66-RTS-TX-B4
@@ -1638,8 +1632,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 14
-        rel_y: 13
+        rel_x: 18
+        rel_y: 15
         connections:
           1: VIC-220-RTS-TX-B2
           2: VIC-66-RTS-TX-B2
@@ -1647,11 +1641,50 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 18
-        rel_y: 13
+        rel_x: 6
+        rel_y: 15
         connections:
           1: VIC-220-RTS-TX-B5
           2: VIC-66-RTS-TX-B5
+    child_definitions:
+      - def: |
+          1s/3
+          sd2
+          s/5
+        buses:
+          1: "1"
+        voltage_kv: 220
+        rel_x: 7
+        rel_y: 11
+        connections:
+          1: VIC-220-RTS-TIE-LINE-L1/B1/B2/B4
+          2: VIC-220-RTS-TX-B4
+          3: VIC-220-RTS-TX-B1
+          # RTS L1 TX not currently show
+          5: VIC-220-RTS-TX-B2
+      - def: |
+          1x|
+          t
+          2x||
+          t
+          3x|||
+          t
+          4x||||
+          t
+          5x|||||
+        buses:
+          1: ""
+          2: ""
+          3: ""
+        voltage_kv: 66
+        rel_x: 1
+        rel_y: 24
+        connections:
+          1: VIC-66-RTS-TX-B5
+          2: VIC-66-RTS-TX-B1
+          3: VIC-66-RTS-TX-B3
+          4: VIC-66-RTS-TX-B4
+          5: VIC-66-RTS-TX-B2
   # - name: Axedale (ADTS)
   #   lat: -36.725225
   #   long: 144.54545
@@ -1744,23 +1777,23 @@ substations:
           2: VIC-66-CBTS-TX-B1
     child_definitions:
       - def: |
-          |x1xs
-          |/2xs3
+          |/1xs
+          |x2xs3
         buses:
           1: "1"
         voltage_kv: 500
-        rel_x: 15
+        rel_x: 16
         rel_y: 0
         connections:
           1: VIC-500-CBTS-TX-A1
           2: VIC-500-CBTS-HWTS-4 todo connect
-          3: VIC-500-CBTS-ROTS-4 todo connect
+          3: VIC-500-CBTS-ROTS-4
       - def: |
           x|
           t
-          x|
+          x||
           t
-          x|
+          x|||
         buses:
           1: ""
           2: ""
@@ -1791,7 +1824,7 @@ substations:
       3: B1 tx
       4: B2 tx
       5: B4 TX
-      6: RWTS-ROTS
+      6: VIC-220-ROTS-RWTS
       7: B3 TX
 
   # - name: Carwarp (CPTS)
@@ -1841,9 +1874,9 @@ substations:
       2: VIC-330-DDTS-TX-H2
       3: VIC-330-DDTS-TX-H3
       4: VIC-330-DDTS-WOTS
-      5: ddts to smts1
+      5: VIC-330-SMTS-DDTS-1
       6: ddts to murray @67
-      7: ddts to smts2
+      7: VIC-330-SMTS-DDTS-2
       8: ddts to murray @68
     objects:
       - type: tx-ud # H1 tx
@@ -1980,9 +2013,9 @@ substations:
       2: b2 tx
       3: b3 tx
       4: b4 tx
-      5: rots1 erts
+      5: VIC-220-ERTS-ROTS-1
       6: VIC-220-CBTS-ERTS-2
-      7: rots2 erts
+      7: VIC-220-ERTS-ROTS-2
       8: VIC-220-CBTS-ERTS-1
   # - name: Goorambat East (GETS)
   #   lat: -36.426831
@@ -2050,7 +2083,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 2
-        rel_y: 9
+        rel_y: 10
         connections:
           1: VIC-220-HTS-TX-B3
           2: VIC-66-HTS-TX-B3
@@ -2058,8 +2091,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 4
-        rel_y: 9
+        rel_x: 6
+        rel_y: 10
         connections:
           1: VIC-220-HTS-TX-B2
           2: VIC-66-HTS-TX-B2
@@ -2067,12 +2100,28 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
-        rel_y: 9
+        rel_x: 10
+        rel_y: 10
         connections:
           1: VIC-220-HTS-TX-B1
           2: VIC-66-HTS-TX-B1
-    
+    child_definitions:
+      - def: |
+          x|/4
+          t
+          x||
+          t
+          x|||x5
+        buses:
+          1: "3"
+          2: "2"
+          3: "1"
+        voltage_kv: 66
+        rel_x: 1
+        rel_y: 16
+        connections:
+          4: VIC-66-HTS-TIE
+          5: VIC-66-HTS-TIE
   - name: Hazelwood PS (HWPS)
     lat: -38.273103
     long: 146.392264
@@ -2294,24 +2343,271 @@ substations:
       - ROTS
       - Rowville
     def: |
-      1?|
+      |xd1x||
+      |x2x3x||
+      |x4x5x||
+      |xd6x||
+      |xd7x||
+      |EEEN
+      |EE8x||||
+      |x9x10x||||
+      |x11x12x||||
+      NEEE||||
+      |||x13x14x||||
+      |||x15dx||||
+      |||x16x17x||||x18
+      |||x19x20x||||
+      |||x21x22x||||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
+      4: "4"
+      5: ""
     connections:
-      1: VIC-220-ROTS
+      1: VIC-220-ROTS-TTS
+      2: hwps1 rots
+      3: VIC-220-ERTS-ROTS-2
+      4: hwps2 rots
+      5: VIC-220-ERTS-ROTS-1
+      6: VIC-220-RTS-ROTS-1
+      7: VIC-220-ROTS-TIE-BUS2
+      8: VIC-220-ROTS-TIE-BUS4
+      9: rots yps5
+      10: VIC-220-ROTS-RTS-4
+      11: VIC-ROTS-SVC-1
+      12: VIC-220-SVTS-ROTS2
+      13: VIC-ROTS-SVC-2
+      14: VIC-220-ROTS-TX-A1
+      15: VIC-220-ROTS-MTS-1
+      16: yps6 rots
+      17: VIC-220-ROTS-TTS
+      18: VIC-220-ROTS-MTS-3
+      19: rots yps7
+      20: VIC-220-ROTS-RWTS
+      21: rots yps8
+      22: VIC-220-SVTS-ROTS1
+
+
+
+    child_definitions:
+      - def: |
+          2|1
+          3|
+        buses:
+          1: ""
+        voltage_kv: 220
+        rel_x: 10
+        rel_y: 11
+        connections:
+          1: VIC-220-ROTS-TX-A2
+          2: VIC-220-ROTS-TIE-BUS2
+          3: VIC-220-ROTS-TIE-BUS4
+      - def: |
+          1
+        buses:
+          1: ""
+        voltage_kv: 220
+        rel_x: 17
+        rel_y: -2
+        connections:
+          1: VIC-ROTS-SVC-1
+      - def: |
+          1
+        buses:
+          1: ""
+        voltage_kv: 220
+        rel_x: 19
+        rel_y: -2
+        connections:
+          1: VIC-ROTS-SVC-2
+      - def: |
+          |x1x2x||
+          |x3x4x||
+          |dx5x||
+        buses:
+          1: "2"
+          2: "1"
+        voltage_kv: 500
+        rel_x: -10
+        rel_y: 0
+        connections:
+          1: VIC-500-CBTS-ROTS-4
+          2: rots hwts3
+          3: rots smts3
+          4: VIC-500-ROTS-TX-A1
+          5: VIC-500-ROTS-TX-A2
+
+    objects:
+      - type: gen
+        metadata:
+          voltage: 220
+          text: SVC
+          info: |
+            Rowville No.1 SVC
+            +60 MVAr / -100 MVAr
+        rel_x: 18
+        rel_y: -3
+      - type: gen
+        metadata:
+          voltage: 220
+          text: SVC
+          info: |
+            Rowville No.2 SVC
+            +60 MVAr / -100 MVAr
+        rel_x: 20
+        rel_y: -3
+      - type: tx-lr # A2 tx
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: -4
+        rel_y: 10
+        connections:
+          1: VIC-500-ROTS-TX-A2
+          2: VIC-220-ROTS-TX-A2
+      - type: tx-lr # A1 tx
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: -4
+        rel_y: 13
+        connections:
+          1: VIC-500-ROTS-TX-A1
+          2: VIC-220-ROTS-TX-A1
+
+
   - name: South Morang (SMTS)
     lat: -37.644483
     long: 145.078436
-    voltage_kv: 220
+    voltage_kv: 500
     tags:
       - SMTS
       - South Morang
     def: |
-      1?|
+      |x1x2x||
+      |x3x4x||
+      |x5x6x||
+      |xx8x||
     buses:
-      1: ""
+      1: "2"
+      2: "1"
     connections:
-      1: VIC-220-SMTS
+      1: VIC-500-SMTS-HWTS-1 todo
+      2: VIC-500-SMTS-SYTS-1
+      3: VIC-500-SMTS-HWTS-2 todo
+      4: VIC-500-SMTS-SYTS-2
+      5: VIC-500-ROTS-SMTS-3
+      6: VIC-500-KTS-ROTS
+      8: VIC-500-SMTS-TX-F2
+
+    objects:
+      - type: tx-ud # F2 tx
+        metadata:
+          w1: 500
+          w2: 330
+        rel_x: 9
+        rel_y: 10
+        connections:
+          1: VIC-500-SMTS-TX-F2
+          2: VIC-330-SMTS-TX-F2
+
+    child_definitions:
+      - def: |
+          |x1x||
+          |x2x||x3
+          NE4x||x5
+        buses:
+          1: "1"
+          2: "2"
+        voltage_kv: 330
+        rel_x: -9
+        rel_y: 11
+        connections:
+          1: VIC-330-SMTS-DDTS-1
+          2: VIC-330-SMTS-DDTS-2
+          3: VIC-330-SMTS-TX-H2
+          4: VIC-330-SMTS-TX-F2
+          5: VIC-330-SMTS-TX-H1
+        objects:
+          - type: tx-ud # H2 tx
+            metadata:
+              w1: 330
+              w2: 220
+            rel_x: 2
+            rel_y: 9
+            connections:
+              1: VIC-330-SMTS-TX-H2
+              2: VIC-220-SMTS-TX-H2
+          - type: tx-ud # H1 tx
+            metadata:
+              w1: 330
+              w2: 220
+            rel_x: 4
+            rel_y: 9
+            connections:
+              1: VIC-330-SMTS-TX-H1
+              2: VIC-220-SMTS-TX-H1
+
+      - def: |
+          |/1E2/||
+          |x3x4x||
+          |x5x6x||
+        buses:
+          1: "1"
+          2: "2"
+        voltage_kv: 220
+        rel_x: -9
+        rel_y: 27
+        connections:
+          1: VIC-220-SMTS-TX-B1
+          2: VIC-220-SMTS-TX-B2
+          3: VIC-220-SMTS-TX-H2
+          4: VIC-220-SMTS-TTS-2
+          5: VIC-220-SMTS-TX-H1
+          6: VIC-220-SMTS-TTS-2
+        objects:
+          - type: tx-lr # B1 tx
+            metadata:
+              w1: 66
+              w2: 220
+            rel_x: -6
+            rel_y: 3
+            connections:
+              1: VIC-66-SMTS-TX-B1
+              2: VIC-220-SMTS-TX-B1
+          - type: tx-lr # B2 tx
+            metadata:
+              w1: 66
+              w2: 220
+            rel_x: -6
+            rel_y: 8
+            connections:
+              1: VIC-66-SMTS-TX-B2
+              2: VIC-220-SMTS-TX-B2
+      - def: |
+          1x|
+          t
+          |x2
+          t
+          3x|x4
+        buses:
+          1: ""
+          2: ""
+          3: ""
+        voltage_kv: 66
+        rel_x: -20
+        rel_y: 37
+        connections:
+          1: VIC-66-SMTS-TX-B1
+          3: VIC-66-SMTS-TX-B2
+
+
+
+
+
+
+
   - name: Springvale (SVTS)
     lat: -37.928183
     long: 145.1461
@@ -2332,14 +2628,68 @@ substations:
       1: "1"
       2: "2"
     connections:
-      1: VIC-220-SVTS-B4-TX
-      2: VIC-220-SVTS-B3-TX
-      3: VIC-220-SVTS-B2-TX
-      4: VIC-220-SVTS-B1-TX
+      1: VIC-220-SVTS-TX-B4
+      2: VIC-220-SVTS-TX-B3
+      3: VIC-220-SVTS-TX-B2
+      4: VIC-220-SVTS-TX-B1
       5: VIC-220-HTS-SVTS1
       6: VIC-220-HTS-SVTS2
-      7: VIC-220-HTS-ROTS1
-      8: VIC-220-HTS-ROTS2
+      7: VIC-220-SVTS-ROTS1
+      8: VIC-220-SVTS-ROTS2
+    child_definitions:
+      - def: |
+          x|
+          t
+          x||
+          t
+          x|||
+          t
+          x||||
+        buses:
+          1: ""
+          2: ""
+          3: ""
+          4: ""
+        voltage_kv: 66
+        rel_x: 1
+        rel_y: 16
+    objects:
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 10
+        connections:
+          1: VIC-220-SVTS-TX-B4
+          2: VIC-66-SVTS-TX-B4
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 10
+        connections:
+          1: VIC-220-SVTS-TX-B3
+          2: VIC-66-SVTS-TX-B3
+      - type: tx-ud # b5 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 10
+        connections:
+          1: VIC-220-SVTS-TX-B2
+          2: VIC-66-SVTS-TX-B2
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 14
+        rel_y: 10
+        connections:
+          1: VIC-220-SVTS-TX-B1
+          2: VIC-66-SVTS-TX-B1
   - name: Tyabb (TBTS)
     lat: -38.267861
     long: 145.201553
@@ -2367,9 +2717,9 @@ substations:
       - def: |
           x|
           t
-          x|
+          x||
           t
-          x|
+          x|||
         buses:
           1: ""
           2: ""
@@ -2405,6 +2755,9 @@ substations:
         connections:
           1: VIC-220-TBTS-TX-B3
           2: VIC-66-TBTS-TX-B3
+
+
+
   - name: Templestowe (TSTS)
     lat: -37.748069
     long: 145.170536
@@ -2418,6 +2771,9 @@ substations:
       1: ""
     connections:
       1: VIC-220-TSTS
+
+
+
   - name: Thomastown (TTS)
     lat: -37.6937
     long: 145.009928
@@ -2444,12 +2800,12 @@ substations:
       1: VIC-220-KTS-TTS-1
       2: VIC-220-KTS-TTS-2
       3: VIC-220-TTS-TX-B4
-      4: tts smts2
-      5: tts smts1
+      4: VIC-220-SMTS-TTS-2
+      5: VIC-220-SMTS-TTS-1
       6: VIC-220-TTS-TX-B3
       7: VIC-220-TTS-TX-B5
       8: VIC-220-EPS-TTS
-      9: tts ROTS
+      9: VIC-220-ROTS-TTS
       10: VIC-220-TTS-TX-B2
       11: VIC-220-TTS-TX-B1
       12: VIC-220-BTS-TTS-3
@@ -2460,19 +2816,19 @@ substations:
       - def: |
           x|
           t
-          x|
+          x||
           t
-          x|
+          x|||
           t
-          x|
+          x||||
           t
-          x|
+          x|||||
         buses:
           1: ""
           2: ""
           3: ""
         voltage_kv: 66
-        rel_x: 2
+        rel_x: 1
         rel_y: 24
     objects:
       - type: tx-ud # b4 tx

@@ -63,7 +63,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
-PADDING_STEPS = 7
+PADDING_STEPS = 10
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -1819,7 +1819,7 @@ def render_substation_svg(
 
     # Create the drawing with appropriate size
     drawing = draw.Drawing(svg_width, svg_height, origin=(0, 0))
-    drawing.append(draw.Rectangle(0, 0, svg_width, svg_height, fill="#e0e0e0"))
+    drawing.append(draw.Rectangle(0, 0, svg_width, svg_height, fill="transparent"))
 
     # Create a temporary copy of the substation with adjusted use coordinates
     # to center it in the SVG with padding
@@ -2127,7 +2127,7 @@ def main():
 
     # 6. Draw substations onto the main canvas
     drawing = draw.Drawing(MAP_DIMS, MAP_DIMS, origin=(0, 0))
-    drawing.append(draw.Rectangle(0, 0, MAP_DIMS, MAP_DIMS, fill="#e0e0e0"))
+    drawing.append(draw.Rectangle(0, 0, MAP_DIMS, MAP_DIMS, fill="transparent"))
     for sub in substations:
         # Use direct coordinates without inversion
         drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
