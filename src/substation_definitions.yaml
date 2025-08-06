@@ -1555,7 +1555,7 @@ substations:
       1: VIC-330-DDTS-TX-H1
       2: VIC-330-DDTS-TX-H2
       3: VIC-330-DDTS-TX-H3
-      4: ddts to wots
+      4: VIC-330-DDTS-WOTS
       5: ddts to smts1
       6: ddts to murray @67
       7: ddts to smts2
@@ -1914,16 +1914,42 @@ substations:
   - name: Wodonga (WOTS)
     lat: -36.154814
     long: 146.950147
-    voltage_kv: 220
+    voltage_kv: 330
     tags:
       - WOTS
       - Wodonga
     def: |
-      1?|
+      |x1x||
+      |E2/||
+      |x3x||
+      |/4E||
     buses:
-      1: ""
+      1: "2"
+      2: "1"
     connections:
-      1: VIC-220-WOTS
+      1: VIC-330-DDTS-WOTS
+      2: VIC-330-WOTS-TX-1
+      3: wots ???jindera? @060
+      4: VIC-330-WOTS-TX-2
+    objects:
+      - type: tx-ud # ?1 tx
+        metadata:
+          w1: 330
+          w2: 66
+        rel_x: 2
+        rel_y: 8
+        connections:
+          1: VIC-330-WOTS-TX-1
+          2: VIC-66-WOTS-TX-1
+      - type: tx-ud # ?2 tx
+        metadata:
+          w1: 330
+          w2: 66
+        rel_x: 7
+        rel_y: 8
+        connections:
+          1: VIC-330-WOTS-TX-2
+          2: VIC-66-WOTS-TX-2
   - name: Yallourn (YPS)
     lat: -38.174139
     long: 146.349914
