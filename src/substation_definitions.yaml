@@ -147,7 +147,7 @@ substations:
           text: WF
           info: |
             Waubra Wind Farm
-            192 MW
+            128x 1.5 = 192 MW
         rel_x: 1
         rel_y: -8
       - type: tx-ud
@@ -162,7 +162,7 @@ substations:
           text: WF
           info: |
             Waubra Wind Farm
-            192 MW
+            128x 1.5 = 192 MW
         rel_x: 3
         rel_y: -8
   - name: Crowlands (CWTS)
@@ -1603,8 +1603,8 @@ substations:
         rel_x: 0
         rel_y: 19
         connections:
-          1: ddts mbts 1
-          2: ddts mbts2
+          1: VIC-220-DDTS-MBTS-1
+          2: VIC-220-DDTS-MBTS-2
           3: VIC-220-GNTS-DDTS-3
           4: VIC-220-DDTS-TX-H1
           5: VIC-220-DDTS-TX-H2
@@ -1612,7 +1612,7 @@ substations:
           7: VIC-220-SHTS-DDTS
           8: VIC-220-DDTS-TX-H3
 
-  - name: Eildon PS (EPS)
+  - name: Eildon (EPS)
     lat: -37.223708
     long: 145.920919
     voltage_kv: 220
@@ -1620,11 +1620,59 @@ substations:
       - EPS
       - Eildon PS
     def: |
-      1?|
+      |N
+      2x|x
+      t
+      4x|x
+      |N
     buses:
       1: ""
+      2: ""
     connections:
-      1: VIC-220-EPS
+      1: EPS gentx 1??
+      2: VIC-220-EPS-MBTS-1?
+      4: VIC-220-EPS-MBTS-2?
+      5: EPS gentx 2??
+    objects:
+      - type: tx-ud # ?1 tx
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 1
+        rel_y: 0
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Eildon Power Station
+            2x 60 = 120 MW
+        rel_x: 1
+        rel_y: 5
+      - type: tx-ud # ?2 tx
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 9
+        rel_y: 0
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Eildon Power Station
+            2x 60 = 120 MW
+        rel_x: 9
+        rel_y: 5
+    child_definitions:
+      - def: |
+          s1
+          s
+        voltage_kv: 220
+        rel_x: 2
+        rel_y: 3
+        connections:
+          1: EPS-TTS 220
   - name: East Rowville (ERTS)
     lat: -37.940958
     long: 145.236342
@@ -1789,11 +1837,45 @@ substations:
       - MBTS
       - Mount Beauty
     def: |
-      1?|
+      |x1E||
+      |E2/||
+      |x3E||
+      |xd||
+      4x|EE|x5
+      |E6x||x7
+      8x|x9x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-MBTS
+      1: VIC-220-MBTS-TX-B2
+      2: VIC-220-MBTS-TX-B1
+      3: VIC-220-EPS-MBTS-1?
+      4: VIC-220-DDTS-MBTS-2
+      5: VIC-220-EPS-MBTS-2?
+      6: VIC-220-DDTS-MBTS-1
+      7: VIC-220-MBTS-DPS
+      8: VIC-220-MBTS-BOPS/MKPS
+      9: VIC-220-MBTS-WKPS
+    objects:
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 8
+        connections:
+          1: VIC-220-MBTS-TX-B1
+          2: VIC-66-MBTS-TX-B1
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: -1
+        rel_y: 8
+        connections:
+          1: VIC-220-MBTS-TX-B2
+          2: VIC-66-MBTS-TX-B2
   - name: Morwell (MWTS)
     lat: -38.257164
     long: 146.420847
@@ -2036,21 +2118,64 @@ substations:
       - WKPS
       - West Kiewa Power Station
     def: |
-      1?|
+      1/
     buses:
       1: ""
     connections:
-      1: VIC-220-WKPS
+      1: VIC-220-MBTS-WKPS
     objects:
-      - type: gen
+      - type: tx-ud
         metadata:
-          voltage: 220
-          text: PS
-          info: |
-            West Kiewa Power Station
-            74 MW
+          w1: 220
+          w2: 22
         rel_x: 1
-        rel_y: 4
+        rel_y: 3
+    child_definitions:
+      - def: |
+          NE|x
+          sx|x
+          sx|x
+          NE|x
+        voltage_kv: 22
+        rel_x: -1
+        rel_y: 7
+        objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                West Kiewa Power Station
+                4x 18.5 = 74 MW
+            rel_x: 1
+            rel_y: 7
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                West Kiewa Power Station
+                4x 18.5 = 74 MW
+            rel_x: 3
+            rel_y: 7
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                West Kiewa Power Station
+                4x 18.5 = 74 MW
+            rel_x: 5
+            rel_y: 7
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                West Kiewa Power Station
+                4x 18.5 = 74 MW
+            rel_x: 7
+            rel_y: 7
   - name: Bogong Power Station (BGPS)
     lat: -36.8051893
     long: 147.227913
@@ -2059,44 +2184,174 @@ substations:
       - BGPS
       - Bogong Power Station
     def: |
-      1?|
+      1sx|/
+      2sE|/
     buses:
       1: ""
+      2: ""
     connections:
-      1: VIC-220-BGPS
+      1: VIC-220-MBTS-BOPS/MKPS
+      2: VIC-220-BOPS-MKPS
     objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 1
+        rel_y: 5
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 3
+        rel_y: 5
       - type: gen
         metadata:
-          voltage: 220
-          text: PS
+          voltage: 22
+          text: G
           info: |
             Bogong Power Station
-            140 MW
+            2x 70 = 140 MW
         rel_x: 1
-        rel_y: 4
-  - name: McKay Creek power station (MCPS)
+        rel_y: 10
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Bogong Power Station
+            2x 70 = 140 MW
+        rel_x: 3
+        rel_y: 10
+  
+  - name: McKay Creek Power Station (MKPS)
     lat: -36.8583086
     long: 147.2337226
     voltage_kv: 220
     tags:
-      - MCPS
+      - MKPS
       - McKay Creek power station
     def: |
-      1?|
+      s/
+      s
+      s
+      s/
+      s
+      s
+      1s/
     buses:
       1: ""
     connections:
-      1: VIC-220-MCPS
+      1: VIC-220-BOPS-MKPS
     objects:
-      - type: gen
+      - type: tx-ud
         metadata:
-          voltage: 220
-          text: PS
-          info: |
-            McKay Creek power station
-            150 MW
+          w1: 220
+          w2: 22
         rel_x: 1
-        rel_y: 4
+        rel_y: 2
+        connections: {}
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 7
+        rel_y: 2
+        connections: {}
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 13
+        rel_y: 2
+        connections: {}
+    child_definitions:
+      - def: |
+          |x
+          |x
+        voltage_kv: 22
+        rel_x: -1
+        rel_y: 6
+        objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 3
+            rel_y: 4
+      - def: |
+          |x
+          |x
+        voltage_kv: 22
+        rel_x: 6
+        rel_y: 6
+        objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 3
+            rel_y: 4
+      - def: |
+          |x
+          |x
+        voltage_kv: 22
+        rel_x: 12
+        rel_y: 6
+        objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 3
+            rel_y: 4
+
+      # - type: gen
+      #   metadata:
+      #     voltage: 220
+      #     text: PS
+      #     info: |
+      #       McKay Creek power station
+      #       150 MW
+      #   rel_x: 1
+      #   rel_y: 4
+  
   - name: Dartmouth Power station (DPS)
     lat: -36.5564405
     long: 147.5196251
@@ -2105,19 +2360,26 @@ substations:
       - DPS
       - Dartmouth Power station
     def: |
-      1?|
+      1x|
     buses:
       1: ""
     connections:
-      1: VIC-220-DPS
+      1: VIC-220-MBTS-DPS
     objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 1
+        rel_y: 0
+        connections: {}
       - type: gen
         metadata:
-          voltage: 220
-          text: PS
+          voltage: 22
+          text: G
           info: |
             Dartmouth Power station
             180 MW
         rel_x: 1
-        rel_y: 4
-  
+        rel_y: 5
+        connections: {}

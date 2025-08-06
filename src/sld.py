@@ -927,7 +927,7 @@ def draw_busbar_object(
         # Add text label if first bay
         if is_first_bay:
             bus_id = element["id"]
-            bus_name = sub.buses.get(bus_id, f"Bus {bus_id}")
+            bus_name = sub.buses.get(bus_id, "")
             parent_group.append(
                 draw.Text(
                     bus_name,
