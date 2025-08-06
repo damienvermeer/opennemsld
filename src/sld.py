@@ -1450,9 +1450,8 @@ def get_substation_group(
             child_previous_bay_elements = None
             for i, bay_def in enumerate(child_bay_defs):
                 base_xoff = child_def["rel_x"] * params.grid_step
-                # Snap base_xoff to the bay grid (multiples of 2 * grid_step)
+                # Allow any x offset value, not just multiples of bay_width
                 bay_width = 2 * params.grid_step
-                base_xoff = round(base_xoff / bay_width) * bay_width
                 xoff = base_xoff + (bay_width * i)
 
                 # handle correct y offset for this bay within the child

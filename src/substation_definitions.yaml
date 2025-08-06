@@ -1755,7 +1755,6 @@ substations:
           1: VIC-500-CBTS-TX-A1
           2: VIC-500-CBTS-HWTS-4 todo connect
           3: VIC-500-CBTS-ROTS-4 todo connect
-    child_definitions:
       - def: |
           x|
           t
