@@ -158,6 +158,32 @@
         }
     });
 
+    // --- Zoom to fit control ---
+    var ZoomToFitControl = L.Control.extend({
+        options: {
+            position: 'bottomright'
+        },
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            var button = L.DomUtil.create('a', '', container);
+            button.innerHTML = '&#x26F6;'; // SQUARE WITH FOUR CORNERS
+            button.href = '#';
+            button.title = 'Zoom to fit';
+            button.role = 'button';
+            button.setAttribute('aria-label', 'Zoom to fit');
+            button.style.fontSize = '1.5em';
+
+            L.DomEvent.on(button, 'click', L.DomEvent.stop);
+            L.DomEvent.on(button, 'click', function () {
+                map.fitBounds(bounds);
+            });
+            L.DomEvent.on(button, 'click', L.DomEvent.preventDefault);
+
+            return container;
+        }
+    });
+    map.addControl(new ZoomToFitControl());
+
     // Initialize the search control
     var searchControl = new L.Control.Search({
         layer: featuresLayer,
@@ -166,8 +192,9 @@
         marker: false, // Do not show a marker on the map
         markerLocation: false, // Do not show the circle when location found
         moveToLocation: function(latlng, title, map) {
-            map.setView(latlng, 0); // Move to location without showing any marker
-            // You could add custom behavior here when location is found
+            map.flyTo(latlng, 0, {
+                duration: 1
+            });
         },
         textPlaceholder: 'e.g. ARTS',
         textErr: 'Location not found',
