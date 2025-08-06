@@ -117,7 +117,7 @@ substations:
           text: WF
           info: |
             Ararat Wind Farm
-            240 MW
+            75x 3.2 = 240 MW
         rel_x: 10
         rel_y: 3
   - name: Waubra (WBTS)
@@ -1504,11 +1504,75 @@ substations:
       - CBTS
       - Cranbourne
     def: |
-      1?|
+      |x1x2x||
+      |x3x4x||
+      |x5dx||
+      |/6EE||
+      |xd7x||/8
+      |x9xd||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-CBTS
+      1: cbts tbts1
+      2: VIC-220-CBTS-ERTS-1
+      3: cbts tbts2
+      4: VIC-220-CBTS-ERTS-2
+      5: cbts wdp
+      6: VIC-220-CBTS-TX-B1
+      7: VIC-220-CBTS-TX-B3
+      8: VIC-220-CBTS-TX-B2
+      9: VIC-220-CBTS-TX-A1
+    objects:
+      - type: tx-lr # a1
+        metadata:
+          w1: 220
+          w2: 500
+        rel_x: 13
+        rel_y: 3
+        connections:
+          1: VIC-220-CBTS-TX-A1
+          2: VIC-500-CBTS-TX-A1
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 13
+        connections:
+          1: VIC-220-CBTS-TX-B3
+          2: VIC-66-CBTS-TX-B3
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 13
+        connections:
+          1: VIC-220-CBTS-TX-B2
+          2: VIC-66-CBTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 13
+        connections:
+          1: VIC-220-CBTS-TX-B1
+          2: VIC-66-CBTS-TX-B1
+    child_definitions:
+      - def: |
+          |x1xs
+          |/2xs3
+        buses:
+          1: "1"
+        voltage_kv: 500
+        rel_x: 15
+        rel_y: 0
+        connections:
+          1: VIC-500-CBTS-TX-A1
+          2: VIC-500-CBTS-HWTS-4 todo connect
+          3: VIC-500-CBTS-ROTS-4 todo connect
   # - name: Carwarp (CPTS)
   #   lat: -34.499106
   #   long: 142.234786
@@ -1667,12 +1731,15 @@ substations:
     child_definitions:
       - def: |
           s1
-          s
+          s3
+          s2
         voltage_kv: 220
         rel_x: 2
         rel_y: 3
         connections:
-          1: EPS-TTS 220
+          1: eps tts 220
+          2: EPS-TIE
+          3: EPS-TIE
   - name: East Rowville (ERTS)
     lat: -37.940958
     long: 145.236342
@@ -1681,11 +1748,21 @@ substations:
       - ERTS
       - East Rowville
     def: |
-      1?|
+      1/|x2x3x||/4
+      5/|x6EE||
+      NEE7/||x8
     buses:
-      1: ""
+      1: "1"
+      2: "4"
     connections:
-      1: VIC-220-ERTS
+      1: b1 tx
+      2: b2 tx
+      3: b3 tx
+      4: b4 tx
+      5: rots1 erts
+      6: VIC-220-CBTS-ERTS-2
+      7: rots2 erts
+      8: VIC-220-CBTS-ERTS-1
   # - name: Goorambat East (GETS)
   #   lat: -36.426831
   #   long: 145.925653
@@ -1733,11 +1810,48 @@ substations:
       - HTS
       - Heatherton
     def: |
-      1?|
+      |x1x||
+      |x2E||
+      |E3x||
+      4x|EE|x5
     buses:
-      1: ""
+      1: "2"
+      2: "1"
     connections:
-      1: VIC-220-HTS
+      1: VIC-220-HTS-TX-B3
+      2: VIC-220-HTS-TX-B2
+      3: VIC-220-HTS-SVTS1
+      4: VIC-220-HTS-SVTS2
+      5: VIC-220-HTS-TX-B1
+    objects:
+      - type: tx-ud # b3 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 9
+        connections:
+          1: VIC-220-HTS-TX-B3
+          2: VIC-66-HTS-TX-B3
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 4
+        rel_y: 9
+        connections:
+          1: VIC-220-HTS-TX-B2
+          2: VIC-66-HTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 9
+        connections:
+          1: VIC-220-HTS-TX-B1
+          2: VIC-66-HTS-TX-B1
+    
   - name: Hazelwood PS (HWPS)
     lat: -38.273103
     long: 146.392264
@@ -1948,12 +2062,27 @@ substations:
     tags:
       - SVTS
       - Springvale
-    def: |
-      1?|
+    def: | # note taken from AER doc
+      |x1x||
+      |x2E||
+      |E3x||
+      |x4x||
+      |E5x||
+      |x6E||
+      |x7x||
+      |x8x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-SVTS
+      1: VIC-220-SVTS-B4-TX
+      2: VIC-220-SVTS-B3-TX
+      3: VIC-220-SVTS-B2-TX
+      4: VIC-220-SVTS-B1-TX
+      5: VIC-220-HTS-SVTS1
+      6: VIC-220-HTS-SVTS2
+      7: VIC-220-HTS-ROTS1
+      8: VIC-220-HTS-ROTS2
   - name: Tyabb (TBTS)
     lat: -38.267861
     long: 145.201553
@@ -2270,7 +2399,7 @@ substations:
           |x
           |x
         voltage_kv: 22
-        rel_x: -1
+        rel_x: -2
         rel_y: 6
         objects:
           - type: gen
@@ -2295,7 +2424,7 @@ substations:
           |x
           |x
         voltage_kv: 22
-        rel_x: 6
+        rel_x: 5
         rel_y: 6
         objects:
           - type: gen
@@ -2320,7 +2449,7 @@ substations:
           |x
           |x
         voltage_kv: 22
-        rel_x: 12
+        rel_x: 11
         rel_y: 6
         objects:
           - type: gen
