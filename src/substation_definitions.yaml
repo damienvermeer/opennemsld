@@ -681,7 +681,7 @@ substations:
       2: '1'
     connections:
       1: VIC-220-SHTS-FVTS-1
-      2: VIC-220-SHTS-DDTS-1
+      2: VIC-220-SHTS-DDTS
       3: VIC-220-SHTS-GNTS-1
       4: VIC-220-SHTS-GNTS-3
   - name: Glenrowan (GNTS)
@@ -1538,16 +1538,80 @@ substations:
   - name: Dederang (DDTS)
     lat: -36.454286
     long: 146.990814
-    voltage_kv: 220
+    voltage_kv: 330
     tags:
       - DDTS
       - Dederang
     def: |
-      1?|
+      |x1dx||
+      |EE2x||
+      |x3x4x||
+      |x5x6x||
+      |x7x8x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-DDTS
+      1: VIC-330-DDTS-TX-H1
+      2: VIC-330-DDTS-TX-H2
+      3: VIC-330-DDTS-TX-H3
+      4: ddts to wots
+      5: ddts to smts1
+      6: ddts to murray @67
+      7: ddts to smts2
+      8: ddts to murray @68
+    objects:
+      - type: tx-ud # H1 tx
+        metadata:
+          w1: 330
+          w2: 220
+        rel_x: -1
+        rel_y: 10
+        connections:
+          1: VIC-330-DDTS-TX-H1
+          2: VIC-220-DDTS-TX-H1
+      - type: tx-ud # H2 tx
+        metadata:
+          w1: 330
+          w2: 220
+        rel_x: 3
+        rel_y: 10
+        connections:
+          1: VIC-330-DDTS-TX-H2
+          2: VIC-220-DDTS-TX-H2
+      - type: tx-ud # H3 tx
+        metadata:
+          w1: 330
+          w2: 220
+        rel_x: 6
+        rel_y: 10
+        connections:
+          1: VIC-330-DDTS-TX-H3
+          2: VIC-220-DDTS-TX-H3
+
+    child_definitions:
+      - def: |
+          |E1x||
+          4x|x3x||x2
+          |E5x||
+          |x6E||
+          7x|x8x||
+        buses:
+          1: "2"
+          2: "1"
+        voltage_kv: 220
+        rel_x: 0
+        rel_y: 19
+        connections:
+          1: ddts mbts 1
+          2: ddts mbts2
+          3: VIC-220-GNTS-DDTS-3
+          4: VIC-220-DDTS-TX-H1
+          5: VIC-220-DDTS-TX-H2
+          6: VIC-220-GNTS-DDTS-1
+          7: VIC-220-SHTS-DDTS
+          8: VIC-220-DDTS-TX-H3
+
   - name: Eildon PS (EPS)
     lat: -37.223708
     long: 145.920919
