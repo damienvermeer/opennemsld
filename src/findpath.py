@@ -154,7 +154,7 @@ def _straighten_paths(
 
         for original_idx, _ in indexed_paths_to_process:
             path = paths_to_modify[original_idx]
-            if not path or len(path) < 3:
+            if not path or len(path) < 2:
                 continue
 
             # Loop until no more changes can be made to this path
@@ -322,7 +322,7 @@ def run_all_gridsearches(
             # Use a quadratic scaling factor from 0 to 1.
             scaling_factor = (i / (iterations - 1)) ** 2
             # The max penalty multiplier is set to be aggressive in the final iterations.
-            max_penalty_multiplier = 5.0
+            max_penalty_multiplier = 1.0
             current_penalty = (
                 congestion_penalty_increment * max_penalty_multiplier * scaling_factor
             )

@@ -1697,22 +1697,27 @@ def draw_connections(
         )
 
         for i, path in enumerate(all_paths):
-            if len(path) > 0:
+            if len(path) > 1:
                 colour = path_metadata[i]["colour"]
-                # print(f"Drawing path with {len(path)} points")
-                # The path is returned as (row, col) tuples. Drawing needs (x, y).
-                for j in range(len(path) - 1):
-                    start_rc, end_rc = path[j], path[j + 1]
-                    drawing.append(
-                        draw.Line(
-                            start_rc[1] * step,  # x = col
-                            start_rc[0] * step,  # y = row
-                            end_rc[1] * step,
-                            end_rc[0] * step,
-                            stroke=colour,
-                            stroke_width=2,
-                        )
+                # The path is returned as (row, col) tuples.
+                # Start the path data string with a "Move to" command.
+                start_node = path[0]
+                path_data = f"M {start_node[1] * step} {start_node[0] * step}"
+
+                # Add "Line to" commands for the rest of the path.
+                for j in range(1, len(path)):
+                    node = path[j]
+                    path_data += f" L {node[1] * step} {node[0] * step}"
+
+                # Create a single, consolidated path element.
+                drawing.append(
+                    draw.Path(
+                        d=path_data,
+                        stroke=colour,
+                        stroke_width=2,
+                        fill="none",
                     )
+                )
     except Exception as e:
         print(f"Error finding paths: {e}")
 
