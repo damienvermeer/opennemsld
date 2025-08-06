@@ -1514,11 +1514,11 @@ substations:
       1: "1"
       2: "2"
     connections:
-      1: cbts tbts1
+      1: VIC-220-CBTS-TBTS-1
       2: VIC-220-CBTS-ERTS-1
-      3: cbts tbts2
+      3: VIC-220-CBTS-TBTS-2
       4: VIC-220-CBTS-ERTS-2
-      5: cbts wdp
+      5: VIC-220-CBTS-WDP-NORTH
       6: VIC-220-CBTS-TX-B1
       7: VIC-220-CBTS-TX-B3
       8: VIC-220-CBTS-TX-B2
@@ -2091,11 +2091,49 @@ substations:
       - TBTS
       - Tyabb
     def: |
-      1?|
+      |x1x||x2
+      3/|x4E||
+      |x5E||
+      NE6/|x7
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-TBTS
+      1: VIC-220-TBTS-TX-B1
+      2: VIC-220-TBTS-TX-B2
+      3: VIC-220-CBTS-TBTS-1
+      4: VIC-220-TBTS-TX-B3
+      5: VIC-220-JLA-TBTS-1
+      6: VIC-220-CBTS-TBTS-2
+      7: VIC-220-JLA-TBTS-2
+    objects:
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 2
+        rel_y: 13
+        connections:
+          1: VIC-220-TBTS-TX-B1
+          2: VIC-66-TBTS-TX-B1
+      - type: tx-ud # b2 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 6
+        rel_y: 13
+        connections:
+          1: VIC-220-TBTS-TX-B2
+          2: VIC-66-TBTS-TX-B2
+      - type: tx-ud # b1 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 10
+        rel_y: 13
+        connections:
+          1: VIC-220-TBTS-TX-B3
+          2: VIC-66-TBTS-TX-B3
   - name: Templestowe (TSTS)
     lat: -37.748069
     long: 145.170536
@@ -2182,11 +2220,49 @@ substations:
       - JLA
       - John Lysaght
     def: |
-      1?|
+      1/|/2
+      t
+      |/3
+      t
+      4/|/5
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
     connections:
-      1: VIC-220-JLA
+      1: VIC-220-JLA-TBTS-1
+      2: VIC-220-JLA-TX-1
+      3: VIC-220-JLA-TX-2
+      4: VIC-220-JLA-TBTS-2
+      5: VIC-220-JLA-TX-3
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+        connections:
+          1: VIC-220-JLA-TX-1
+          2: VIC-33-JLA-TX-1
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 5
+        rel_y: 3
+        connections:
+          1: VIC-220-JLA-TX-2
+          2: VIC-33-JLA-TX-2
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 9
+        rel_y: 3
+        connections:
+          1: VIC-220-JLA-TX-3
+          2: VIC-33-JLA-TX-3
   - name: WDP Northern Reactive Station (WDPN)
     lat: -38.125762
     long: 145.38783
@@ -2195,11 +2271,12 @@ substations:
       - WDPN
       - WDP Northern Reactive Station
     def: |
-      1?|
+      1?|?2
     buses:
       1: ""
     connections:
-      1: VIC-220-WDPN
+      1: VIC-220-CBTS-WDP-NORTH
+      2: VIC-220-CBTS-WDP-SOUTH
   - name: WDP Southern Reactive Station (WDPS)
     lat: -38.3377199
     long: 145.5588388
@@ -2208,11 +2285,12 @@ substations:
       - WDPS
       - WDP Southern Reactive Station
     def: |
-      1?|
+      1?|?2
     buses:
       1: ""
     connections:
-      1: VIC-220-WDPS
+      1: VIC-220-CBTS-WDP-SOUTH
+      2: VIC-220-CBTS-WDP
   - name: Wonthaggi Desalination Plant (WDP)
     lat: -38.5854383
     long: 145.5252322
@@ -2225,7 +2303,7 @@ substations:
     buses:
       1: ""
     connections:
-      1: VIC-220-WDP
+      1: VIC-220-CBTS-WDP
   - name: Loy Yang HVDC Converter station (BLLC)
     lat: -38.262699
     long: 146.607929
