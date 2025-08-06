@@ -1198,8 +1198,8 @@ substations:
       - DPTS
       - Deer Park
     def: |
-      |x1x3||
-      |x2x4||
+      |x1x3x||
+      |x2x4x||
     buses:
       1: "B"
       2: "A"
