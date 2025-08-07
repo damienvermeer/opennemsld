@@ -4,8 +4,7 @@ from the NetworkX library. It is designed to find the shortest path on a 2D grid
 where cells can have different traversal costs (weights).
 """
 
-import time
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import networkx as nx
 
@@ -94,16 +93,338 @@ def find_shortest_path(
         heuristic = manhattan_distance
 
     try:
-        start_time = time.time()
         path = nx.astar_path(
             graph, start_node, end_node, weight="weight", heuristic=heuristic
         )
-        end_time = time.time()
-        # print(f"Path found in: {end_time - start_time:.4f} seconds.")
         return path
     except nx.NetworkXNoPath:
-        # print(f"No path could be found from {start_node} to {end_node}.")
         return []
+
+
+# --- Pathfinding Helpers ---
+
+
+def _calculate_congestion_penalty(
+    iterations: int, i: int, base_penalty: float
+) -> float:
+    """Calculates a quadratically scaled congestion penalty.
+
+    The penalty increases with each iteration to encourage convergence.
+
+    Args:
+        iterations: The total number of refinement iterations.
+        i: The current iteration index.
+        base_penalty: The base penalty value to be scaled.
+
+    Returns:
+        The calculated penalty for the current iteration.
+    """
+    if iterations <= 1:
+        return base_penalty
+    # Use a quadratic scaling factor from 0 to 1.
+    scaling_factor = (i / (iterations - 1)) ** 2
+    # The max penalty multiplier is set to be aggressive in the final iterations.
+    max_penalty_multiplier = 1.0
+    return base_penalty * max_penalty_multiplier * scaling_factor
+
+
+def _get_busbar_edges(
+    graph: nx.Graph,
+    points: List[List[int]],
+    grid_owners: List[List[str]],
+    busbar_weight: int,
+) -> dict:
+    """Identifies all edges in the graph that correspond to busbars.
+
+    Args:
+        graph: The main pathfinding graph.
+        points: The 2D grid of pathfinding weights.
+        grid_owners: The 2D grid of owner IDs for each point.
+        busbar_weight: The weight value that identifies a busbar point.
+
+    Returns:
+        A dictionary mapping busbar edges (as tuples of nodes) to their
+        owner ID.
+    """
+    busbar_edges = {}
+    if busbar_weight is None:
+        return busbar_edges
+    for u, v in graph.edges():
+        if points[u[0]][u[1]] == busbar_weight and points[v[0]][v[1]] == busbar_weight:
+            edge = tuple(sorted((u, v)))
+            # Assume owner is same for both ends of a busbar segment
+            owner = grid_owners[u[0]][u[1]]
+            busbar_edges[edge] = owner
+    return busbar_edges
+
+
+def _calculate_busbar_crossing_penalties(
+    busbar_edges: dict,
+    start_owner: tuple,
+    end_owner: tuple,
+    busbar_crossing_penalty: int,
+) -> dict:
+    """Calculates penalties for a path crossing various busbars.
+
+    This function determines the penalty for crossing each busbar edge based
+    on the ownership of the path and the busbar.
+
+    Args:
+        busbar_edges: A dictionary of busbar edges and their owners.
+        start_owner: The owner tuple (substation_name, owner_id) of the
+            path's start point.
+        end_owner: The owner tuple of the path's end point.
+        busbar_crossing_penalty: The high penalty value for an illegal crossing.
+
+    Returns:
+        A dictionary mapping busbar edges to their calculated penalty value.
+    """
+    edge_penalties = {}
+    for edge, owner in busbar_edges.items():
+        if not owner:
+            edge_penalties[edge] = 1
+            continue
+
+        bus_sub_name, bus_owner_id = owner
+
+        # An intra-substation connection
+        if start_owner[0] == end_owner[0]:
+            path_sub_name = start_owner[0]
+            # If path is inside one sub, but crosses busbar of another sub
+            if bus_sub_name != path_sub_name:
+                edge_penalties[edge] = busbar_crossing_penalty
+            # If path crosses a busbar within the same sub, but not belonging to start/end owners
+            elif bus_owner_id not in (start_owner[1], end_owner[1]):
+                edge_penalties[edge] = busbar_crossing_penalty
+            else:
+                # Crossing its own busbar, small penalty
+                edge_penalties[edge] = 1
+        # An inter-substation connection
+        else:
+            path_sub_names = {start_owner[0], end_owner[0]}
+            # If it crosses a busbar of an unrelated sub or one of its own substations
+            if bus_sub_name not in path_sub_names:
+                edge_penalties[edge] = busbar_crossing_penalty
+            else:
+                # It's crossing a busbar of one of its own substations. This is also bad.
+                edge_penalties[edge] = busbar_crossing_penalty
+    return edge_penalties
+
+
+def _calculate_congestion_usage(
+    all_paths: list, current_path_idx: int
+) -> tuple[dict, dict]:
+    """Calculates node and edge usage by all paths except the current one.
+
+    Args:
+        all_paths: The list of all current paths.
+        current_path_idx: The index of the path to be excluded from the
+            calculation (the one being rerouted).
+
+    Returns:
+        A tuple containing two dictionaries:
+        - node_usage: Maps nodes to their usage count.
+        - edge_usage: Maps edges to their usage count.
+    """
+    node_usage = {}
+    edge_usage = {}
+    for other_req_idx, other_path in enumerate(all_paths):
+        if current_path_idx == other_req_idx or not other_path:
+            continue
+
+        # Penalize intermediate nodes to discourage paths from crossing.
+        for node in other_path[1:-1]:
+            node_usage[node] = node_usage.get(node, 0) + 1
+
+        for j in range(len(other_path) - 1):
+            u, v = other_path[j], other_path[j + 1]
+            edge = tuple(sorted((u, v)))
+            edge_usage[edge] = edge_usage.get(edge, 0) + 1
+    return node_usage, edge_usage
+
+
+def _apply_penalties_to_graph(
+    graph: nx.Graph,
+    edge_usage: dict,
+    node_usage: dict,
+    current_penalty: float,
+    start_node: tuple,
+    end_node: tuple,
+) -> list:
+    """Temporarily adds penalties to graph edges based on usage.
+
+    Args:
+        graph: The `nx.Graph` to modify.
+        edge_usage: A dictionary mapping edges to their usage count.
+        node_usage: A dictionary mapping nodes to their usage count.
+        current_penalty: The scaled penalty value for the current iteration.
+        start_node: The start node of the path being rerouted.
+        end_node: The end node of the path being rerouted.
+
+    Returns:
+        A list of (edge, penalty_value) tuples that were applied, so they
+        can be reverted later.
+    """
+    applied_penalties = []
+    for edge, count in edge_usage.items():
+        penalty = (count**2) * current_penalty
+        if graph.has_edge(*edge):
+            graph.edges[edge]["weight"] += penalty
+            applied_penalties.append((edge, penalty))
+
+    for node, count in node_usage.items():
+        if node in (start_node, end_node):
+            continue
+
+        if graph.has_node(node):
+            penalty = (count**2) * current_penalty
+            for neighbor in graph.neighbors(node):
+                edge = tuple(sorted((node, neighbor)))
+                if graph.has_edge(*edge):
+                    graph.edges[edge]["weight"] += penalty
+                    applied_penalties.append((edge, penalty))
+    return applied_penalties
+
+
+def _remove_penalties_from_graph(graph: nx.Graph, applied_penalties: list):
+    """Removes temporary penalties from graph edges.
+
+    Args:
+        graph: The `nx.Graph` to modify.
+        applied_penalties: A list of (edge, penalty_value) tuples to revert.
+    """
+    for edge, penalty in applied_penalties:
+        if graph.has_edge(*edge):
+            graph.edges[edge]["weight"] -= penalty
+
+
+def _block_connection_nodes(
+    graph: nx.Graph, all_connection_nodes: set, start_node: tuple, end_node: tuple
+) -> list:
+    """Temporarily blocks access to connection nodes not part of the current path.
+
+    This prevents paths from routing through the connection points of other
+    unrelated lines.
+
+    Args:
+        graph: The `nx.Graph` to modify.
+        all_connection_nodes: A set of all connection nodes in the graph.
+        start_node: The start node of the current path, which should not be blocked.
+        end_node: The end node of the current path, which should not be blocked.
+
+    Returns:
+        A list of (edge, original_weight) tuples for the edges that were
+        blocked, so they can be restored.
+    """
+    blocked_edges = []
+    if not all_connection_nodes:
+        return blocked_edges
+
+    nodes_to_block = all_connection_nodes - {start_node, end_node}
+    for node in nodes_to_block:
+        if graph.has_node(node):
+            for neighbor in list(graph.neighbors(node)):
+                edge_tuple = tuple(sorted((node, neighbor)))
+                if graph.has_edge(*edge_tuple):
+                    original_weight = graph.edges[edge_tuple]["weight"]
+                    blocked_edges.append((edge_tuple, original_weight))
+                    graph.edges[edge_tuple]["weight"] = float("inf")
+    return blocked_edges
+
+
+def _unblock_connection_nodes(graph: nx.Graph, blocked_edges: list):
+    """Restores access to previously blocked connection nodes.
+
+    Args:
+        graph: The `nx.Graph` to modify.
+        blocked_edges: A list of (edge, original_weight) tuples to restore.
+    """
+    for edge, original_weight in blocked_edges:
+        if graph.has_edge(*edge):
+            graph.edges[edge]["weight"] = original_weight
+
+
+def _create_out_of_bounds_heuristic(bounds: tuple):
+    """Creates an A* heuristic that penalizes paths going outside specified bounds.
+
+    Args:
+        bounds: A tuple (min_x, min_y, max_x, max_y) defining the allowed area.
+
+    Returns:
+        A heuristic function for use with `nx.astar_path`.
+    """
+    min_x, min_y, max_x, max_y = bounds
+
+    def out_of_bounds_heuristic(u, v):
+        dist = manhattan_distance(u, v)
+        # u is the current node in the search. (row, col) -> (y, x)
+        y, x = u
+        if x < min_x or x > max_x or y < min_y or y > max_y:
+            dist += 1000000  # Very large penalty
+        return dist
+
+    return out_of_bounds_heuristic
+
+
+def _try_straighten_one_corner(
+    path: list,
+    i: int,
+    graph: nx.Graph,
+    other_occupied_nodes: set,
+    other_occupied_edges: set,
+) -> Union[Tuple[int, int], None]:
+    """Attempts to straighten a single corner in a path.
+
+    It looks for an "L-shaped" segment and tries to replace it with an
+    alternative L-shape if it has the same weight and doesn't cause collisions.
+
+    Args:
+        path: The path being modified.
+        i: The index of the corner node in the path to check.
+        graph: The main pathfinding graph.
+        other_occupied_nodes: A set of nodes occupied by other paths.
+        other_occupied_edges: A set of edges occupied by other paths.
+
+    Returns:
+        The new corner node if a valid straightening was found, otherwise None.
+    """
+    p_prev, p_curr, p_next = path[i - 1], path[i], path[i + 1]
+
+    # Check for a corner (not collinear).
+    if p_prev[0] == p_curr[0] == p_next[0] or p_prev[1] == p_curr[1] == p_next[1]:
+        return None
+
+    # Find the alternative node for a rectangular detour.
+    p_alt = (
+        p_prev[0] + p_next[0] - p_curr[0],
+        p_prev[1] + p_next[1] - p_curr[1],
+    )
+
+    if not graph.has_node(p_alt) or p_alt in other_occupied_nodes or p_alt in path:
+        return None
+
+    edge1_alt = tuple(sorted((p_prev, p_alt)))
+    edge2_alt = tuple(sorted((p_alt, p_next)))
+
+    if (
+        not graph.has_edge(*edge1_alt)
+        or not graph.has_edge(*edge2_alt)
+        or edge1_alt in other_occupied_edges
+        or edge2_alt in other_occupied_edges
+    ):
+        return None
+
+    # Check if weights are equal.
+    edge1_orig = tuple(sorted((p_prev, p_curr)))
+    edge2_orig = tuple(sorted((p_curr, p_next)))
+    weight_orig = graph.edges[edge1_orig]["weight"] + graph.edges[edge2_orig]["weight"]
+    weight_alt = graph.edges[edge1_alt]["weight"] + graph.edges[edge2_alt]["weight"]
+
+    # Tie-break by preferring the lexicographically smaller node to prevent flipping.
+    if abs(weight_orig - weight_alt) < 1e-9 and p_alt < p_curr:
+        return p_alt
+
+    return None
 
 
 # --- Path Straightening ---
@@ -132,29 +453,26 @@ def _straighten_paths(
     paths_to_modify = [list(p) for p in all_paths]
 
     for iter_num in range(iterations):
-        print(f"  Straightening iteration {iter_num + 1}/{iterations}...")
+        print(
+            f"Step 5.1.4.{iter_num + 1}: Straightening iteration {iter_num + 1}/{iterations}..."
+        )
         paths_changed_in_iteration = False
 
-        # Sort paths by length (longest first) for processing, keeping original index
         indexed_paths_to_process = sorted(
             enumerate(paths_to_modify), key=lambda x: len(x[1]), reverse=True
         )
 
         # Build the set of all occupied nodes and edges once per iteration
-        all_occupied_nodes = set()
-        all_occupied_edges = set()
-        for p in paths_to_modify:
-            if not p:
-                continue
-            for node in p:
-                all_occupied_nodes.add(node)
-            for i in range(len(p) - 1):
-                edge = tuple(sorted((p[i], p[i + 1])))
-                all_occupied_edges.add(edge)
+        all_occupied_nodes = {node for p in paths_to_modify if p for node in p}
+        all_occupied_edges = {
+            tuple(sorted((p[i], p[i + 1])))
+            for p in paths_to_modify
+            if p
+            for i in range(len(p) - 1)
+        }
 
-        for original_idx, _ in indexed_paths_to_process:
-            path = paths_to_modify[original_idx]
-            if not path or len(path) < 2:
+        for original_idx, path in indexed_paths_to_process:
+            if not path or len(path) < 3:
                 continue
 
             # Loop until no more changes can be made to this path
@@ -163,72 +481,21 @@ def _straighten_paths(
 
                 # Create occupied sets for *other* paths for collision detection.
                 current_path_nodes = set(path)
-                current_path_edges = set()
-                for i in range(len(path) - 1):
-                    edge = tuple(sorted((path[i], path[i + 1])))
-                    current_path_edges.add(edge)
-
+                current_path_edges = {
+                    tuple(sorted((path[i], path[i + 1]))) for i in range(len(path) - 1)
+                }
                 other_occupied_nodes = all_occupied_nodes - current_path_nodes
                 other_occupied_edges = all_occupied_edges - current_path_edges
 
                 for i in range(1, len(path) - 1):
-                    p_prev, p_curr, p_next = (
-                        path[i - 1],
-                        path[i],
-                        path[i + 1],
+                    p_alt = _try_straighten_one_corner(
+                        path, i, graph, other_occupied_nodes, other_occupied_edges
                     )
 
-                    # Check for a corner (not collinear).
-                    if (
-                        p_prev[0] == p_curr[0] == p_next[0]
-                        or p_prev[1] == p_curr[1] == p_next[1]
-                    ):
-                        continue
-
-                    # This is a corner. Find the alternative node for a rectangular detour.
-                    p_alt = (
-                        p_prev[0] + p_next[0] - p_curr[0],
-                        p_prev[1] + p_next[1] - p_curr[1],
-                    )
-
-                    if not graph.has_node(p_alt):
-                        continue
-
-                    # Check for collisions with other paths or self-intersection.
-                    if p_alt in other_occupied_nodes or p_alt in path:
-                        continue
-
-                    edge1_alt = tuple(sorted((p_prev, p_alt)))
-                    edge2_alt = tuple(sorted((p_alt, p_next)))
-
-                    if not graph.has_edge(*edge1_alt) or not graph.has_edge(*edge2_alt):
-                        continue
-
-                    if (
-                        edge1_alt in other_occupied_edges
-                        or edge2_alt in other_occupied_edges
-                    ):
-                        continue
-
-                    # Check if weights are equal.
-                    edge1_orig = tuple(sorted((p_prev, p_curr)))
-                    edge2_orig = tuple(sorted((p_curr, p_next)))
-
-                    weight_orig = (
-                        graph.edges[edge1_orig]["weight"]
-                        + graph.edges[edge2_orig]["weight"]
-                    )
-                    weight_alt = (
-                        graph.edges[edge1_alt]["weight"]
-                        + graph.edges[edge2_alt]["weight"]
-                    )
-
-                    # Tie-break by preferring the lexicographically smaller node to prevent flipping.
-                    if abs(weight_orig - weight_alt) < 1e-9 and p_alt < p_curr:
-                        print(
-                            f"    Path {original_idx}: Straightened corner at {p_curr} to {p_alt}"
-                        )
+                    if p_alt:
                         old_node = path[i]
+                        p_prev = path[i - 1]
+                        p_next = path[i + 1]
                         path[i] = p_alt
                         made_change_in_pass = True
                         paths_changed_in_iteration = True
@@ -236,20 +503,18 @@ def _straighten_paths(
                         # Update the global occupied sets for subsequent paths
                         all_occupied_nodes.remove(old_node)
                         all_occupied_nodes.add(p_alt)
-                        all_occupied_edges.remove(edge1_orig)
-                        all_occupied_edges.remove(edge2_orig)
-                        all_occupied_edges.add(edge1_alt)
-                        all_occupied_edges.add(edge2_alt)
+                        all_occupied_edges.remove(tuple(sorted((p_prev, old_node))))
+                        all_occupied_edges.remove(tuple(sorted((old_node, p_next))))
+                        all_occupied_edges.add(tuple(sorted((p_prev, p_alt))))
+                        all_occupied_edges.add(tuple(sorted((p_alt, p_next))))
 
                         # Restart scan on the now-modified path
                         break
 
                 if not made_change_in_pass:
-                    # No changes in a full pass, so this path is done.
                     break
 
         if not paths_changed_in_iteration:
-            print("  No more paths changed, finishing straightening.")
             break
 
     return paths_to_modify
@@ -286,214 +551,91 @@ def run_all_gridsearches(
     Args:
         path_requests: A list of (start_node, end_node) tuples.
         points: The initial 2D grid with traversal costs.
+        grid_owners: A 2D grid storing the owner of each cell.
         iterations: The number of times to iterate the pathfinding process.
         congestion_penalty_increment: The base penalty added to a graph edge
                                       for each path crossing it. This value
                                       is scaled up with each iteration.
+        all_connection_nodes: A set of all connection nodes to be avoided.
+        busbar_weight: The grid value identifying a busbar.
+        busbar_crossing_penalty: The penalty for crossing a busbar incorrectly.
 
     Returns:
         A list of paths, where each path is a list of coordinates, in the
         same order as the input path_requests.
     """
-    # Create the graph once from the base grid.
-    print("Pathfinding: Creating base graph...")
+    print("Step 5.1.1: Creating base pathfinding graph...")
     graph = create_graph_from_grid(points)
 
     # --- Sort requests to route longest paths first ---
-    indexed_requests = [
-        (i, req, manhattan_distance(req["start"], req["end"]))
-        for i, req in enumerate(path_requests)
-    ]
-    indexed_requests.sort(key=lambda x: x[2], reverse=True)
-    sorted_requests = [req for i, req, _ in indexed_requests]
+    indexed_requests = sorted(
+        enumerate(path_requests),
+        key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]),
+        reverse=True,
+    )
+    sorted_requests = [req for i, req in indexed_requests]
 
-    # Initial routing of all paths on the base graph, in sorted order.
-    print("Pathfinding: Starting initial routing (longest paths first)...")
+    print("Step 5.1.2: Performing initial routing...")
     all_paths = [
         find_shortest_path(graph, req["start"], req["end"]) for req in sorted_requests
     ]
-    print("Pathfinding: Initial routing complete.")
 
-    # Iteratively refine paths by re-routing each one on a graph
-    # that is penalized by the existence of all other paths.
+    # --- Iteratively refine paths ---
+    busbar_edges = _get_busbar_edges(graph, points, grid_owners, busbar_weight)
+
     for i in range(iterations):
-        print(f"Pathfinding: Starting iteration {i + 1}/{iterations}...")
-        # The penalty is scaled quadratically. It starts low to allow for more
-        # "chaotic" pathfinding and increases sharply in later iterations to
-        # force convergence to a low-congestion state.
-        if iterations > 1:
-            # Use a quadratic scaling factor from 0 to 1.
-            scaling_factor = (i / (iterations - 1)) ** 2
-            # The max penalty multiplier is set to be aggressive in the final iterations.
-            max_penalty_multiplier = 1.0
-            current_penalty = (
-                congestion_penalty_increment * max_penalty_multiplier * scaling_factor
+        print(f"Step 5.1.3: Refining paths (iteration {i + 1}/{iterations})...")
+        current_penalty = _calculate_congestion_penalty(
+            iterations, i, congestion_penalty_increment
+        )
+
+        for req_idx, current_request in enumerate(sorted_requests):
+            start_node = current_request["start"]
+            end_node = current_request["end"]
+
+            # --- Calculate Penalties ---
+            busbar_penalties = _calculate_busbar_crossing_penalties(
+                busbar_edges,
+                current_request["start_owner"],
+                current_request["end_owner"],
+                busbar_crossing_penalty,
             )
-        else:
-            # For a single iteration, use the base penalty.
-            current_penalty = congestion_penalty_increment
+            node_usage, congestion_usage = _calculate_congestion_usage(
+                all_paths, req_idx
+            )
+            edge_usage = {**congestion_usage}
+            for edge, penalty in busbar_penalties.items():
+                edge_usage[edge] = edge_usage.get(edge, 0) + penalty
 
-        # Pre-calculate busbar edges and their owners to avoid recalculating for each path.
-        busbar_edges = {}  # dict: edge -> owner
-        if busbar_weight is not None:
-            for u, v in graph.edges():
-                if (
-                    points[u[0]][u[1]] == busbar_weight
-                    and points[v[0]][v[1]] == busbar_weight
-                ):
-                    edge = tuple(sorted((u, v)))
-                    # Assume owner is same for both ends of a busbar segment
-                    owner = grid_owners[u[0]][u[1]]
-                    busbar_edges[edge] = owner
+            # --- Apply Penalties and Blockers ---
+            applied_penalties = _apply_penalties_to_graph(
+                graph, edge_usage, node_usage, current_penalty, start_node, end_node
+            )
+            blocked_edges = _block_connection_nodes(
+                graph, all_connection_nodes, start_node, end_node
+            )
 
-        for req_idx in range(len(sorted_requests)):
-            current_request = sorted_requests[req_idx]
-            start_node, end_node = current_request["start"], current_request["end"]
-            start_owner = current_request["start_owner"]
-            end_owner = current_request["end_owner"]
-
-            # Calculate edge and node usage from all *other* paths.
-            # Apply penalties for busbar crossings.
-            edge_usage = {}
-            for edge, owner in busbar_edges.items():
-                if not owner:
-                    edge_usage[edge] = edge_usage.get(edge, 0) + 1
-                    continue
-
-                bus_sub_name, bus_owner_id = owner
-
-                # An intra-substation connection
-                if start_owner[0] == end_owner[0]:
-                    path_sub_name = start_owner[0]
-                    # If path is inside one sub, but crosses busbar of another sub
-                    if bus_sub_name != path_sub_name:
-                        edge_usage[edge] = (
-                            edge_usage.get(edge, 0) + busbar_crossing_penalty
-                        )
-                    # If path crosses a busbar within the same sub, but not belonging to start/end owners
-                    elif bus_owner_id not in (start_owner[1], end_owner[1]):
-                        edge_usage[edge] = (
-                            edge_usage.get(edge, 0) + busbar_crossing_penalty
-                        )
-                    else:
-                        # Crossing its own busbar, small penalty
-                        edge_usage[edge] = edge_usage.get(edge, 0) + 1
-                # An inter-substation connection
-                else:
-                    path_sub_names = {start_owner[0], end_owner[0]}
-                    # If it crosses a busbar of an unrelated sub
-                    if bus_sub_name not in path_sub_names:
-                        edge_usage[edge] = (
-                            edge_usage.get(edge, 0) + busbar_crossing_penalty
-                        )
-                    else:
-                        # It's crossing a busbar of one of its own substations. This is also bad.
-                        edge_usage[edge] = (
-                            edge_usage.get(edge, 0) + busbar_crossing_penalty
-                        )
-            node_usage = {}
-            for other_req_idx, other_path in enumerate(all_paths):
-                if req_idx == other_req_idx:
-                    continue
-                if not other_path:
-                    continue
-
-                # Penalize intermediate nodes to discourage paths from crossing.
-                # We don't penalize the endpoints of paths.
-                for node in other_path[1:-1]:
-                    node_usage[node] = node_usage.get(node, 0) + 1
-
-                for j in range(len(other_path) - 1):
-                    u, v = other_path[j], other_path[j + 1]
-                    # Normalize edge to be order-independent for the undirected graph.
-                    edge = tuple(sorted((u, v)))
-                    edge_usage[edge] = edge_usage.get(edge, 0) + 1
-
-            # Temporarily apply penalties to the graph for shared edges.
-            penalized_edges = []
-            for edge, count in edge_usage.items():
-                penalty = (count**2) * current_penalty
-                if graph.has_edge(*edge):
-                    graph.edges[edge]["weight"] += penalty
-                    penalized_edges.append((edge, penalty))
-
-            # Temporarily apply penalties for shared nodes by penalizing their edges.
-            penalized_node_edges = []
-            for node, count in node_usage.items():
-                # Don't penalize the start/end nodes of the path we are currently routing.
-                if node in (start_node, end_node):
-                    continue
-
-                if graph.has_node(node):
-                    penalty = (count**2) * current_penalty
-                    for neighbor in graph.neighbors(node):
-                        edge = tuple(sorted((node, neighbor)))
-                        if graph.has_edge(*edge):
-                            graph.edges[edge]["weight"] += penalty
-                            penalized_node_edges.append((edge, penalty))
-
-            # --- Temporarily block other connection points ---
-            blocked_edges = []
-            if all_connection_nodes:
-                nodes_to_block = all_connection_nodes - {start_node, end_node}
-                for node in nodes_to_block:
-                    if graph.has_node(node):
-                        # Block all edges connected to this node
-                        for neighbor in list(graph.neighbors(node)):
-                            edge_tuple = tuple(sorted((node, neighbor)))
-                            if graph.has_edge(*edge_tuple):
-                                original_weight = graph.edges[edge_tuple]["weight"]
-                                blocked_edges.append((edge_tuple, original_weight))
-                                graph.edges[edge_tuple]["weight"] = float("inf")
-
-            # --- Heuristic for out-of-bounds penalty ---
-            heuristic = manhattan_distance
-            if "bounds" in current_request:
-                bounds = current_request["bounds"]
-                min_x, min_y, max_x, max_y = bounds
-
-                def out_of_bounds_heuristic(u, v):
-                    dist = manhattan_distance(u, v)
-                    # u is the current node in the search. (row, col) -> (y, x)
-                    y, x = u
-                    if x < min_x or x > max_x or y < min_y or y > max_y:
-                        dist += 1000000  # Very large penalty
-                    return dist
-
-                heuristic = out_of_bounds_heuristic
-
-            # Reroute the current path on the penalized graph.
+            # --- Reroute Path ---
+            heuristic = (
+                _create_out_of_bounds_heuristic(current_request["bounds"])
+                if "bounds" in current_request
+                else manhattan_distance
+            )
             new_path = find_shortest_path(graph, start_node, end_node, heuristic)
-            if new_path:  # Only update if a path was found
+            if new_path:
                 all_paths[req_idx] = new_path
 
-            # --- Unblock connection points before removing penalties ---
-            for edge, original_weight in blocked_edges:
-                if graph.has_edge(*edge):
-                    graph.edges[edge]["weight"] = original_weight
+            # --- Remove Penalties and Blockers ---
+            _unblock_connection_nodes(graph, blocked_edges)
+            _remove_penalties_from_graph(graph, applied_penalties)
 
-            # Remove the temporary penalties to prepare for the next path.
-            for edge, penalty in penalized_node_edges:
-                if graph.has_edge(*edge):
-                    graph.edges[edge]["weight"] -= penalty
-            for edge, penalty in penalized_edges:
-                if graph.has_edge(*edge):
-                    graph.edges[edge]["weight"] -= penalty
-
-        print(f"Pathfinding: Iteration {i + 1} complete.")
-
-    # --- Post-process to straighten paths ---
-    print("Pathfinding: Post-processing to straighten paths...")
+    # --- Post-process and Finalize ---
+    print("Step 5.1.4: Straightening paths...")
     all_paths = _straighten_paths(all_paths, graph, iterations=3)
-    print("Pathfinding: Straightening complete.")
 
-    # --- Re-sort paths back to original order ---
-    # Associate original indices with the final paths
-    indexed_paths = list(zip([item[0] for item in indexed_requests], all_paths))
-    # Sort by original index
-    indexed_paths.sort(key=lambda x: x[0])
-    # Extract paths in original order
-    final_paths = [path for i, path in indexed_paths]
+    # Re-sort paths back to original order
+    original_indices = [item[0] for item in indexed_requests]
+    final_paths = [path for _, path in sorted(zip(original_indices, all_paths))]
 
     return final_paths
 
@@ -522,17 +664,10 @@ def run_gridsearch(
         - The updated grid with the path marked as high-penalty.
         - The graph used for pathfinding.
     """
-
-    # --- 2. Create Graph ---
     graph = create_graph_from_grid(points)
-
-    # --- 3. Find Path ---
     path = find_shortest_path(graph, start_node, end_node)
 
-    # --- 4. Update Grid and Return ---
     if path:
-        # print(f"Path length: {len(path) - 1} steps.")
-        # print("Updating 'points' grid with the new path...")
         for r, c in path:
             points[r][c] = path_weight  # Mark path as used in the grid
 

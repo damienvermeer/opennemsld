@@ -1,31 +1,3 @@
-# CB notes
-# test comm
-"""
-general notes
-- only 66 kV and higher, no 22kv or 33kv
-- dont show isols if CB presnet, dont show double isol if there is meant to be a CB, but no CB (e.g. GNTS)
-
-import math
-
-
-single switched arrangements:
-    - need to support bus-ties on multi planar bus arrangements (Ballarat NTH). same sub, we also need to consider how the diagram will be oriented (there are CBs on both side of the single switched bus here - for the diagram)
-    - need to support subs which dont have buses, e.g. COBDEN (---[]-<>-[]--- with tx at <> for load)
-
-double switched subs:
-    - need to support single switched lines off of double switched buses (e.g. GTS)
-    -
-special cases:
-    - need to support ring bus subs, rings arnt always 4, e.g. CAMPERDOWN is 4 cb 1 isol ring, COLAC is 3c ring
-    - need to support 3-bus double switched arrangements (e.g. TTS, though i cant see any direct bus-ties, so planar bus arrangement might be possible)
-    - need to support unused bays, e.g. SMTS bay next to F2 tx on 500 kV side
-
-"""
-
-
-# one substation has many buses
-# one substation has many bays, which reference one or two buses
-
 # Standard library imports
 import math
 from dataclasses import dataclass, field
@@ -131,7 +103,25 @@ class Substation:
         y_offset: float = 0,
         owner_id: str = "main",
     ) -> draw.Group:
-        """Draw all objects associated with the substation."""
+        """Draw all objects associated with the substation.
+
+        This method iterates through a list of object definitions, draws them
+        onto the provided parent group, and marks their positions on the
+        substation's pathfinding grid. It handles various object types like
+        transformers and generators.
+
+        Args:
+            parent_group: The `draw.Group` to which the objects will be added.
+            objects_to_draw: A list of dictionaries, each defining an object.
+            params: Drawing parameters for sizes and steps.
+            x_offset: An additional X offset for all objects in the group.
+            y_offset: An additional Y offset for all objects in the group.
+            owner_id: The identifier for the owner of these objects, used for
+                pathfinding penalties.
+
+        Returns:
+            The parent group with the new objects drawn onto it.
+        """
         import math  # Import at the top for rotation calculations
 
         conn_points = {}  # Initialize conn_points here
@@ -555,9 +545,20 @@ class Substation:
 def get_substation_bbox_from_svg(
     substation: "Substation", params: "DrawingParams"
 ) -> tuple[float, float, float, float]:
-    """
-    Calculates the bounding box of a single substation by rendering it to a
-    temporary SVG and measuring it with svgelements.
+    """Calculates the bounding box of a substation by rendering it to SVG.
+
+    This function renders a substation's definition to a temporary, unrotated
+    SVG file. It then uses the `svgelements` library to parse the SVG and
+    calculate its precise bounding box. This is used to determine the
+    substation's dimensions for layout and spacing calculations.
+
+    Args:
+        substation: The `Substation` object to measure.
+        params: The drawing parameters to use for rendering.
+
+    Returns:
+        A tuple (min_x, min_y, max_x, max_y) representing the
+        unrotated bounding box relative to the substation's local origin.
     """
     # Create a temporary drawing of a fixed large size
     temp_drawing = draw.Drawing(2000, 2000, origin=(0, 0))
@@ -591,7 +592,8 @@ def get_substation_bbox_from_svg(
     temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
 
     # Save to a temporary file
-    temp_svg_path = f"temp_{substation.name.replace('?', '').replace('/', '_').replace('(', '_').replace(')', '_')}.svg"
+    safe_name = "".join(c for c in substation.name if c.isalnum() or c in ("_", "-"))
+    temp_svg_path = f"temp_{safe_name}.svg"
     temp_drawing.save_svg(temp_svg_path)
 
     try:
@@ -619,7 +621,16 @@ def get_substation_bbox_from_svg(
 def get_rotated_bbox(
     bbox: tuple[float, float, float, float], rotation_deg: int
 ) -> tuple[float, float, float, float]:
-    """Calculates the axis-aligned bounding box of a rotated rectangle."""
+    """Calculates the axis-aligned bounding box of a rotated rectangle.
+
+    Args:
+        bbox: A tuple (min_x, min_y, max_x, max_y) of the unrotated rectangle.
+        rotation_deg: The rotation angle in degrees.
+
+    Returns:
+        A tuple (min_x, min_y, max_x, max_y) representing the new
+        axis-aligned bounding box that encloses the rotated rectangle.
+    """
     if rotation_deg % 360 == 0:
         return bbox
 
@@ -657,7 +668,14 @@ def get_rotated_bbox(
 
 # --- Data Loading ---
 def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
-    """Load substations from YAML file into a dictionary."""
+    """Load substations from a YAML file into a dictionary.
+
+    Args:
+        filename: The path to the YAML file containing substation definitions.
+
+    Returns:
+        A dictionary mapping substation names to `Substation` objects.
+    """
     with open(filename, "r") as f:
         data = yaml.safe_load(f)
 
@@ -690,7 +708,19 @@ def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
 def mark_grid_point(
     sub: "Substation", x: float, y: float, weight: int = 25, owner_id: str = "main"
 ) -> None:
-    """Mark a grid point in the substation's grid_points dictionary with a weight."""
+    """Marks a grid point in the substation's grid_points dictionary.
+
+    This function stores a pathfinding weight and an owner ID for a specific
+    coordinate in the substation's local grid. This information is used later
+    to build the global pathfinding grid.
+
+    Args:
+        sub: The `Substation` object to which the grid point belongs.
+        x: The x-coordinate of the grid point.
+        y: The y-coordinate of the grid point.
+        weight: The pathfinding cost associated with this point.
+        owner_id: The identifier for the owner of this grid point.
+    """
     sub.grid_points[(x, y)] = (weight, owner_id)
 
 
@@ -704,7 +734,21 @@ def draw_switch(
     params: DrawingParams = DrawingParams(),
     colour: str = "black",
 ) -> draw.Group:
-    """Generic function to draw a switch (CB or isolator) at given coordinates."""
+    """Generic function to draw a switch (CB or isolator) at given coordinates.
+
+    Args:
+        x: The x-coordinate for the center of the switch.
+        y: The y-coordinate for the center of the switch.
+        parent_group: The `draw.Group` to which the switch will be added.
+        switch_type: The type of switch to draw (e.g., CB, ISOL).
+        orientation: The orientation of the switch ('vertical' or 'horizontal').
+        rotation_angle: The angle for isolator switches.
+        params: Drawing parameters for sizes.
+        colour: The stroke colour for the switch.
+
+    Returns:
+        The parent group with the new switch drawn onto it.
+    """
     if switch_type == SwitchType.CB:
         # Circuit breaker is drawn as a rectangle
         parent_group.append(
@@ -772,89 +816,30 @@ def draw_bay_from_string(
     y_offset: int = 0,
     owner_id: str = "main",
 ) -> draw.Group:
-    """
-    Draw a single bay based on a definition string using the new substation language.
+    """Draws a single bay based on a definition string.
+
+    This function parses a bay definition string, then iterates through the
+    elements (busbars, switches, connections) to draw them vertically. It
+    handles connecting lines between elements and alignment.
+
+    Args:
+        xoff: The x-offset for the entire bay.
+        parent_group: The `draw.Group` to which the bay will be added.
+        bay_def: The string defining the bay's layout.
+        sub: The parent `Substation` object.
+        is_first_bay: Flag indicating if this is the first bay, used for
+            drawing bus labels.
+        params: Drawing parameters for sizes and steps.
+        previous_bay_elements: A list of elements from the previous bay, used
+            to determine busbar continuity.
+        y_offset: A y-offset to align the start of the bay.
+        owner_id: The identifier for the owner of this bay.
+
+    Returns:
+        The parent group with the new bay drawn onto it.
     """
     colour = COLOUR_MAP.get(sub.voltage_kv, "black")
-
-    # Parse the definition string into elements
-    elements = []
-    char_index = 0
-
-    while char_index < len(bay_def):
-        char = bay_def[char_index]
-
-        # Handle busbar objects
-        if char == "|":
-            # Count consecutive | characters for busbar ID
-            bus_start_index = char_index
-            while char_index < len(bay_def) and bay_def[char_index] == "|":
-                char_index += 1
-            bus_id = char_index - bus_start_index
-            elements.append({"type": "busbar", "subtype": "standard", "id": bus_id})
-
-        elif char == "s":
-            elements.append({"type": "busbar", "subtype": "string"})
-            char_index += 1
-
-        elif char == "N":
-            elements.append({"type": "busbar", "subtype": "null"})
-            char_index += 1
-
-        elif char == "t":
-            # Check for 'ts' variant
-            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
-                elements.append({"type": "busbar", "subtype": "tie_cb_thin"})
-                char_index += 2
-            else:
-                elements.append({"type": "busbar", "subtype": "tie_cb"})
-                char_index += 1
-
-        elif char == "i":
-            # Check for 'is' variant
-            if char_index + 1 < len(bay_def) and bay_def[char_index + 1] == "s":
-                elements.append({"type": "busbar", "subtype": "tie_isol_thin"})
-                char_index += 2
-            else:
-                elements.append({"type": "busbar", "subtype": "tie_isol"})
-                char_index += 1
-
-        # Handle element objects
-        elif char == "x":
-            elements.append({"type": "element", "subtype": "cb"})
-            char_index += 1
-
-        elif char == "?":
-            elements.append({"type": "element", "subtype": "unknown"})
-            char_index += 1
-
-        elif char == "/":
-            elements.append({"type": "element", "subtype": "isolator"})
-            char_index += 1
-
-        elif char == "d":
-            elements.append({"type": "element", "subtype": "direct"})
-            char_index += 1
-
-        elif char == "E":
-            elements.append({"type": "element", "subtype": "empty"})
-            char_index += 1
-
-        # Handle connection objects
-        elif char.isdigit():
-            num_start_index = char_index
-            while char_index < len(bay_def) and bay_def[char_index].isdigit():
-                char_index += 1
-            conn_id = int(bay_def[num_start_index:char_index])
-            elements.append({"type": "connection", "id": conn_id})
-
-        else:
-            # Warn about unrecognised characters
-            print(
-                f"WARNING: Unrecognised character '{char}' at position {char_index} in bay definition '{bay_def}' for substation '{sub.name}'"
-            )
-            char_index += 1
-
+    elements = parse_bay_elements(bay_def)
     y_pos = -y_offset
 
     # Draw elements with proper connecting lines
@@ -955,6 +940,126 @@ def draw_bay_from_string(
     return parent_group
 
 
+def _mark_busbar_grid_points(
+    sub: "Substation",
+    xoff: float,
+    y_pos: float,
+    extend_left: bool,
+    weight: int,
+    owner_id: str,
+    params: DrawingParams,
+):
+    """Marks grid points for a busbar element.
+
+    Args:
+        sub: The `Substation` object.
+        xoff: The central x-offset of the busbar segment.
+        y_pos: The y-position of the busbar.
+        extend_left: Whether the busbar should extend further to the left.
+        weight: The pathfinding weight to assign to the grid points.
+        owner_id: The owner identifier for the grid points.
+        params: Drawing parameters.
+    """
+    x_positions = [
+        xoff - params.grid_step,
+        xoff,
+        xoff + params.grid_step,
+    ]
+    if extend_left:
+        x_positions.insert(0, xoff - 2 * params.grid_step)
+
+    for x in x_positions:
+        mark_grid_point(sub, x, y_pos, weight=weight, owner_id=owner_id)
+
+
+def _draw_standard_element_frame(
+    parent_group: draw.Group, xoff: float, y_pos: float, colour: str, params: DrawingParams
+):
+    """Draws the top and bottom connecting lines for a standard 3-step element.
+
+    Args:
+        parent_group: The `draw.Group` to draw on.
+        xoff: The x-coordinate for the element.
+        y_pos: The starting y-coordinate for the element.
+        colour: The stroke colour for the lines.
+        params: Drawing parameters.
+    """
+    # Top line
+    parent_group.append(
+        draw.Line(
+            xoff, y_pos, xoff, y_pos + params.grid_step, stroke=colour, stroke_width=2
+        )
+    )
+    # Bottom line
+    parent_group.append(
+        draw.Line(
+            xoff,
+            y_pos + 2 * params.grid_step,
+            xoff,
+            y_pos + 3 * params.grid_step,
+            stroke=colour,
+            stroke_width=2,
+        )
+    )
+
+
+def _draw_standard_element_symbol(
+    parent_group: draw.Group,
+    subtype: str,
+    xoff: float,
+    y_pos: float,
+    colour: str,
+    params: DrawingParams,
+):
+    """Draws the central symbol for a standard 3-step element.
+
+    Args:
+        parent_group: The `draw.Group` to draw on.
+        subtype: The subtype of the element ('cb', 'isolator', 'unknown').
+        xoff: The x-coordinate for the element.
+        y_pos: The starting y-coordinate for the element.
+        colour: The stroke colour for the symbol.
+        params: Drawing parameters.
+    """
+    symbol_center_y = y_pos + params.grid_step + (params.grid_step / 2)
+    if subtype == "cb":
+        parent_group.append(
+            draw.Rectangle(
+                xoff - params.grid_step / 2,
+                symbol_center_y - params.grid_step / 2,
+                params.grid_step,
+                params.grid_step,
+                fill="white",
+                stroke=colour,
+            )
+        )
+    elif subtype == "unknown":
+        parent_group.append(
+            draw.Text(
+                "?",
+                font_size=params.grid_step,
+                x=xoff,
+                y=symbol_center_y,
+                text_anchor="middle",
+                dominant_baseline="central",
+                fill=colour,
+                stroke_width=0,
+            )
+        )
+    elif subtype == "isolator":
+        isolator_half_size = params.grid_step / 2
+        parent_group.append(
+            draw.Line(
+                xoff - isolator_half_size,
+                symbol_center_y - isolator_half_size,
+                xoff + isolator_half_size,
+                symbol_center_y + isolator_half_size,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+
+
 def draw_busbar_object(
     element,
     xoff,
@@ -967,7 +1072,26 @@ def draw_busbar_object(
     previous_bay_elements=None,
     owner_id: str = "main",
 ):
-    """Draw a busbar object at the specified position."""
+    """Draw a busbar object at the specified position.
+
+    Handles drawing different types of busbars (standard, string, tie-ins)
+    and marking their grid points for pathfinding.
+
+    Args:
+        element: The dictionary defining the busbar element.
+        xoff: The x-offset for the bay.
+        y_pos: The y-position for the busbar.
+        parent_group: The `draw.Group` to draw on.
+        sub: The parent `Substation` object.
+        is_first_bay: Flag for drawing bus labels.
+        params: Drawing parameters.
+        colour: The stroke colour.
+        previous_bay_elements: Elements of the previous bay for continuity checks.
+        owner_id: The owner identifier for pathfinding.
+
+    Returns:
+        The new y-position after drawing the object.
+    """
     subtype = element["subtype"]
 
     # Check if previous bay has a busbar at the same y position for continuity
@@ -1003,20 +1127,8 @@ def draw_busbar_object(
             )
         )
         # Mark grid points with BUSBAR_WEIGHT
-        if extend_left:
-            mark_grid_point(
-                sub,
-                xoff - 2 * params.grid_step,
-                y_pos,
-                weight=BUSBAR_WEIGHT,
-                owner_id=owner_id,
-            )
-        mark_grid_point(
-            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        _mark_busbar_grid_points(
+            sub, xoff, y_pos, extend_left, BUSBAR_WEIGHT, owner_id, params
         )
 
         # Add text label if first bay
@@ -1053,38 +1165,14 @@ def draw_busbar_object(
             )
         )
         # Mark grid points with BUSBAR_WEIGHT
-        if extend_left:
-            mark_grid_point(
-                sub,
-                xoff - 2 * params.grid_step,
-                y_pos,
-                weight=BUSBAR_WEIGHT,
-                owner_id=owner_id,
-            )
-        mark_grid_point(
-            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        _mark_busbar_grid_points(
+            sub, xoff, y_pos, extend_left, BUSBAR_WEIGHT, owner_id, params
         )
 
     elif subtype == "null":
         # No line drawn, but mark grid points spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
-        if extend_left:
-            mark_grid_point(
-                sub,
-                xoff - 2 * params.grid_step,
-                y_pos,
-                weight=BUSBAR_WEIGHT,
-                owner_id=owner_id,
-            )
-        mark_grid_point(
-            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        _mark_busbar_grid_points(
+            sub, xoff, y_pos, extend_left, BUSBAR_WEIGHT, owner_id, params
         )
 
     elif subtype in ["tie_cb", "tie_cb_thin"]:
@@ -1133,28 +1221,8 @@ def draw_busbar_object(
         )
 
         # Mark grid points with ELEMENT_WEIGHT
-        if extend_left:
-            mark_grid_point(
-                sub,
-                xoff - 2 * params.grid_step,
-                y_pos,
-                weight=ELEMENT_WEIGHT,
-                owner_id=owner_id,
-            )
-        mark_grid_point(
-            sub,
-            xoff - params.grid_step,
-            y_pos,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff + params.grid_step,
-            y_pos,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
+        _mark_busbar_grid_points(
+            sub, xoff, y_pos, extend_left, ELEMENT_WEIGHT, owner_id, params
         )
 
     elif subtype in ["tie_isol", "tie_isol_thin"]:
@@ -1204,28 +1272,8 @@ def draw_busbar_object(
         )
 
         # Mark grid points with ELEMENT_WEIGHT
-        if extend_left:
-            mark_grid_point(
-                sub,
-                xoff - 2 * params.grid_step,
-                y_pos,
-                weight=ELEMENT_WEIGHT,
-                owner_id=owner_id,
-            )
-        mark_grid_point(
-            sub,
-            xoff - params.grid_step,
-            y_pos,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff + params.grid_step,
-            y_pos,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
+        _mark_busbar_grid_points(
+            sub, xoff, y_pos, extend_left, ELEMENT_WEIGHT, owner_id, params
         )
 
     return y_pos
@@ -1234,194 +1282,37 @@ def draw_busbar_object(
 def draw_element_object(
     element, xoff, y_pos, parent_group, sub, params, colour, owner_id: str = "main"
 ):
-    """Draw an element object at the specified position."""
+    """Draw an element object at the specified position.
+
+    Handles drawing different types of bay elements (CB, isolator, etc.)
+    and marking their grid points for pathfinding.
+
+    Args:
+        element: The dictionary defining the element.
+        xoff: The x-offset for the bay.
+        y_pos: The starting y-position for the element.
+        parent_group: The `draw.Group` to draw on.
+        sub: The parent `Substation` object.
+        params: Drawing parameters.
+        colour: The stroke colour.
+        owner_id: The owner identifier for pathfinding.
+
+    Returns:
+        The new y-position after drawing the object.
+    """
     subtype = element["subtype"]
 
-    if subtype == "cb":
-        # Circuit breaker: 25px line + square + 25px line
-        # First vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
+    if subtype in ["cb", "unknown", "isolator"]:
+        _draw_standard_element_frame(parent_group, xoff, y_pos, colour, params)
+        _draw_standard_element_symbol(parent_group, subtype, xoff, y_pos, colour, params)
+        for i in range(4):
+            mark_grid_point(
+                sub,
                 xoff,
-                y_pos,
-                xoff,
-                y_pos + params.grid_step,
-                stroke=colour,
-                stroke_width=2,
+                y_pos + i * params.grid_step,
+                weight=ELEMENT_WEIGHT,
+                owner_id=owner_id,
             )
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # Square (full grid step size, centered in middle grid step)
-        square_center_y = y_pos + params.grid_step + (params.grid_step // 2)
-        parent_group.append(
-            draw.Rectangle(
-                xoff - params.grid_step // 2,
-                square_center_y - params.grid_step // 2,
-                params.grid_step,
-                params.grid_step,
-                fill="white",
-                stroke=colour,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 2 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # Second vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
-                xoff,
-                y_pos + 2 * params.grid_step,
-                xoff,
-                y_pos + 3 * params.grid_step,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 3 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-    elif subtype == "unknown":
-        # Unknown switch: 25px line + '?' + 25px line
-        # First vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
-                xoff,
-                y_pos,
-                xoff,
-                y_pos + params.grid_step,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # Question mark (centered in middle grid step)
-        q_mark_center_y = y_pos + params.grid_step + (params.grid_step // 2)
-        parent_group.append(
-            draw.Text(
-                "?",
-                font_size=params.grid_step,
-                x=xoff,
-                y=q_mark_center_y,
-                text_anchor="middle",
-                dominant_baseline="central",
-                fill=colour,
-                stroke_width=0,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 2 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # Second vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
-                xoff,
-                y_pos + 2 * params.grid_step,
-                xoff,
-                y_pos + 3 * params.grid_step,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 3 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-    elif subtype == "isolator":
-        # Isolator: 25px line + 45° line + 25px line
-        # First vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
-                xoff,
-                y_pos,
-                xoff,
-                y_pos + params.grid_step,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # 45-degree line (centered in middle grid step)
-        isolator_center_y = y_pos + params.grid_step + (params.grid_step // 2)
-        isolator_half_size = params.grid_step // 2
-        parent_group.append(
-            draw.Line(
-                xoff - isolator_half_size,
-                isolator_center_y - isolator_half_size,
-                xoff + isolator_half_size,
-                isolator_center_y + isolator_half_size,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 2 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-
-        # Second vertical line (exactly 25px)
-        parent_group.append(
-            draw.Line(
-                xoff,
-                y_pos + 2 * params.grid_step,
-                xoff,
-                y_pos + 3 * params.grid_step,
-                stroke=colour,
-                stroke_width=2,
-            )
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 3 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
 
     elif subtype == "direct":
         # Direct connection: single vertical line spanning 3*GRID_STEP
@@ -1435,28 +1326,14 @@ def draw_element_object(
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 2 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
-        mark_grid_point(
-            sub,
-            xoff,
-            y_pos + 3 * params.grid_step,
-            weight=ELEMENT_WEIGHT,
-            owner_id=owner_id,
-        )
+        for i in range(4):
+            mark_grid_point(
+                sub,
+                xoff,
+                y_pos + i * params.grid_step,
+                weight=ELEMENT_WEIGHT,
+                owner_id=owner_id,
+            )
 
     elif subtype == "empty":
         # Empty element: no drawing, no grid marking, but advance position
@@ -1466,7 +1343,15 @@ def draw_element_object(
 
 
 def parse_bay_elements(bay_def: str) -> list:
-    """Parse a bay definition string into elements for continuity checking."""
+    """Parse a bay definition string into a list of element dictionaries.
+
+    Args:
+        bay_def: The string defining the bay's layout.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a parsed
+        element from the definition string.
+    """
     elements = []
     char_index = 0
 
@@ -1557,7 +1442,22 @@ def draw_connection_object(
     draw_dot: bool = False,
     owner_id: str = "main",
 ):
-    """Draw a connection object at the specified position."""
+    """Draw a connection object at the specified position.
+
+    This function doesn't draw a visible object itself (unless a dot is
+    requested) but records the location of a named connection point for
+    later pathfinding between substations.
+
+    Args:
+        element: The dictionary defining the connection.
+        xoff: The x-coordinate of the connection point.
+        y_pos: The y-coordinate of the connection point.
+        parent_group: The `draw.Group` to which a dot might be added.
+        sub: The parent `Substation` object.
+        colour: The colour for the optional dot.
+        draw_dot: Whether to draw a visible dot at the connection point.
+        owner_id: The owner identifier for pathfinding.
+    """
     conn_id = element["id"]
     connection_name = sub.connections.get(conn_id)
 
@@ -1583,6 +1483,24 @@ def get_substation_group(
     rotation=0,
     draw_title: bool = True,
 ):
+    """Creates a `draw.Group` containing all SVG elements for a substation.
+
+    This function orchestrates the drawing of all bays, objects, and titles
+    for a single substation into a group. The group is rotated around its
+    calculated center.
+
+    Args:
+        sub: The `Substation` object to draw.
+        params: Drawing parameters.
+        bbox: The unrotated bounding box of the substation, used to find the
+            rotation center.
+        rotation: The rotation angle in degrees.
+        draw_title: Whether to draw the substation's name as a title.
+
+    Returns:
+        A `draw.Group` containing the complete visual representation of the
+        substation.
+    """
     min_x, min_y, max_x, max_y = bbox
     center_x = (min_x + max_x) / 2
     center_y = (min_y + max_y) / 2
@@ -1775,7 +1693,15 @@ def get_substation_group(
 
 # --- Layout and Positioning Functions ---
 def calculate_initial_scaled_positions(substations: list[Substation]):
-    """Converts lat/lon to UTM and scales them to fit the map."""
+    """Converts lat/lon to UTM and scales them to fit the map.
+
+    This function takes a list of substations, converts their geographic
+    coordinates to UTM, and then scales and translates these UTM coordinates
+    to fit within the main drawing canvas dimensions (`MAP_DIMS`).
+
+    Args:
+        substations: A list of `Substation` objects to position.
+    """
     if not substations:
         return
 
@@ -1811,11 +1737,9 @@ def calculate_initial_scaled_positions(substations: list[Substation]):
     # Use margin of 5% on each side (10% total)
     margin = MAP_DIMS * 0.05
 
-    print("\nScaled coordinates:")
     for sub in substations:
         sub.scaled_x = (sub.x - min_x) * scale_factor + margin
         sub.scaled_y = (sub.y - min_y) * scale_factor + margin
-        print(f"{sub.name}: ({sub.scaled_x:.1f}, {sub.scaled_y:.1f})")
 
 
 def calculate_connection_points(
@@ -1823,7 +1747,23 @@ def calculate_connection_points(
     params: DrawingParams,
     bboxes: dict[str, tuple[float, float, float, float]],
 ) -> dict[str, list[dict]]:
-    """Calculates global coordinates for all connection points."""
+    """Calculates global coordinates for all connection points.
+
+    This function iterates through all substations and their locally defined
+    connection points. It applies the substation's final rotation and
+    translation to convert these local points into global coordinates on the
+    main canvas.
+
+    Args:
+        substations: A list of all `Substation` objects.
+        params: Drawing parameters.
+        bboxes: A dictionary mapping substation names to their unrotated
+            bounding boxes.
+
+    Returns:
+        A dictionary where keys are line definition names and values are lists
+        of connection point data (including global coordinates).
+    """
     all_connections: dict[str, list[dict]] = {}
     for sub in substations:
         min_x, min_y, max_x, max_y = bboxes[sub.name]
@@ -1881,7 +1821,21 @@ def draw_connections(
     step: int,
     sub_global_bounds: dict,
 ):
-    """Finds paths and draws connections between substations."""
+    """Finds paths and draws connections between substations.
+
+    This function prepares pathfinding requests from the global connection
+    points, calls the pathfinder to get the routes, and then draws the
+    resulting paths onto the main drawing canvas.
+
+    Args:
+        drawing: The main `draw.Drawing` object.
+        all_connections: A dictionary of all connection points.
+        points: The 2D grid of pathfinding weights.
+        grid_owners: The 2D grid of pathfinding point owners.
+        step: The grid step size.
+        sub_global_bounds: A dictionary mapping substation names to their
+            global bounding boxes on the grid.
+    """
     num_steps = len(points)
 
     def _distance(a, b) -> float:
@@ -1953,7 +1907,7 @@ def draw_connections(
         path_requests.append(request)
         path_metadata.append({"colour": colour})
 
-    print(f"Finding {len(path_requests)} paths collectively...")
+    print(f"Step 5.1: Finding {len(path_requests)} paths...")
     try:
         all_paths = findpath.run_all_gridsearches(
             path_requests=path_requests,
@@ -2041,16 +1995,19 @@ def draw_connections(
 def render_substation_svg(
     substation: Substation, params: DrawingParams = None, filename: str = None
 ) -> str:
-    """
-    Render a single substation as an SVG image for documentation purposes.
+    """Renders a single substation as a standalone SVG image.
+
+    This is primarily used for generating documentation images. It calculates
+    the required SVG dimensions, centers the substation, adds a title, and
+    optionally saves it to a file.
 
     Args:
-        substation: The substation to render
-        params: Drawing parameters (uses defaults if None)
-        filename: Optional filename to save the SVG (if None, returns SVG string)
+        substation: The `Substation` object to render.
+        params: Drawing parameters. If None, defaults are used.
+        filename: If provided, the SVG is saved to this path.
 
     Returns:
-        SVG content as a string
+        The SVG content as a string.
     """
     if params is None:
         params = DrawingParams()
@@ -2178,12 +2135,11 @@ def render_substation_svg(
 def generate_substation_documentation_svgs(
     substations: list[Substation], output_dir: str = "substation_docs"
 ):
-    """
-    Generate individual SVG files for each substation for documentation purposes.
+    """Generates individual SVG files for each substation for documentation.
 
     Args:
-        substations: List of substations to render
-        output_dir: Directory to save the SVG files
+        substations: A list of `Substation` objects to render.
+        output_dir: The directory where the SVG files will be saved.
     """
     import os
 
@@ -2216,7 +2172,17 @@ def generate_substation_documentation_svgs(
 def generate_output_files(
     drawing: draw.Drawing, substations: list[Substation], sub_bboxes: dict
 ):
-    """Saves the SVG and generates the final HTML file."""
+    """Saves the main SVG and generates the final HTML file.
+
+    This function saves the complete drawing to an SVG file, then embeds that
+    SVG content into an HTML template. It also injects location data for
+    interactive markers into the HTML.
+
+    Args:
+        drawing: The final `draw.Drawing` object.
+        substations: The list of all `Substation` objects.
+        sub_bboxes: A dictionary of substation bounding boxes.
+    """
     drawing.save_svg(OUTPUT_SVG)
 
     locations_data = []
@@ -2273,63 +2239,77 @@ def generate_output_files(
     with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print(f"\nGenerated {OUTPUT_HTML} with embedded SVG.")
+    print(f"Step 6.1: Generated {OUTPUT_HTML} with embedded SVG.")
 
 
 # --- Main Execution ---
-def main():
-    """Main function to run the SLD generation process."""
+def _handle_cli_args(substation_map: dict[str, Substation]) -> bool:
+    """Handles command-line arguments for special modes.
+
+    Checks for arguments like `--docs` or `--single` to run specific
+    generation tasks instead of the full map generation.
+
+    Args:
+        substation_map: The dictionary of all loaded substations.
+
+    Returns:
+        True if a CLI argument was handled (and the main process should exit),
+        False otherwise.
+    """
     import sys
 
-    # Check for command line arguments
-    if len(sys.argv) > 1 and sys.argv[1] == "--docs":
-        # Generate documentation SVGs
-        substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
-        substations = list(substation_map.values())
-        generate_substation_documentation_svgs(substations)
-        return
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--docs":
+            substations = list(substation_map.values())
+            generate_substation_documentation_svgs(substations)
+            return True
+        if sys.argv[1] == "--single":
+            if len(sys.argv) < 3:
+                print("Usage: python sld.py --single <substation_name>")
+                return True
+            substation_name = sys.argv[2]
+            if substation_name not in substation_map:
+                print(f"Substation '{substation_name}' not found.")
+                print(f"Available substations: {', '.join(substation_map.keys())}")
+                return True
+            substation = substation_map[substation_name]
+            filename = f"{substation_name.replace(' ', '_')}_single.svg"
+            render_substation_svg(substation, filename=filename)
+            return True
+    return False
 
-    if len(sys.argv) > 1 and sys.argv[1] == "--single":
-        # Generate single substation SVG
-        if len(sys.argv) < 3:
-            print("Usage: python sld.py --single <substation_name>")
-            return
 
-        substation_name = sys.argv[2]
-        substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
+def _prepare_substation_layout(
+    substations: list[Substation], params: DrawingParams
+) -> dict:
+    """Calculates layout, spacing, and final positions for all substations.
 
-        if substation_name not in substation_map:
-            print(f"Substation '{substation_name}' not found.")
-            print(f"Available substations: {', '.join(substation_map.keys())}")
-            return
+    This function orchestrates the entire layout process:
+    1. Calculates initial scaled positions from lat/lon.
+    2. Determines bounding boxes for each substation.
+    3. Uses the rectangle spacing algorithm to prevent overlaps.
+    4. Sets the final `use_x` and `use_y` coordinates for drawing.
 
-        substation = substation_map[substation_name]
-        filename = f"{substation_name.replace(' ', '_')}_single.svg"
-        render_substation_svg(substation, filename=filename)
-        return
+    Args:
+        substations: The list of all `Substation` objects.
+        params: Drawing parameters.
 
-    params = DrawingParams()
-
-    # 1. Load data
-    substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
-    substations = list(substation_map.values())
-
-    # 2. Calculate initial positions
+    Returns:
+        A dictionary mapping substation names to their calculated unrotated
+        bounding boxes.
+    """
     calculate_initial_scaled_positions(substations)
 
-    # 3. Apply network layout adjustments
-    print("Calculating substation bounding boxes...")
+    print("Step 2.1: Calculating substation bounding boxes...")
     sub_bboxes = {}
     for sub in substations:
         min_x, min_y, max_x, max_y = get_substation_bbox_from_svg(sub, params)
-        # Snap to closest grid point
         min_x = round(min_x / params.grid_step) * params.grid_step
         min_y = round(min_y / params.grid_step) * params.grid_step
         max_x = round(max_x / params.grid_step) * params.grid_step
         max_y = round(max_y / params.grid_step) * params.grid_step
         sub_bboxes[sub.name] = (min_x, min_y, max_x, max_y)
 
-    # Snap rotations and calculate rotated bboxes for spacing
     rotated_sub_bboxes = {}
     for sub in substations:
         sub.rotation = round(sub.rotation / 90) * 90
@@ -2337,11 +2317,9 @@ def main():
             sub_bboxes[sub.name], sub.rotation
         )
 
-    # Calculate dynamic padding for each substation based on its area
     MIN_PADDING_STEPS = 6
     PADDING_RATIO = 35
     paddings_in_steps = []
-    # The order of substations must match the order of initial_rects
     for sub in substations:
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
         width_px = max_x - min_x
@@ -2349,11 +2327,9 @@ def main():
         width_grid_steps = width_px / params.grid_step
         height_grid_steps = height_px / params.grid_step
         area_grid_steps = width_grid_steps * height_grid_steps
-
         padding = max(MIN_PADDING_STEPS, round(area_grid_steps / PADDING_RATIO))
         paddings_in_steps.append(padding)
-
-    print(f"Dynamic padding steps (per substation): {paddings_in_steps}")
+    print(f"Step 2.2: Calculated dynamic padding: {paddings_in_steps}")
 
     initial_rects = []
     for sub in substations:
@@ -2366,6 +2342,7 @@ def main():
         y2 = sub.scaled_y + height / 2
         initial_rects.append((x1, y1, x2, y2))
 
+    print("Step 2.3: Spacing rectangles to avoid overlap...")
     shifts = space_rectangles(
         rectangles=initial_rects,
         grid_size=params.grid_step,
@@ -2373,73 +2350,65 @@ def main():
         padding_steps=paddings_in_steps,
     )
 
-    # 4. Calculate final drawing positions (use_x, use_y)
+    print("Step 2.4: Finalizing substation positions...")
     for i, sub in enumerate(substations):
         shift_x, shift_y = shifts[i]
-        sub.use_x = sub.scaled_x + shift_x
-        # Invert the Y shift to match SVG coordinate system (0,0 is top-left)
-        sub.use_y = sub.scaled_y + shift_y
+        sub.use_x = round((sub.scaled_x + shift_x) / params.grid_step) * params.grid_step
+        sub.use_y = round((sub.scaled_y + shift_y) / params.grid_step) * params.grid_step
 
-    # snap to the nearest 25px grid
-    for sub in substations:
-        sub.use_x = round(sub.use_x / params.grid_step) * params.grid_step
-        sub.use_y = round(sub.use_y / params.grid_step) * params.grid_step
+    return sub_bboxes
 
-    # 5. Create substation drawing groups
-    substation_groups = {
-        sub.name: get_substation_group(
-            sub, params, sub_bboxes[sub.name], rotation=sub.rotation
-        )
-        for sub in substations
-    }
 
-    # 6. Draw substations onto the main canvas
-    drawing = draw.Drawing(MAP_DIMS, MAP_DIMS, origin=(0, 0))
-    drawing.append(draw.Rectangle(0, 0, MAP_DIMS, MAP_DIMS, fill="transparent"))
-    for sub in substations:
-        # Use direct coordinates without inversion
-        drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
+def _populate_pathfinding_grid(
+    substations: list[Substation],
+    sub_bboxes: dict,
+    params: DrawingParams,
+) -> tuple[list[list[int]], list[list[tuple[str, str]]], dict]:
+    """Populates the grid with weights and boundaries for pathfinding.
 
-    # 7. Prepare for and draw connections
+    This function creates the main data structures for the pathfinder. It
+    marks the grid with weights based on where substations and their
+    components are located, applying rotations and translations to place them
+    correctly in the global grid space.
+
+    Args:
+        substations: The list of all `Substation` objects.
+        sub_bboxes: A dictionary of substation bounding boxes.
+        params: Drawing parameters.
+
+    Returns:
+        A tuple containing:
+        - points: The 2D grid of pathfinding weights.
+        - grid_owners: The 2D grid of owner IDs for each point.
+        - sub_global_bounds: A dictionary mapping substation names to their
+          global bounding boxes on the grid.
+    """
     num_steps = MAP_DIMS // GRID_STEP + 1
     points = [[0 for _ in range(num_steps)] for _ in range(num_steps)]
     grid_owners = [[None for _ in range(num_steps)] for _ in range(num_steps)]
     sub_global_bounds = {}
 
-    # Mark all grid points occupied by substations
     for sub in substations:
         min_x, min_y, max_x, max_y = sub_bboxes[sub.name]
-        box_margin = 50  # Extra margin around boxes for better path finding
+        box_margin = 50
 
-        # The bounding box needs to be rotated to correctly mark the grid
         rotation_rad = math.radians(sub.rotation)
-        center_x = (min_x + max_x) / 2
-        center_y = (min_y + max_y) / 2
+        center_x = round(((min_x + max_x) / 2) / params.grid_step) * params.grid_step
+        center_y = round(((min_y + max_y) / 2) / params.grid_step) * params.grid_step
 
-        # Snap rotation center to match get_substation_group
-        grid_step = params.grid_step
-        center_x = round(center_x / grid_step) * grid_step
-        center_y = round(center_y / grid_step) * grid_step
-
-        corners = [
-            (min_x, min_y),
-            (max_x, min_y),
-            (max_x, max_y),
-            (min_x, max_y),
-        ]
+        corners = [(min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, max_y)]
         rotated_corners = []
         for x, y in corners:
             rel_x = x - center_x
             rel_y = y - center_y
-            # Rotate (for Y-down coordinate system, this is a clockwise rotation)
             rot_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(rotation_rad)
             rot_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(rotation_rad)
             rotated_corners.append((rot_x + center_x, rot_y + center_y))
 
-        rotated_xs = [pt[0] for pt in rotated_corners]
-        rotated_ys = [pt[1] for pt in rotated_corners]
-        rot_min_x, rot_max_x = min(rotated_xs), max(rotated_xs)
-        rot_min_y, rot_max_y = min(rotated_ys), max(rotated_ys)
+        rot_min_x = min(p[0] for p in rotated_corners)
+        rot_max_x = max(p[0] for p in rotated_corners)
+        rot_min_y = min(p[1] for p in rotated_corners)
+        rot_max_y = max(p[1] for p in rotated_corners)
 
         grid_min_x = max(0, int((sub.use_x + rot_min_x - box_margin) / GRID_STEP))
         grid_min_y = max(0, int((sub.use_y + rot_min_y - box_margin) / GRID_STEP))
@@ -2451,113 +2420,74 @@ def main():
         )
         sub_global_bounds[sub.name] = (grid_min_x, grid_min_y, grid_max_x, grid_max_y)
 
-        # Mark grid cells within the bounding box as generally occupied.
         for grid_y in range(grid_min_y, grid_max_y + 1):
             for grid_x in range(grid_min_x, grid_max_x + 1):
-                points[grid_y][grid_x] = 1  # Mark as occupied
+                points[grid_y][grid_x] = 1
                 grid_owners[grid_y][grid_x] = (sub.name, "main")
 
-        # Overwrite with specific weights from the substation's grid_points to allow
-        # for correct pathfinding costs through elements.
         cos_r = math.cos(rotation_rad)
         sin_r = math.sin(rotation_rad)
         for (local_x, local_y), (weight, owner_id) in sub.grid_points.items():
-            # Transform local point to global coordinates
             rel_x = local_x - center_x
             rel_y = local_y - center_y
-            # Rotate (for Y-down coordinate system, this is a clockwise rotation)
             rotated_x = rel_x * cos_r + rel_y * sin_r
             rotated_y = -rel_x * sin_r + rel_y * cos_r
-
             global_x = sub.use_x + (rotated_x + center_x)
             global_y = sub.use_y + (rotated_y + center_y)
-
             grid_x = int(round(global_x / GRID_STEP))
             grid_y = int(round(global_y / GRID_STEP))
-
             if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
                 points[grid_y][grid_x] = weight
                 grid_owners[grid_y][grid_x] = (sub.name, owner_id)
-    all_connections: dict[str, list[dict]] = calculate_connection_points(
-        substations, params, sub_bboxes
+
+    return points, grid_owners, sub_global_bounds
+
+
+def main():
+    """Main function to run the SLD generation process."""
+    print("Step 1: Loading substation data...")
+    substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
+    if _handle_cli_args(substation_map):
+        return
+
+    params = DrawingParams()
+    substations = list(substation_map.values())
+
+    # 1. Prepare layout
+    print("Step 2: Preparing substation layout...")
+    sub_bboxes = _prepare_substation_layout(substations, params)
+
+    # 2. Create substation drawing groups
+    print("Step 3: Creating substation drawing groups...")
+    substation_groups = {
+        sub.name: get_substation_group(
+            sub, params, sub_bboxes[sub.name], rotation=sub.rotation
+        )
+        for sub in substations
+    }
+
+    # 3. Draw substations onto the main canvas
+    print("Step 4: Drawing substations on canvas...")
+    drawing = draw.Drawing(MAP_DIMS, MAP_DIMS, origin=(0, 0))
+    drawing.append(draw.Rectangle(0, 0, MAP_DIMS, MAP_DIMS, fill="transparent"))
+    for sub in substations:
+        drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
+
+    # 4. Prepare for and draw connections
+    print("Step 5: Preparing and drawing connections...")
+    points, grid_owners, sub_global_bounds = _populate_pathfinding_grid(
+        substations, sub_bboxes, params
     )
+    all_connections = calculate_connection_points(substations, params, sub_bboxes)
     draw_connections(
         drawing, all_connections, points, grid_owners, GRID_STEP, sub_global_bounds
     )
 
-    # Draw bounding boxes with safety margin for each substation to debug overlaps
-    for sub in substations:
-        min_x, min_y, max_x, max_y = sub_bboxes[sub.name]
-
-        # The drawing group for the substation is already rotated.
-        # To draw the bounding box correctly, we need to wrap it in the same rotation.
-        center_x = (min_x + max_x) / 2
-        center_y = (min_y + max_y) / 2
-        rotation = sub.rotation
-
-        # Create a group for the bounding boxes and apply the same transform as the substation
-        # The substation group is just `Use(group, x, y)`. The group itself has the rotation.
-        # So I need to apply the same transform to my bbox group.
-        sub_group_transform = substation_groups[sub.name].args.get("transform")
-        bbox_group = draw.Group(
-            transform=sub_group_transform,
-        )
-
-        # Draw actual bounding box (local coordinates, will be transformed by group)
-        bbox_group.append(
-            draw.Rectangle(
-                min_x,
-                min_y,
-                max_x - min_x,
-                max_y - min_y,
-                fill="none",
-                stroke="grey",
-                stroke_width=2,
-                stroke_dasharray="5,5",
-                opacity=0.5,
-            )
-        )
-
-        # The bbox group needs to be placed at the same spot as the substation group
-        drawing.append(draw.Use(bbox_group, sub.use_x, sub.use_y))
-
-        # Draw center point for reference - this should be the final, global center of the bbox
-        # 1. Bbox center in local coords (snapped to grid)
-        local_center_x = (min_x + max_x) / 2
-        local_center_y = (min_y + max_y) / 2
-        grid_step = params.grid_step
-        local_center_x = round(local_center_x / grid_step) * grid_step
-        local_center_y = round(local_center_y / grid_step) * grid_step
-
-        # 2. The group is rotated around the snapped local center and then translated by (use_x, use_y).
-        # The snapped center point itself does not move during rotation.
-        # So its final global position is the translation offset + its local position.
-        global_center_x = sub.use_x + local_center_x
-        global_center_y = sub.use_y + local_center_y
-        # drawing.append(draw.Circle(global_center_x, global_center_y, 5, fill="blue"))
-
-    # draw a grey dot at each grid point
-    # for y in range(num_steps):
-    #     for x in range(num_steps):
-    #         weight = points[y][x]
-    #         if weight == 0:
-    #             col = "green"
-    #         elif weight > 10:
-    #             col = "red"
-    #         else:
-    #             col = "orange"
-    #         drawing.append(draw.Circle(x * GRID_STEP, y * GRID_STEP, 3, fill=col))
-
-    # Draw circles at connection points for debugging
-    # for connection in all_connections.values():
-    #     for point in connection:
-    #         coords = point["coords"]
-    #         voltage = point["voltage"]
-    #         colour = COLOUR_MAP.get(voltage, "black")
-    #         drawing.append(draw.Circle(coords[0], coords[1], 5, fill=colour))
-
-    # 9. Generate output files
+    # 5. Generate output files
+    print("Step 6: Generating output files...")
     generate_output_files(drawing, substations, sub_bboxes)
+
+    print("\nSLD generation complete.")
 
 
 if __name__ == "__main__":
