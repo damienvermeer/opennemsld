@@ -42,7 +42,7 @@ substations:
           w1: 220
           w2: 1
         rel_x: 5
-        rel_y: 6
+        rel_y: 7
         connections:
           1: VIC-220-KIAMALSC
       - type: gen
@@ -53,7 +53,7 @@ substations:
             Kiamal Synchronous Condenser
             190 MVAr
         rel_x: 10
-        rel_y: 6
+        rel_y: 7
     child_definitions:
       - def: |
           1dsx
@@ -301,10 +301,10 @@ substations:
     child_definitions:
       - def: |
           sx
-          s
-          1sx
+          1s
+          sx
         voltage_kv: 33
-        rel_x: -1
+        rel_x: -2
         rel_y: 10
         connections:
           1: VIC-220-MRTS-MMWF-TX-33
@@ -316,7 +316,7 @@ substations:
               info: |
                 Murra Warra Wind Farm 1
                 64 x 3.70 = 226 MW
-            rel_x: 2
+            rel_x: 0
             rel_y: 4
           - type: gen
             metadata:
@@ -325,7 +325,7 @@ substations:
               info: |
                 Murra Warra Wind Farm 2
                 38 x 5.5 = 209 MW
-            rel_x: 6
+            rel_x: 4
             rel_y: 4
   - name: Horsham (HOTS)
     lat: -36.722206
@@ -2271,8 +2271,8 @@ substations:
       1: VIC-500-CBTS-HWTS-4
       2: VIC-500-LYPS-HWTS-3
       3: VIC-500-HWTS-ROTS-3
-      4: hwts lyps2
-      5: htws lyps1
+      4: VIC-500-LYPS-HWTS-2
+      5: VIC-500-LYPS-HWTS-1
       6: VIC-500-HWTS-TX-A4
       7: VIC-500-SMTS-HWTS-2
       8: VIC-500-HWTS-TX-A3
@@ -2281,39 +2281,39 @@ substations:
       11: VIC-500-HWTS-TX-A2
 
     objects:
-      - type: tx-lr
+      - type: tx-ud
         metadata:
           w1: 500
           w2: 220
-        rel_x: 25
-        rel_y: 0
+        rel_x: 0
+        rel_y: 14
         connections:
           1: VIC-500-HWTS-TX-A1
           2: VIC-220-HWPS-TX-A1/LINE-1
-      - type: tx-lr
+      - type: tx-ud
         metadata:
           w1: 500
           w2: 220
-        rel_x: 25
-        rel_y: 4
+        rel_x: 4
+        rel_y: 14
         connections:
           1: VIC-500-HWTS-TX-A2
           2: VIC-220-HWPS-TX-A2/LINE-2
-      - type: tx-lr
+      - type: tx-ud
         metadata:
           w1: 500
           w2: 220
-        rel_x: 25
-        rel_y: 8
+        rel_x: 8
+        rel_y: 14
         connections:
           1: VIC-500-HWTS-TX-A3
           2: VIC-220-HWPS-TX-A3/LINE-3
-      - type: tx-lr
+      - type: tx-ud
         metadata:
           w1: 500
           w2: 220
-        rel_x: 25
-        rel_y: 12
+        rel_x: 12
+        rel_y: 14
         connections:
           1: VIC-500-HWTS-TX-A4
           2: VIC-220-HWPS-TX-A4/LINE-4
@@ -2382,25 +2382,255 @@ substations:
       |E7x||
       |x8x||
       |x9x||
-      10x|x11xx||
+      10x|x11x||
     buses:
       1: "1"
       2: "2"
       3: "3"
       4: "4"
     connections:
-      1: lyps a1 tx for valley power
-      2: lyps bllc
-      3: lyps unt B2
-      4: lyps unit B1
+      1: VIC-500-LYPS-TX-A?
+      2: VIC-500-LYPS-BLLC
+      3: VIC-500-LYPS-GEN-B2
+      4: VIC-500-LYPS-GEN-B1
       5: VIC-500-LYPS-HWTS-3
       6: VIC-500-LYPS-HWTS-2
-      7: lyps A4
-      8: lyps a3
-      9: lyps a2
-      10: lyps a1
+      7: VIC-500-LYPS-GEN-A4
+      8: VIC-500-LYPS-GEN-A3
+      9: VIC-500-LYPS-GEN-A2
+      10: VIC-500-LYPS-GEN-A1
       11: VIC-500-LYPS-HWTS-1
       
+    objects:
+
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 500
+        rel_x: 1
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-TX-A?
+          1: VIC-220-LYPS-VPGS
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 4
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-B2
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'B' - Unit 2
+            580 MW
+        rel_x: 4
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 6
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-B1
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'B' - Unit 1
+            525 MW
+        rel_x: 6
+        rel_y: -8
+
+
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 11
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-A4
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'A' - Unit 4
+            560 MW
+        rel_x: 11
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 13
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-A3
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'A' - Unit 3
+            560 MW
+        rel_x: 13
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 15
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-A2
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'A' - Unit 2
+            530 MW
+        rel_x: 15
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 500
+        rel_x: 17
+        rel_y: -7
+        connections:
+          2: VIC-500-LYPS-GEN-A1
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Loy Yang Power Station 'A' - Unit 1
+            560 MW
+        rel_x: 17
+        rel_y: -8
+
+  - name: Valley Power (VPPS)
+    lat: -38.2539359
+    long: 146.5890768
+    voltage_kv: 220
+    def: |
+      1/|x
+      |x
+      |x
+      |x
+      |x
+      |x
+    buses:
+      1: ""
+    connections:
+      1: VIC-220-LYPS-VPGS
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 1
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 1
+            50 MW
+        rel_x: 1
+        rel_y: 7
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 3
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 2
+            50 MW
+        rel_x: 3
+        rel_y: 7
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 5
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 3
+            50 MW
+        rel_x: 5
+        rel_y: 7
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 7
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 4
+            50 MW
+        rel_x: 7
+        rel_y: 7
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 9
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 5
+            50 MW
+        rel_x: 9
+        rel_y: 7
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 11
+        rel_x: 11
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 11
+          text: G
+          info: |
+            Valley Power Power Station (VPPS) - Unit 6
+            50 MW
+        rel_x: 11
+        rel_y: 7
+
+
   - name: Malvern (MTS)
     lat: -37.877828
     long: 145.084433
@@ -2708,7 +2938,7 @@ substations:
           w1: 500
           w2: 330
         rel_x: 9
-        rel_y: 6
+        rel_y: 7
         connections:
           1: VIC-500-SMTS-TX-F2
           2: VIC-330-SMTS-TX-F2
@@ -2782,7 +3012,7 @@ substations:
               w1: 66
               w2: 220
             rel_x: -4
-            rel_y: 6
+            rel_y: 7
             connections:
               1: VIC-66-SMTS-TX-B2
               2: VIC-220-SMTS-TX-B2
@@ -3316,19 +3546,27 @@ substations:
       1: ""
     connections:
       1: VIC-220-CBTS-WDP
-  - name: Loy Yang HVDC Converter station (BLLC)
+  - name: Basslink Converter Station [Victoria] (BLLC)
     lat: -38.262699
     long: 146.607929
     voltage_kv: 500
-    tags:
-      - BLLC
-      - Loy Yang HVDC Converter station
     def: |
-      1?|
+      2/|x1
     buses:
       1: ""
     connections:
-      1: VIC-500-BLLC
+      1: VIC-500-LYPS-BLLC
+      2: VIC-500-BLLC-TX
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 132
+          w2: 500
+        rel_x: 1
+        rel_y: -7
+        connections:
+          2: VIC-500-BLLC-TX
+
   - name: West Kiewa Power Station (WKPS)
     lat: -36.7598216
     long: 147.1857268
@@ -3490,7 +3728,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: -1
-        rel_y: 6
+        rel_y: 7
         objects:
           - type: gen
             metadata:
@@ -3515,7 +3753,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: 5
-        rel_y: 6
+        rel_y: 7
         objects:
           - type: gen
             metadata:
@@ -3540,7 +3778,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: 11
-        rel_y: 6
+        rel_y: 7
         objects:
           - type: gen
             metadata:

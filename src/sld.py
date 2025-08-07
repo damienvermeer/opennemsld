@@ -67,6 +67,7 @@ VERSION = "1"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
+    11: "#4682B4",
     22: "#4682B4",
     33: "#006400",
     66: "#A0522D",
