@@ -187,10 +187,10 @@
         <p>This is a work in progress! I've so far only implemented parts of Victoria, with much more to come...</p>
         
         <h3>Where's the data from?</h3>
-        <p>AEMO used to publish the <a href="https://web.archive.org/web/20220119012004if_/https://aemo.com.au/-/media/files/electricity/nem/planning_and_forecasting/maps/nem-slds.pdf#[{%22num%22%3A91%2C%22gen%22%3A0}%2C{%22name%22%3A%22FitR%22}%2C-7%2C0%2C849%2C1181]" target="_blank">NEM SLDs</a> but these haven't been updated since 2019.</p>
+        <p>AEMO used to publish the <a href="https://web.archive.org/web/20220119012004if_/https://aemo.com.au/-/media/files/electricity/nem/planning_and_forecasting/maps/nem-slds.pdf#[{%22num%22%3A91%2C%22gen%22%3A0}%2C{%22name%22%3A%22FitR%22}%2C-7%2C0%2C849%2C1181]" target="_blank">NEM SLDs</a> but these haven't been updated since 2019. <a href="https://openinframap.org/#6.89/-36.804/144.698" target="_blank">Open Infrastructure Map</a> has been used for some geographic data.</p>
         
         <h3>Is this free?</h3>
-        <p>Yes - it's a static webpage hosted on Cloudflare so it doesn't cost me anything to host. The code that generates the SVG image is open source <a href="https://github.com/damienvermeer/opennemsld" target="_blank">available on GitHub here</a>.</p>
+        <p>Yep, the repo with the SVG generation code is <a href="https://github.com/damienvermeer/opennemsld" target="_blank">available on GitHub here</a>.</p>
         </ul>
     </div>
 </div>
@@ -198,12 +198,12 @@
 <div id="errorModal" class="modal">
     <div class="modal-content">
         <span class="close-button" onclick="closeErrorModal()">&times;</span>
-        <h2>Notice an error?</h2>
-        <p>This diagram is community-sourced - please let me know if you have any updates or corrections! You can help by emailing <code>updates@nemsld.com</code> with (or <a href="https://github.com/damienvermeer/opennemsld" target="_blank">post an issue on GitHub</a>):</p>
+        <h2>Notice an error? 🤔</h2>
+        <p>This diagram is community-sourced - please let me know if you have any updates or corrections! You can help by <a href="mailto:updates@nemsld.com">emailing updates@nemsld.com</a> (or <a href="https://github.com/damienvermeer/opennemsld" target="_blank">post an issue on GitHub</a>) with:</p>
         <ul>
-            <li>Details of any errors, corrections or changes - references for these would be helpful to cross-check.</li>
-            <li>Any public information about the layout of switchgear at substations, or new substations (including their location and layout).</li>
-            <li>Details on updating the codebase or the data structure which describes each substation is <a href="https://github.com/damienvermeer/opennemsld" target="_blank">available on GitHub here</a>.</li>
+            <li>Details of any errors, corrections or changes - providing references for these would be helpful to cross-check.</li>
+            <li>Any public information about the layout of switchgear at substations, or new substations (including their location and layout) or new generating systems (once built - not just commited stage).</li>
+            <li>For those who want to get into the details, the codebase and data structure which describes each substation is <a href="https://github.com/damienvermeer/opennemsld" target="_blank">available on GitHub here</a>.</li>
         </ul>
     </div>
 </div>
