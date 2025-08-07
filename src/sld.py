@@ -55,7 +55,7 @@ NEAR_SUB_WEIGHT = 4
 ELEMENT_WEIGHT = 50000
 GRID_STEP = 25
 PATHFINDING_ITERATIONS = 5
-CONGESTION_PENALTY = 25
+CONGESTION_PENALTY = 19
 import pathlib
 
 SCRIPT_DIR = pathlib.Path(__file__).parent
@@ -129,6 +129,7 @@ class Substation:
         params: DrawingParams = DrawingParams(),
         x_offset: float = 0,
         y_offset: float = 0,
+        owner_id: str = "main",
     ) -> draw.Group:
         """Draw all objects associated with the substation."""
         import math  # Import at the top for rotation calculations
@@ -217,11 +218,41 @@ class Substation:
                 obj_group.append(bottom_line)
 
                 # Mark grid points for the transformer elements
-                mark_grid_point(self, obj_x, top_line_start_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, obj_x, top_line_end_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, obj_x, symbol_center_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, obj_x, bottom_line_start_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, obj_x, bottom_line_end_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    top_line_start_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    top_line_end_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    symbol_center_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    bottom_line_start_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    bottom_line_end_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
 
                 # Store connection points
                 conn_points = {}
@@ -240,6 +271,7 @@ class Substation:
                             conn_points[conn_name] = {
                                 "coords": coords,
                                 "voltage": voltage,
+                                "owner": owner_id,
                             }
 
             elif obj["type"] == "tx-lr":
@@ -313,11 +345,41 @@ class Substation:
                 obj_group.append(right_line)
 
                 # Mark grid points for the transformer elements
-                mark_grid_point(self, left_line_start_x, obj_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, left_line_end_x, obj_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, symbol_center_x, obj_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, right_line_start_x, obj_y, weight=ELEMENT_WEIGHT)
-                mark_grid_point(self, right_line_end_x, obj_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(
+                    self,
+                    left_line_start_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    left_line_end_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    symbol_center_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    right_line_start_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+                mark_grid_point(
+                    self,
+                    right_line_end_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
 
                 # Store connection points
                 conn_points = {}
@@ -336,6 +398,7 @@ class Substation:
                             conn_points[conn_name] = {
                                 "coords": coords,
                                 "voltage": voltage,
+                                "owner": owner_id,
                             }
 
             elif obj["type"] == "gen":
@@ -360,31 +423,39 @@ class Substation:
 
                 # Mark grid point for the circle center and perimeter
                 mark_grid_point(
-                    self, circle_center_x, circle_center_y, weight=ELEMENT_WEIGHT
+                    self,
+                    circle_center_x,
+                    circle_center_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
                 )
                 mark_grid_point(
                     self,
                     circle_center_x,
                     circle_center_y - params.grid_step,
                     weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
                 )
                 mark_grid_point(
                     self,
                     circle_center_x,
                     circle_center_y + params.grid_step,
                     weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
                 )
                 mark_grid_point(
                     self,
                     circle_center_x - params.grid_step,
                     circle_center_y,
                     weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
                 )
                 mark_grid_point(
                     self,
                     circle_center_x + params.grid_step,
                     circle_center_y,
                     weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
                 )
 
             # Apply rotation if specified
@@ -616,9 +687,11 @@ def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
 
 
 # --- Drawing Helpers ---
-def mark_grid_point(sub: "Substation", x: float, y: float, weight: int = 25) -> None:
+def mark_grid_point(
+    sub: "Substation", x: float, y: float, weight: int = 25, owner_id: str = "main"
+) -> None:
     """Mark a grid point in the substation's grid_points dictionary with a weight."""
-    sub.grid_points[(x, y)] = weight
+    sub.grid_points[(x, y)] = (weight, owner_id)
 
 
 def draw_switch(
@@ -697,6 +770,7 @@ def draw_bay_from_string(
     params: DrawingParams = DrawingParams(),
     previous_bay_elements: list = None,
     y_offset: int = 0,
+    owner_id: str = "main",
 ) -> draw.Group:
     """
     Draw a single bay based on a definition string using the new substation language.
@@ -801,6 +875,7 @@ def draw_bay_from_string(
                         xoff,
                         last_y + step * params.grid_step,
                         weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
                     )
 
             y_pos = draw_busbar_object(
@@ -813,6 +888,7 @@ def draw_bay_from_string(
                 params,
                 colour,
                 previous_bay_elements,
+                owner_id=owner_id,
             )
             last_y = y_pos
 
@@ -830,10 +906,18 @@ def draw_bay_from_string(
                         xoff,
                         last_y + step * params.grid_step,
                         weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
                     )
 
             y_pos = draw_element_object(
-                element, xoff, y_pos, parent_group, sub, params, colour
+                element,
+                xoff,
+                y_pos,
+                parent_group,
+                sub,
+                params,
+                colour,
+                owner_id=owner_id,
             )
             last_y = y_pos
 
@@ -865,6 +949,7 @@ def draw_bay_from_string(
                 sub,
                 colour,
                 draw_dot=should_draw_dot,
+                owner_id=owner_id,
             )
 
     return parent_group
@@ -880,6 +965,7 @@ def draw_busbar_object(
     params,
     colour,
     previous_bay_elements=None,
+    owner_id: str = "main",
 ):
     """Draw a busbar object at the specified position."""
     subtype = element["subtype"]
@@ -919,11 +1005,19 @@ def draw_busbar_object(
         # Mark grid points with BUSBAR_WEIGHT
         if extend_left:
             mark_grid_point(
-                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+                sub,
+                xoff - 2 * params.grid_step,
+                y_pos,
+                weight=BUSBAR_WEIGHT,
+                owner_id=owner_id,
             )
-        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(
+            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
 
         # Add text label if first bay
         if is_first_bay:
@@ -961,21 +1055,37 @@ def draw_busbar_object(
         # Mark grid points with BUSBAR_WEIGHT
         if extend_left:
             mark_grid_point(
-                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+                sub,
+                xoff - 2 * params.grid_step,
+                y_pos,
+                weight=BUSBAR_WEIGHT,
+                owner_id=owner_id,
             )
-        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(
+            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
 
     elif subtype == "null":
         # No line drawn, but mark grid points spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
         if extend_left:
             mark_grid_point(
-                sub, xoff - 2 * params.grid_step, y_pos, weight=BUSBAR_WEIGHT
+                sub,
+                xoff - 2 * params.grid_step,
+                y_pos,
+                weight=BUSBAR_WEIGHT,
+                owner_id=owner_id,
             )
-        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT)
-        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT)
+        mark_grid_point(
+            sub, xoff - params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub, xoff + params.grid_step, y_pos, weight=BUSBAR_WEIGHT, owner_id=owner_id
+        )
 
     elif subtype in ["tie_cb", "tie_cb_thin"]:
         # Draw busbar with circuit breaker tie
@@ -1025,11 +1135,27 @@ def draw_busbar_object(
         # Mark grid points with ELEMENT_WEIGHT
         if extend_left:
             mark_grid_point(
-                sub, xoff - 2 * params.grid_step, y_pos, weight=ELEMENT_WEIGHT
+                sub,
+                xoff - 2 * params.grid_step,
+                y_pos,
+                weight=ELEMENT_WEIGHT,
+                owner_id=owner_id,
             )
-        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff - params.grid_step,
+            y_pos,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff + params.grid_step,
+            y_pos,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     elif subtype in ["tie_isol", "tie_isol_thin"]:
         # Draw busbar with isolator tie
@@ -1080,16 +1206,34 @@ def draw_busbar_object(
         # Mark grid points with ELEMENT_WEIGHT
         if extend_left:
             mark_grid_point(
-                sub, xoff - 2 * params.grid_step, y_pos, weight=ELEMENT_WEIGHT
+                sub,
+                xoff - 2 * params.grid_step,
+                y_pos,
+                weight=ELEMENT_WEIGHT,
+                owner_id=owner_id,
             )
-        mark_grid_point(sub, xoff - params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff + params.grid_step, y_pos, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff - params.grid_step,
+            y_pos,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff + params.grid_step,
+            y_pos,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     return y_pos
 
 
-def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour):
+def draw_element_object(
+    element, xoff, y_pos, parent_group, sub, params, colour, owner_id: str = "main"
+):
     """Draw an element object at the specified position."""
     subtype = element["subtype"]
 
@@ -1106,8 +1250,14 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # Square (full grid step size, centered in middle grid step)
         square_center_y = y_pos + params.grid_step + (params.grid_step // 2)
@@ -1121,7 +1271,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke=colour,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 2 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # Second vertical line (exactly 25px)
         parent_group.append(
@@ -1134,7 +1290,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 3 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     elif subtype == "unknown":
         # Unknown switch: 25px line + '?' + 25px line
@@ -1149,8 +1311,14 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # Question mark (centered in middle grid step)
         q_mark_center_y = y_pos + params.grid_step + (params.grid_step // 2)
@@ -1166,7 +1334,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=0,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 2 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # Second vertical line (exactly 25px)
         parent_group.append(
@@ -1179,7 +1353,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 3 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     elif subtype == "isolator":
         # Isolator: 25px line + 45° line + 25px line
@@ -1194,8 +1374,14 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # 45-degree line (centered in middle grid step)
         isolator_center_y = y_pos + params.grid_step + (params.grid_step // 2)
@@ -1210,7 +1396,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 2 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
         # Second vertical line (exactly 25px)
         parent_group.append(
@@ -1223,7 +1415,13 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 3 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     elif subtype == "direct":
         # Direct connection: single vertical line spanning 3*GRID_STEP
@@ -1237,10 +1435,28 @@ def draw_element_object(element, xoff, y_pos, parent_group, sub, params, colour)
                 stroke_width=2,
             )
         )
-        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + params.grid_step, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + 2 * params.grid_step, weight=ELEMENT_WEIGHT)
-        mark_grid_point(sub, xoff, y_pos + 3 * params.grid_step, weight=ELEMENT_WEIGHT)
+        mark_grid_point(sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id)
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 2 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
+        mark_grid_point(
+            sub,
+            xoff,
+            y_pos + 3 * params.grid_step,
+            weight=ELEMENT_WEIGHT,
+            owner_id=owner_id,
+        )
 
     elif subtype == "empty":
         # Empty element: no drawing, no grid marking, but advance position
@@ -1332,7 +1548,14 @@ def parse_bay_elements(bay_def: str) -> list:
 
 
 def draw_connection_object(
-    element, xoff, y_pos, parent_group, sub, colour, draw_dot: bool = False
+    element,
+    xoff,
+    y_pos,
+    parent_group,
+    sub,
+    colour,
+    draw_dot: bool = False,
+    owner_id: str = "main",
 ):
     """Draw a connection object at the specified position."""
     conn_id = element["id"]
@@ -1340,10 +1563,14 @@ def draw_connection_object(
 
     if connection_name:
         # Store the connection point for pathfinding, including voltage
-        connection_data = {"coords": (xoff, y_pos), "voltage": sub.voltage_kv}
+        connection_data = {
+            "coords": (xoff, y_pos),
+            "voltage": sub.voltage_kv,
+            "owner": owner_id,
+        }
         sub.connection_points.setdefault(connection_name, []).append(connection_data)
         mark_grid_point(
-            sub, xoff, y_pos, weight=ELEMENT_WEIGHT
+            sub, xoff, y_pos, weight=ELEMENT_WEIGHT, owner_id=owner_id
         )  # Connection points are now handled by pathfinder logic
     if draw_dot:
         parent_group.append(draw.Circle(xoff, y_pos, 5, fill=colour, stroke="none"))
@@ -1411,12 +1638,16 @@ def get_substation_group(
             params,
             previous_bay_elements,
             y_offset=y_offset,
+            owner_id="main",
         )
 
     # Draw objects after bays
     if sub.objects:
         dg = sub.draw_objects(
-            parent_group=dg, objects_to_draw=sub.objects, params=params
+            parent_group=dg,
+            objects_to_draw=sub.objects,
+            params=params,
+            owner_id="main",
         )
 
     # Draw child definitions
@@ -1478,6 +1709,7 @@ def get_substation_group(
                     params=params,
                     previous_bay_elements=child_previous_bay_elements,
                     y_offset=y_offset,
+                    owner_id=f"child_{i}",
                 )
 
             # Draw child objects
@@ -1492,6 +1724,7 @@ def get_substation_group(
                     params=params,
                     x_offset=child_x_offset,
                     y_offset=child_y_offset,
+                    owner_id=f"child_{i}",
                 )
         sub.voltage_kv = original_voltage
         sub.connections = original_connections
@@ -1533,7 +1766,9 @@ def get_substation_group(
             current_grid_y = grid_y + y_offset
             for i in range(grid_start_x_idx, grid_end_x_idx + 1):
                 grid_x = i * params.grid_step
-                mark_grid_point(sub, grid_x, current_grid_y, weight=ELEMENT_WEIGHT)
+                mark_grid_point(
+                    sub, grid_x, current_grid_y, weight=ELEMENT_WEIGHT, owner_id="main"
+                )
 
     return dg
 
@@ -1609,6 +1844,7 @@ def calculate_connection_points(
             for connection_data in connection_data_list:
                 local_coords = connection_data["coords"]
                 voltage = connection_data["voltage"]
+                owner = connection_data.get("owner", "main")
 
                 local_x, local_y = local_coords
                 rel_x = local_x - center_x
@@ -1631,6 +1867,7 @@ def calculate_connection_points(
                     "coords": global_coords,
                     "voltage": voltage,
                     "substation": sub.name,
+                    "owner": owner,
                 }
                 all_connections.setdefault(linedef, []).append(new_connection_data)
     return all_connections
@@ -1642,6 +1879,7 @@ def draw_connections(
     points: list[list],
     grid_owners: list[list],
     step: int,
+    sub_global_bounds: dict,
 ):
     """Finds paths and draws connections between substations."""
     num_steps = len(points)
@@ -1665,6 +1903,8 @@ def draw_connections(
 
         sub1_name = connection_points[0]["substation"]
         sub2_name = connection_points[1]["substation"]
+        owner1 = connection_points[0]["owner"]
+        owner2 = connection_points[1]["owner"]
 
         voltage1 = connection_points[0]["voltage"]
         voltage2 = connection_points[1]["voltage"]
@@ -1699,13 +1939,18 @@ def draw_connections(
         points[start_node[0]][start_node[1]] = 0
         points[end_node[0]][end_node[1]] = 0
 
-        path_requests.append(
-            {
-                "start": start_node,
-                "end": end_node,
-                "substations": {sub1_name, sub2_name},
-            }
-        )
+        request = {
+            "start": start_node,
+            "end": end_node,
+            "substations": {sub1_name, sub2_name},
+            "start_owner": (sub1_name, owner1),
+            "end_owner": (sub2_name, owner2),
+        }
+
+        if sub1_name == sub2_name and sub1_name in sub_global_bounds:
+            request["bounds"] = sub_global_bounds[sub1_name]
+
+        path_requests.append(request)
         path_metadata.append({"colour": colour})
 
     print(f"Finding {len(path_requests)} paths collectively...")
@@ -2159,6 +2404,7 @@ def main():
     num_steps = MAP_DIMS // GRID_STEP + 1
     points = [[0 for _ in range(num_steps)] for _ in range(num_steps)]
     grid_owners = [[None for _ in range(num_steps)] for _ in range(num_steps)]
+    sub_global_bounds = {}
 
     # Mark all grid points occupied by substations
     for sub in substations:
@@ -2203,18 +2449,19 @@ def main():
         grid_max_y = min(
             num_steps - 1, int((sub.use_y + rot_max_y + box_margin) / GRID_STEP)
         )
+        sub_global_bounds[sub.name] = (grid_min_x, grid_min_y, grid_max_x, grid_max_y)
 
         # Mark grid cells within the bounding box as generally occupied.
         for grid_y in range(grid_min_y, grid_max_y + 1):
             for grid_x in range(grid_min_x, grid_max_x + 1):
                 points[grid_y][grid_x] = 1  # Mark as occupied
-                grid_owners[grid_y][grid_x] = sub.name
+                grid_owners[grid_y][grid_x] = (sub.name, "main")
 
         # Overwrite with specific weights from the substation's grid_points to allow
         # for correct pathfinding costs through elements.
         cos_r = math.cos(rotation_rad)
         sin_r = math.sin(rotation_rad)
-        for (local_x, local_y), weight in sub.grid_points.items():
+        for (local_x, local_y), (weight, owner_id) in sub.grid_points.items():
             # Transform local point to global coordinates
             rel_x = local_x - center_x
             rel_y = local_y - center_y
@@ -2230,11 +2477,13 @@ def main():
 
             if 0 <= grid_y < num_steps and 0 <= grid_x < num_steps:
                 points[grid_y][grid_x] = weight
-                grid_owners[grid_y][grid_x] = sub.name
+                grid_owners[grid_y][grid_x] = (sub.name, owner_id)
     all_connections: dict[str, list[dict]] = calculate_connection_points(
         substations, params, sub_bboxes
     )
-    draw_connections(drawing, all_connections, points, grid_owners, GRID_STEP)
+    draw_connections(
+        drawing, all_connections, points, grid_owners, GRID_STEP, sub_global_bounds
+    )
 
     # Draw bounding boxes with safety margin for each substation to debug overlaps
     for sub in substations:

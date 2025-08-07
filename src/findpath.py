@@ -349,20 +349,48 @@ def run_all_gridsearches(
         for req_idx in range(len(sorted_requests)):
             current_request = sorted_requests[req_idx]
             start_node, end_node = current_request["start"], current_request["end"]
-            allowed_substations = current_request["substations"]
+            start_owner = current_request["start_owner"]
+            end_owner = current_request["end_owner"]
 
             # Calculate edge and node usage from all *other* paths.
             # Apply penalties for busbar crossings.
             edge_usage = {}
             for edge, owner in busbar_edges.items():
-                if owner and owner not in allowed_substations:
-                    # Penalize crossing busbars of unrelated substations heavily.
-                    edge_usage[edge] = (
-                        edge_usage.get(edge, 0) + busbar_crossing_penalty
-                    )
-                else:
-                    # Apply a base penalty for crossing own or unowned busbars.
+                if not owner:
                     edge_usage[edge] = edge_usage.get(edge, 0) + 1
+                    continue
+
+                bus_sub_name, bus_owner_id = owner
+
+                # An intra-substation connection
+                if start_owner[0] == end_owner[0]:
+                    path_sub_name = start_owner[0]
+                    # If path is inside one sub, but crosses busbar of another sub
+                    if bus_sub_name != path_sub_name:
+                        edge_usage[edge] = (
+                            edge_usage.get(edge, 0) + busbar_crossing_penalty
+                        )
+                    # If path crosses a busbar within the same sub, but not belonging to start/end owners
+                    elif bus_owner_id not in (start_owner[1], end_owner[1]):
+                        edge_usage[edge] = (
+                            edge_usage.get(edge, 0) + busbar_crossing_penalty
+                        )
+                    else:
+                        # Crossing its own busbar, small penalty
+                        edge_usage[edge] = edge_usage.get(edge, 0) + 1
+                # An inter-substation connection
+                else:
+                    path_sub_names = {start_owner[0], end_owner[0]}
+                    # If it crosses a busbar of an unrelated sub
+                    if bus_sub_name not in path_sub_names:
+                        edge_usage[edge] = (
+                            edge_usage.get(edge, 0) + busbar_crossing_penalty
+                        )
+                    else:
+                        # It's crossing a busbar of one of its own substations. This is also bad.
+                        edge_usage[edge] = (
+                            edge_usage.get(edge, 0) + busbar_crossing_penalty
+                        )
             node_usage = {}
             for other_req_idx, other_path in enumerate(all_paths):
                 if req_idx == other_req_idx:
@@ -418,8 +446,24 @@ def run_all_gridsearches(
                                 blocked_edges.append((edge_tuple, original_weight))
                                 graph.edges[edge_tuple]["weight"] = float("inf")
 
+            # --- Heuristic for out-of-bounds penalty ---
+            heuristic = manhattan_distance
+            if "bounds" in current_request:
+                bounds = current_request["bounds"]
+                min_x, min_y, max_x, max_y = bounds
+
+                def out_of_bounds_heuristic(u, v):
+                    dist = manhattan_distance(u, v)
+                    # u is the current node in the search. (row, col) -> (y, x)
+                    y, x = u
+                    if x < min_x or x > max_x or y < min_y or y > max_y:
+                        dist += 1000000  # Very large penalty
+                    return dist
+
+                heuristic = out_of_bounds_heuristic
+
             # Reroute the current path on the penalized graph.
-            new_path = find_shortest_path(graph, start_node, end_node)
+            new_path = find_shortest_path(graph, start_node, end_node, heuristic)
             if new_path:  # Only update if a path was found
                 all_paths[req_idx] = new_path
 
