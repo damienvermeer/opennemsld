@@ -64,6 +64,7 @@ TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
 PADDING_STEPS = 10
+VERSION = "1"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -2017,6 +2018,7 @@ def generate_output_files(
 
     svg_content_escaped = svg_content.replace("`", "\\`")
     html_content = template_content.replace("%%SVG_CONTENT%%", svg_content_escaped)
+    html_content = html_content.replace("%%VERSION%%", VERSION)
     html_content = html_content.replace("%%LOCATIONS_DATA%%", locations_json_string)
     html_content = html_content.replace("%%OBJECT_POPUPS%%", object_popups_json_string)
 

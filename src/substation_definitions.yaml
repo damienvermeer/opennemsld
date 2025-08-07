@@ -223,7 +223,7 @@ substations:
       4: VIC-220-BATS-ELTS
       5: VIC-220-BATS-MLTS-2
       6: VIC-220-BATS-MLTS-1
-  - name: BGTS
+  - name: Bulgana BGTS
     lat: -37.037044
     long: 142.985036
     voltage_kv: 220
@@ -1246,7 +1246,7 @@ substations:
       1: ""
     connections:
       1: VIC-500-APD
-  - name: DPTS (Deer Park)
+  - name: Deer Park (DPTS)
     lat: -37.777564
     long: 144.735572
     voltage_kv: 220

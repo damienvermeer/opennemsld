@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NEMSLD</title>
+    <title>⚡️NEM SLD | v%%VERSION%%</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
@@ -19,6 +22,7 @@
             margin: 0;
             padding: 0;
             background-color: #f2f2f2;
+            font-family: 'Roboto', sans-serif;
         }
     
     .location-popup .leaflet-popup-content-wrapper,
@@ -43,9 +47,98 @@
     }
 
     /* Align search control with zoom control */
-    .leaflet-control-search:not(.search-exp) {
-        width: 34px;
-        height: 34px;
+    .leaflet-top.leaflet-right {
+        display: grid;
+        grid-template-areas: "search zoom"
+                             ".      zoomfit";
+        grid-template-columns: auto auto;
+        grid-gap: 10px;
+    }
+    .leaflet-control-search { grid-area: search; align-self: start; }
+    .leaflet-control-zoom { grid-area: zoom; }
+    .zoom-to-fit-control { grid-area: zoomfit; }
+    .title-control {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        text-align: center;
+        width: 150px;
+        box-sizing: border-box;
+    }
+    .title-control b {
+        font-size: 1.2em;
+    }
+    .help-buttons {
+        width: 150px;
+    }
+    .help-buttons a {
+        font-size: 14px;
+        padding: 8px;
+        display: block;
+        text-align: center;
+    }
+    .help-buttons a:first-child {
+        border-bottom: 1px solid #ddd;
+        border-radius: 4px 4px 0 0;
+    }
+    .help-buttons a:last-child {
+        border-radius: 0 0 4px 4px;
+    }
+    /* Modal styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 10000; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        max-width: 600px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        position: relative;
+    }
+    .modal-content h2 {
+        text-align: center;
+        margin-top: 0;
+    }
+    .modal-content ul {
+        list-style-type: disc;
+        padding-left: 20px;
+    }
+    .modal-content li {
+        margin-bottom: 10px;
+    }
+    .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    .close-button:hover,
+    .close-button:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    /* Ensure all controls use Roboto font */
+    .leaflet-control-zoom a,
+    .zoom-to-fit-control a,
+    .help-buttons a,
+    .leaflet-control-search .search-input,
+    .leaflet-control-search .search-tooltip {
+        font-family: 'Roboto', sans-serif;
     }
     </style>
 </head>
@@ -54,6 +147,34 @@
 <div id="map"></div>
 
 <script>
+    function showHelp() {
+        document.getElementById('helpModal').style.display = 'block';
+    }
+
+    function closeHelpModal() {
+        document.getElementById('helpModal').style.display = 'none';
+    }
+
+    function reportError() {
+        document.getElementById('errorModal').style.display = 'block';
+    }
+
+    function closeErrorModal() {
+        document.getElementById('errorModal').style.display = 'none';
+    }
+
+    // Close modals if user clicks outside of the modal content
+    window.onclick = function(event) {
+        var helpModal = document.getElementById('helpModal');
+        var errorModal = document.getElementById('errorModal');
+        if (event.target == helpModal) {
+            closeHelpModal();
+        }
+        if (event.target == errorModal) {
+            closeErrorModal();
+        }
+    }
+
     // Initialize the map
     var map = L.map('map', {
         crs: L.CRS.Simple,
@@ -64,9 +185,63 @@
         zoomControl: false
     });
 
-    // Add zoom control to the bottom right
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    // Add zoom control to the top right
+    L.control.zoom({ position: 'topright' }).addTo(map);
 
+    // --- Title Control ---
+    var TitleControl = L.Control.extend({
+        options: {
+            position: 'topleft'
+        },
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-control title-control');
+            container.innerHTML = '<b>⚡️NEM SLD</b><hr style="margin: 4px 0; border: 0; border-top: 1px solid #ccc;">Version %%VERSION%% <a href="https://github.com/damienvermeer/opennemsld/releases" target="_blank" title="Changelog" style="text-decoration: none; font-size: 1.2em; vertical-align: middle;">&#x1F517;</a>';
+            L.DomEvent.disableClickPropagation(container);
+            return container;
+        }
+    });
+    map.addControl(new TitleControl());
+
+    // --- Help/Error Buttons ---
+    var HelpControl = L.Control.extend({
+        options: {
+            position: 'topleft'
+        },
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control help-buttons');
+            
+            // Help button
+            var helpButton = L.DomUtil.create('a', '', container);
+            helpButton.innerHTML = 'What is this?';
+            helpButton.href = '#';
+            helpButton.title = 'Help';
+            helpButton.role = 'button';
+            helpButton.style.width = '89%';
+            helpButton.style.textAlign = 'center';
+            L.DomEvent.on(helpButton, 'click', L.DomEvent.stop);
+            L.DomEvent.on(helpButton, 'click', function () {
+                showHelp();
+            });
+            L.DomEvent.on(helpButton, 'click', L.DomEvent.preventDefault);
+
+            // Error button
+            var errorButton = L.DomUtil.create('a', '', container);
+            errorButton.innerHTML = 'Notice an error?';
+            errorButton.href = '#';
+            errorButton.title = 'Report an error';
+            errorButton.role = 'button';
+            errorButton.style.width = '89%';
+            errorButton.style.textAlign = 'center';
+            L.DomEvent.on(errorButton, 'click', L.DomEvent.stop);
+            L.DomEvent.on(errorButton, 'click', function () {
+                reportError();
+            });
+            L.DomEvent.on(errorButton, 'click', L.DomEvent.preventDefault);
+
+            return container;
+        }
+    });
+    map.addControl(new HelpControl());
 
     // Define the bounds to match the SVG dimensions (5000x5000)
     var bounds = [[0, 0], [16000, 16000]];
@@ -78,6 +253,11 @@
     var parser = new DOMParser();
     var svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
     var svgElement = svgDoc.documentElement;
+
+    // Inject Roboto font style into SVG
+    var style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
+    svgElement.prepend(style);
     
     // Create a proper SVG overlay with the SVG element
     var overlay = L.svgOverlay(svgElement, bounds).addTo(map);
@@ -161,10 +341,10 @@
     // --- Zoom to fit control ---
     var ZoomToFitControl = L.Control.extend({
         options: {
-            position: 'bottomright'
+            position: 'topright'
         },
         onAdd: function (map) {
-            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control zoom-to-fit-control');
             var button = L.DomUtil.create('a', '', container);
             button.innerHTML = '&#x26F6;'; // SQUARE WITH FOUR CORNERS
             button.href = '#';
@@ -200,7 +380,7 @@
         textErr: 'Location not found',
         title: 'Search Substations',
         zoom: 4,
-        position: 'bottomright'
+        position: 'topright'
     });
     map.addControl(searchControl);
 
@@ -239,6 +419,30 @@
         }
     });
 </script>
+
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeHelpModal()">&times;</span>
+        <h2>Help &amp; Information</h2>
+        <p>This is an interactive Single Line Diagram (SLD) of the National Electricity Market (NEM).</p>
+        <ul>
+            <li><b>Pan:</b> Click and drag to move around the map.</li>
+            <li><b>Zoom:</b> Use the scroll wheel or the +/- buttons in the top right.</li>
+            <li><b>Search:</b> Use the search bar (Ctrl+F) to find substations by name.</li>
+            <li><b>Substation Info:</b> Click on a substation name to zoom to it.</li>
+            <li><b>Generator Info:</b> Hover over green circles to see generator details.</li>
+        </ul>
+        <p>For more information, visit the <a href="https://aemo.com.au" target="_blank">AEMO website</a>.</p>
+    </div>
+</div>
+
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeErrorModal()">&times;</span>
+        <h2>Notice an error?</h2>
+        <p>Please provide details of the error you've noticed.</p>
+    </div>
+</div>
 
 </body>
 </html>
