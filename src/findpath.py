@@ -202,11 +202,8 @@ def _calculate_busbar_crossing_penalties(
         # An inter-substation connection
         else:
             path_sub_names = {start_owner[0], end_owner[0]}
-            # If it crosses a busbar of an unrelated sub or one of its own substations
+            # If it crosses a busbar of an unrelated sub
             if bus_sub_name not in path_sub_names:
-                edge_penalties[edge] = busbar_crossing_penalty
-            else:
-                # It's crossing a busbar of one of its own substations. This is also bad.
                 edge_penalties[edge] = busbar_crossing_penalty
     return edge_penalties
 

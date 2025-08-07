@@ -25,14 +25,12 @@
             font-family: 'Roboto', sans-serif;
         }
     
-    .location-popup .leaflet-popup-content-wrapper,
     .object-popup .leaflet-popup-content-wrapper {
-        background: rgba(255, 255, 255, 1);
+        background: white;
         border-radius: 4px;
         box-shadow: 0 1px 5px rgba(0,0,0,0.4);
     }
     
-    .location-popup .leaflet-popup-content,
     .object-popup .leaflet-popup-content {
         margin: 5px 10px;
         font-size: 12px;
@@ -41,12 +39,10 @@
         text-align: center;
     }
     
-    .location-popup .leaflet-popup-tip,
     .object-popup .leaflet-popup-tip {
-        background: rgba(255, 255, 255, 0.1);
+        background: transparent;
     }
 
-    /* Align search control with zoom control */
     .leaflet-top.leaflet-right {
         display: grid;
         grid-template-areas: "search zoom"
@@ -63,13 +59,13 @@
     .leaflet-control-zoom { grid-area: zoom; }
     .zoom-to-fit-control { grid-area: zoomfit; }
     .title-control {
-        background: rgba(255, 255, 255, 1);
+        background: white;
         padding: 5px 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
         box-shadow: 0 1px 5px rgba(0,0,0,0.4);
         text-align: center;
-        width: 173px;
+        width: 190px;
         box-sizing: border-box;
     }
     .title-control b {
@@ -79,6 +75,11 @@
         text-decoration: none;
         font-size: 1.2em;
         vertical-align: middle;
+    }
+    .title-control hr {
+        margin: 4px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
     }
     .help-buttons {
         width: 150px;
@@ -96,24 +97,34 @@
     .help-buttons a:last-child {
         border-radius: 0 0 4px 4px;
     }
-    /* Modal styles */
+    .zoom-to-fit-control a {
+        font-size: 1.5em;
+    }
+    .generator-marker div {
+        background-color: rgba(68, 204, 68, 0.2);
+        border: 1px solid rgba(68, 204, 68, 0.8);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        box-sizing: border-box;
+    }
     .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 10000; /* Sit on top */
+        display: none;
+        position: fixed;
+        z-index: 10000;
         left: 0;
         top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
     }
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto; /* 15% from the top and centered */
+        margin: 15% auto;
         padding: 20px;
         border: 1px solid #888;
-        width: 80%; /* Could be more or less, depending on screen size */
+        width: 80%;
         max-width: 600px;
         border-radius: 8px;
         box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
@@ -142,12 +153,7 @@
         text-decoration: none;
         cursor: pointer;
     }
-    /* Ensure all controls use Roboto font */
-    .leaflet-control-zoom a,
-    .zoom-to-fit-control a,
-    .help-buttons a,
-    .leaflet-control-search .search-input,
-    .leaflet-control-search .search-tooltip {
+    .leaflet-control, .leaflet-control-search .search-tooltip {
         font-family: 'Roboto', sans-serif;
     }
 
@@ -173,7 +179,7 @@
 
 <div id="helpModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeHelpModal()">&times;</span>
+        <span class="close-button">&times;</span>
         <h2>Welcome to NEM SLD! 🎉</h2>
         <ul>
             <li>This is a geographic schematic of the Australian electrical system (transmission and sub-transmission).</li>
@@ -197,7 +203,7 @@
 
 <div id="errorModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeErrorModal()">&times;</span>
+        <span class="close-button">&times;</span>
         <h2>Notice an error? 🤔</h2>
         <p>Note - I am still working on migrating the existing AEMO .pdf NEM SLDs into this interactive format!</p>
         <p>This diagram is community-sourced - please let me know if you have any updates or corrections! You can help by <a href="mailto:updates@nemsld.com">emailing updates@nemsld.com</a> (or <a href="https://github.com/damienvermeer/opennemsld" target="_blank">post an issue on GitHub</a>) with:</p>
@@ -210,280 +216,202 @@
 </div>
 
 <script>
-    function showHelp() {
-        document.getElementById('helpModal').style.display = 'block';
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    (function() {
+        const MAP_BOUNDS = [[0, 0], [16000, 16000]];
+        const SVG_CONTENT = `%%SVG_CONTENT%%`;
+        const OBJECT_POPUPS = %%OBJECT_POPUPS%%;
+        const LOCATIONS_DATA = %%LOCATIONS_DATA%%;
 
-    function closeHelpModal() {
-        document.getElementById('helpModal').style.display = 'none';
-    }
-
-    function reportError() {
-        document.getElementById('errorModal').style.display = 'block';
-    }
-
-    function closeErrorModal() {
-        document.getElementById('errorModal').style.display = 'none';
-    }
-
-    // Close modals if user clicks outside of the modal content
-    window.onclick = function(event) {
-        var helpModal = document.getElementById('helpModal');
-        var errorModal = document.getElementById('errorModal');
-        if (event.target == helpModal) {
-            closeHelpModal();
+        function setupModal(modalId, closeButtonSelector) {
+            const modal = document.getElementById(modalId);
+            const closeButton = modal.querySelector(closeButtonSelector);
+            const open = () => modal.style.display = 'block';
+            const close = () => modal.style.display = 'none';
+            if (closeButton) closeButton.addEventListener('click', close);
+            return { modal, open, close };
         }
-        if (event.target == errorModal) {
-            closeErrorModal();
+
+        function initializeModals() {
+            const helpModal = setupModal('helpModal', '.close-button');
+            const errorModal = setupModal('errorModal', '.close-button');
+
+            helpModal.open();
+
+            window.addEventListener('click', (event) => {
+                if (event.target === helpModal.modal) helpModal.close();
+                if (event.target === errorModal.modal) errorModal.close();
+            });
+
+            return { showHelp: helpModal.open, showError: errorModal.open };
         }
-    }
 
-    // Initialize the map
-    var map = L.map('map', {
-        crs: L.CRS.Simple,
-        minZoom: -5, // Allow zooming out
-        maxZoom: 2,  // Allow zooming in
-        zoomDelta: 0.02, // Smaller zoom steps
-        zoomSnap: 0, // Snap to smaller increments
-        zoomControl: false
-    });
-
-    // Add zoom control to the top right
-    L.control.zoom({ position: 'topright' }).addTo(map);
-
-    // --- Title Control ---
-    var TitleControl = L.Control.extend({
-        options: {
-            position: 'topleft'
-        },
-        onAdd: function (map) {
-            var container = L.DomUtil.create('div', 'leaflet-control title-control');
-            container.innerHTML = '<b>🇦🇺⚡️NEM SLD</b><hr style="margin: 4px 0; border: 0; border-top: 1px solid #ccc;">Version %%VERSION%% <a href="https://github.com/damienvermeer/opennemsld/releases" target="_blank" title="Changelog">&#x1F517;</a>';
-            L.DomEvent.disableClickPropagation(container);
-            return container;
+        function initializeMap() {
+            const map = L.map('map', {
+                crs: L.CRS.Simple,
+                minZoom: -5,
+                maxZoom: 2,
+                zoomDelta: 0.02,
+                zoomSnap: 0,
+                zoomControl: false
+            });
+            L.control.zoom({ position: 'topright' }).addTo(map);
+            map.fitBounds(MAP_BOUNDS);
+            return map;
         }
-    });
-    map.addControl(new TitleControl());
 
-    // --- Help/Error Buttons ---
-    var HelpControl = L.Control.extend({
-        options: {
-            position: 'topleft'
-        },
-        onAdd: function (map) {
-            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control help-buttons');
-            
-            // Help button
-            var helpButton = L.DomUtil.create('a', '', container);
-            helpButton.innerHTML = 'What is this?';
-            helpButton.href = '#';
-            helpButton.title = 'Help';
-            helpButton.role = 'button';
-            helpButton.style.width = '89%';
-            helpButton.style.textAlign = 'center';
-            L.DomEvent.on(helpButton, 'click', L.DomEvent.stop);
-            L.DomEvent.on(helpButton, 'click', function () {
-                showHelp();
-            });
-            L.DomEvent.on(helpButton, 'click', L.DomEvent.preventDefault);
-
-            // Error button
-            var errorButton = L.DomUtil.create('a', '', container);
-            errorButton.innerHTML = 'Notice an error?';
-            errorButton.href = '#';
-            errorButton.title = 'Report an error';
-            errorButton.role = 'button';
-            errorButton.style.width = '89%';
-            errorButton.style.textAlign = 'center';
-            L.DomEvent.on(errorButton, 'click', L.DomEvent.stop);
-            L.DomEvent.on(errorButton, 'click', function () {
-                reportError();
-            });
-            L.DomEvent.on(errorButton, 'click', L.DomEvent.preventDefault);
-
-            return container;
-        }
-    });
-    map.addControl(new HelpControl());
-
-    // Define the bounds to match the SVG dimensions (5000x5000)
-    var bounds = [[0, 0], [16000, 16000]];
-    
-    // Create SVG element - This is where you would paste your pre-prepared SVG content
-    var svgString = `%%SVG_CONTENT%%`;
-
-    // Parse the SVG string into an SVG DOM element
-    var parser = new DOMParser();
-    var svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
-    var svgElement = svgDoc.documentElement;
-
-    // Inject Roboto font style into SVG
-    var style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-    style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
-    svgElement.prepend(style);
-    
-    // Create a proper SVG overlay with the SVG element
-    var overlay = L.svgOverlay(svgElement, bounds).addTo(map);
-    
-    // Fit the map to the bounds
-    map.fitBounds(bounds);
-    
-    // --- Object popups for generators ---
-    // This will be filled by the Python script
-    var objectPopups = %%OBJECT_POPUPS%%;
-
-    // --- Search functionality ---
-
-    // Data for searchable locations (substations)
-    var locations = %%LOCATIONS_DATA%%;
-
-    // Add popups for generator objects if available
-    if (objectPopups && objectPopups.length > 0) {
-        objectPopups.forEach(function(obj) {
-            // Invert Y coordinate
-            var objY = obj.coords[0]; // Invert y-axis
-            var objX = obj.coords[1];
-            var objLatLng = [objY, objX]; 
-            
-            // Use a marker with constant physical size regardless of zoom
-            var objMarker = L.marker(objLatLng, {
-                icon: L.divIcon({
-                    className: 'generator-marker',
-                    html: '<div style="background-color: rgba(68, 204, 68, 0.2); border: 1px solid rgba(68, 204, 68, 0.8); border-radius: 50%; width: 20px; height: 20px;"></div>',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                }),
-                interactive: true,
-                opacity: 0.1
-            });
-            
-            objMarker.bindPopup(obj.info, {
-                closeButton: false,
-                offset: L.point(0, -3),
-                className: 'object-popup'
-            });
-            
-            objMarker.on('mouseover', function(e) {
-                this.openPopup();
-            });
-            
-            objMarker.on('mouseout', function(e) {
-                this.closePopup();
-            });
-            
-            objMarker.addTo(map);
-        });
-    }
-
-    // Convert locations to GeoJSON features for the search plugin
-    var features = locations.map(function(loc) {
-        return {
-            type: "Feature",
-            properties: {
-                title: loc.title
-            },
-            geometry: {
-                type: "Point",
-                // GeoJSON is [x, y], our coords are [y, x] for Leaflet.
-                coordinates: [loc.coords[1], loc.coords[0]]
-            }
-        };
-    });
-
-    // Create a GeoJSON layer for searching, but don't add it to the map and make it invisible
-    var featuresLayer = L.geoJSON(features, {
-        pointToLayer: function(feature, latlng) {
-            // Create an invisible marker
-            return L.marker(latlng, {
-                opacity: 0,  // Make marker completely transparent
-                interactive: true  // Keep it interactive for search functionality
-            });
-        }
-    });
-
-    // --- Zoom to fit control ---
-    var ZoomToFitControl = L.Control.extend({
-        options: {
-            position: 'topright'
-        },
-        onAdd: function (map) {
-            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control zoom-to-fit-control');
-            var button = L.DomUtil.create('a', '', container);
-            button.innerHTML = '&#x26F6;'; // SQUARE WITH FOUR CORNERS
-            button.href = '#';
-            button.title = 'Zoom to fit';
-            button.role = 'button';
-            button.setAttribute('aria-label', 'Zoom to fit');
-            button.style.fontSize = '1.5em';
-
-            L.DomEvent.on(button, 'click', L.DomEvent.stop);
-            L.DomEvent.on(button, 'click', function () {
-                map.fitBounds(bounds);
-            });
-            L.DomEvent.on(button, 'click', L.DomEvent.preventDefault);
-
-            return container;
-        }
-    });
-    map.addControl(new ZoomToFitControl());
-
-    // Initialize the search control
-    var searchControl = new L.Control.Search({
-        layer: featuresLayer,
-        propertyName: 'title',
-        initial: false,
-        marker: false, // Do not show a marker on the map
-        markerLocation: false, // Do not show the circle when location found
-        moveToLocation: function(latlng, title, map) {
-            map.flyTo(latlng, 0, {
-                duration: 1
-            });
-        },
-        textPlaceholder: 'e.g. ARTS',
-        textErr: 'Location not found',
-        title: 'Search Substations',
-        zoom: 4,
-        position: 'topright'
-    });
-    map.addControl(searchControl);
-
-    // Override Enter key to select the first result
-    var searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                var firstResult = document.querySelector('.search-tooltip a');
-                if (firstResult) {
-                    firstResult.click();
+        function createCustomControls(map, modalActions) {
+            const TitleControl = L.Control.extend({
+                options: { position: 'topleft' },
+                onAdd: function () {
+                    const container = L.DomUtil.create('div', 'leaflet-control title-control');
+                    container.innerHTML = '<b>🇦🇺⚡️NEM SLD</b><hr>Version %%VERSION%% <a href="https://github.com/damienvermeer/opennemsld/releases" target="_blank" title="Changelog">&#x1F517;</a>';
+                    L.DomEvent.disableClickPropagation(container);
+                    return container;
                 }
-            }
-        });
-    }
+            });
 
-    // Override Ctrl+F to focus the search box
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
-            e.preventDefault();
-            var searchContainer = document.querySelector('.leaflet-control-search');
-            if (searchContainer && !searchContainer.classList.contains('search-exp')) {
-                // If collapsed, click the button to expand and focus
-                var searchButton = searchContainer.querySelector('.search-button');
-                if (searchButton) {
-                    searchButton.click();
+            const HelpControl = L.Control.extend({
+                options: { position: 'topleft' },
+                onAdd: function () {
+                    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control help-buttons');
+                    const createButton = (text, title, action) => {
+                        const button = L.DomUtil.create('a', '', container);
+                        button.innerHTML = text;
+                        button.href = '#';
+                        button.title = title;
+                        button.role = 'button';
+                        button.style.width = '89%';
+                        L.DomEvent.on(button, 'click', L.DomEvent.stop)
+                                  .on(button, 'click', action)
+                                  .on(button, 'click', L.DomEvent.preventDefault);
+                    };
+                    createButton('What is this?', 'Help', modalActions.showHelp);
+                    createButton('Notice an error?', 'Report an error', modalActions.showError);
+                    return container;
                 }
-            } else {
-                // If already expanded, just focus the input
-                var searchInput = document.querySelector('.search-input');
-                if (searchInput) {
-                    searchInput.focus();
+            });
+
+            const ZoomToFitControl = L.Control.extend({
+                options: { position: 'topright' },
+                onAdd: function (map) {
+                    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control zoom-to-fit-control');
+                    const button = L.DomUtil.create('a', '', container);
+                    button.innerHTML = '&#x26F6;';
+                    button.href = '#';
+                    button.title = 'Zoom to fit';
+                    button.role = 'button';
+                    button.setAttribute('aria-label', 'Zoom to fit');
+                    L.DomEvent.on(button, 'click', L.DomEvent.stop)
+                              .on(button, 'click', () => map.fitBounds(MAP_BOUNDS))
+                              .on(button, 'click', L.DomEvent.preventDefault);
+                    return container;
                 }
-            }
+            });
+
+            map.addControl(new TitleControl());
+            map.addControl(new HelpControl());
+            map.addControl(new ZoomToFitControl());
         }
-    });
 
-    // Show help on page load
-    showHelp();
+        function addSvgOverlay(map) {
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(SVG_CONTENT, 'image/svg+xml');
+            const svgElement = svgDoc.documentElement;
+
+            const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+            style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
+            svgElement.prepend(style);
+            
+            L.svgOverlay(svgElement, MAP_BOUNDS).addTo(map);
+        }
+
+        function addObjectPopups(map) {
+            if (!OBJECT_POPUPS || OBJECT_POPUPS.length === 0) return;
+
+            OBJECT_POPUPS.forEach(obj => {
+                const objLatLng = [obj.coords[0], obj.coords[1]];
+                const objMarker = L.marker(objLatLng, {
+                    icon: L.divIcon({
+                        className: 'generator-marker',
+                        html: '<div></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    }),
+                    interactive: true,
+                    opacity: 0.1
+                });
+                
+                objMarker.bindPopup(obj.info, {
+                    closeButton: false,
+                    offset: L.point(0, -3),
+                    className: 'object-popup'
+                }).on('mouseover', function() {
+                    this.openPopup();
+                }).on('mouseout', function() {
+                    this.closePopup();
+                });
+                
+                objMarker.addTo(map);
+            });
+        }
+
+        function setupSearch(map) {
+            const features = LOCATIONS_DATA.map(loc => ({
+                type: "Feature",
+                properties: { title: loc.title },
+                geometry: {
+                    type: "Point",
+                    coordinates: [loc.coords[1], loc.coords[0]]
+                }
+            }));
+
+            const featuresLayer = L.geoJSON(features, {
+                pointToLayer: (feature, latlng) => L.marker(latlng, { opacity: 0, interactive: true })
+            });
+
+            const searchControl = new L.Control.Search({
+                layer: featuresLayer,
+                propertyName: 'title',
+                initial: false,
+                marker: false,
+                markerLocation: false,
+                moveToLocation: (latlng, title, map) => map.flyTo(latlng, 0, { duration: 1 }),
+                textPlaceholder: 'e.g. ARTS',
+                textErr: 'Location not found',
+                title: 'Search Substations',
+                zoom: 4,
+                position: 'topright'
+            });
+            map.addControl(searchControl);
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && document.activeElement === document.querySelector('.search-input')) {
+                    e.preventDefault();
+                    document.querySelector('.search-tooltip a')?.click();
+                } else if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
+                    e.preventDefault();
+                    const searchContainer = document.querySelector('.leaflet-control-search');
+                    if (searchContainer && !searchContainer.classList.contains('search-exp')) {
+                        searchContainer.querySelector('.search-button')?.click();
+                    } else {
+                        document.querySelector('.search-input')?.focus();
+                    }
+                }
+            });
+        }
+
+        const modalActions = initializeModals();
+        const map = initializeMap();
+        createCustomControls(map, modalActions);
+        addSvgOverlay(map);
+        addObjectPopups(map);
+        setupSearch(map);
+        setupKeyboardShortcuts();
+    })();
+});
 </script>
 
 </body>

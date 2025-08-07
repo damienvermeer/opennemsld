@@ -1411,7 +1411,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 2
+        rel_x: 1
         rel_y: 13
         connections:
           1: VIC-220-ATS-TX-B2
@@ -1420,7 +1420,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
+        rel_x: 5
         rel_y: 13
         connections:
           1: VIC-220-ATS-TX-B3
@@ -1429,7 +1429,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
+        rel_x: 9
         rel_y: 13
         connections:
           1: VIC-220-ATS-TX-B4

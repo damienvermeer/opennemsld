@@ -28,6 +28,8 @@ ELEMENT_WEIGHT = 50000
 GRID_STEP = 25
 PATHFINDING_ITERATIONS = 5
 CONGESTION_PENALTY = 19
+# Default font family to use for all text
+DEFAULT_FONT_FAMILY = "Roboto"
 import pathlib
 
 SCRIPT_DIR = pathlib.Path(__file__).parent
@@ -536,6 +538,7 @@ class Substation:
                         dominant_baseline="central",
                         fill=colour,
                         stroke_width=0,
+                        font_family=DEFAULT_FONT_FAMILY,
                     )
                 )
 
@@ -773,6 +776,7 @@ def draw_switch(
                 dominant_baseline="central",
                 fill="black",
                 stroke_width=0,
+                font_family=DEFAULT_FONT_FAMILY,
             )
         )
     elif switch_type == SwitchType.ISOL:
@@ -973,7 +977,11 @@ def _mark_busbar_grid_points(
 
 
 def _draw_standard_element_frame(
-    parent_group: draw.Group, xoff: float, y_pos: float, colour: str, params: DrawingParams
+    parent_group: draw.Group,
+    xoff: float,
+    y_pos: float,
+    colour: str,
+    params: DrawingParams,
 ):
     """Draws the top and bottom connecting lines for a standard 3-step element.
 
@@ -1044,6 +1052,7 @@ def _draw_standard_element_symbol(
                 dominant_baseline="central",
                 fill=colour,
                 stroke_width=0,
+                font_family=DEFAULT_FONT_FAMILY,
             )
         )
     elif subtype == "isolator":
@@ -1144,6 +1153,7 @@ def draw_busbar_object(
                     text_anchor="end",
                     dominant_baseline="central",
                     stroke_width=0,
+                    font_family=DEFAULT_FONT_FAMILY,
                 )
             )
 
@@ -1304,7 +1314,9 @@ def draw_element_object(
 
     if subtype in ["cb", "unknown", "isolator"]:
         _draw_standard_element_frame(parent_group, xoff, y_pos, colour, params)
-        _draw_standard_element_symbol(parent_group, subtype, xoff, y_pos, colour, params)
+        _draw_standard_element_symbol(
+            parent_group, subtype, xoff, y_pos, colour, params
+        )
         for i in range(4):
             mark_grid_point(
                 sub,
@@ -1664,6 +1676,7 @@ def get_substation_group(
                 dominant_baseline="text-after-edge",
                 fill="black",
                 stroke_width=0,
+                font_family=DEFAULT_FONT_FAMILY,
             )
         )
 
@@ -2069,6 +2082,7 @@ def render_substation_svg(
             text_anchor="middle",
             fill="black",
             stroke_width=0,
+            font_family=DEFAULT_FONT_FAMILY,
         )
     )
 
@@ -2183,6 +2197,12 @@ def generate_output_files(
         substations: The list of all `Substation` objects.
         sub_bboxes: A dictionary of substation bounding boxes.
     """
+    # Add Google font embedding for Roboto
+    drawing.embed_google_font(
+        DEFAULT_FONT_FAMILY, text=None
+    )  # None means all characters
+
+    # Save the SVG with embedded font
     drawing.save_svg(OUTPUT_SVG)
 
     locations_data = []
@@ -2353,8 +2373,12 @@ def _prepare_substation_layout(
     print("Step 2.4: Finalizing substation positions...")
     for i, sub in enumerate(substations):
         shift_x, shift_y = shifts[i]
-        sub.use_x = round((sub.scaled_x + shift_x) / params.grid_step) * params.grid_step
-        sub.use_y = round((sub.scaled_y + shift_y) / params.grid_step) * params.grid_step
+        sub.use_x = (
+            round((sub.scaled_x + shift_x) / params.grid_step) * params.grid_step
+        )
+        sub.use_y = (
+            round((sub.scaled_y + shift_y) / params.grid_step) * params.grid_step
+        )
 
     return sub_bboxes
 
