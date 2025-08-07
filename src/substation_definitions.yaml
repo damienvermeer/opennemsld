@@ -1877,7 +1877,7 @@ substations:
         rel_y: 0
         connections:
           1: VIC-500-CBTS-TX-A1
-          2: VIC-500-CBTS-HWTS-4 todo connect
+          2: VIC-500-CBTS-HWTS-4
           3: VIC-500-CBTS-ROTS-4
       - def: |
           x|
@@ -2211,32 +2211,113 @@ substations:
         connections:
           4: VIC-66-HTS-TIE
           5: VIC-66-HTS-TIE
-  - name: Hazelwood PS (HWPS)
+  - name: Hazelwood Power (HWPS)
     lat: -38.273103
     long: 146.392264
     voltage_kv: 220
-    tags:
-      - HWPS
-      - Hazelwood PS
     def: |
-      1?|
+      |dx1x|||||
+      |E2x||E|||||x3
+      |x4x||E|||||
+      |xx||E|||||
+      |xx||x|||||
+      6x|E5x||E|||||
+      NE7x||Et
+      |||x8ENE||||||
+      |||x9x||||x||||||
+      10x|||x11x||||E||||||
+      |||xx||||E||||||x12
+      NE13x||||E||||||x14
+      NEE||||x15
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
+      4: "4"
+      5: "5"
+      6: "6"
     connections:
-      1: VIC-220-HWPS
-  - name: Hazelwood (HWTS)
+      1: VIC-220-HWPS-ROTS-2
+      2: VIC-220-HWPS-TX-A1/LINE-1
+      3: VIC-220-HWPS-ROTS-1
+      4: VIC-220-HWPS-TX-A2/LINE-2
+      5: hwps jlts2
+      6: hwps jlts1
+      7: bus 2 tie hwts3 hwps
+      8: bus 3 tie hwts3 hwps
+      9: VIC-220-HWPS-TX-A4/LINE-4
+      10: jlts3-hwps
+      11: jlts4-hwps
+      12: yps1-hwps
+      13: mwts hwps
+      14: yps2-hwps tie 
+      15: yps2-hwps tiex
+  - name: Hazelwood Terminal (HWTS)
     lat: -38.281172
     long: 146.428342
-    voltage_kv: 220
-    tags:
-      - HWTS
-      - Hazelwood
+    voltage_kv: 500
     def: |
-      1?|
+      |||x1x2x||||
+      |||x3x4x||||
+      iEEEi
+      |xd5x|||
+      |x6x7x|||
+      |x8x9x|||x10
+      |x11EEN
     buses:
-      1: ""
+      3: "3"
+      4: "4"
     connections:
-      1: VIC-220-HWTS
+      1: VIC-500-CBTS-HWTS-4
+      2: VIC-500-LYPS-HWTS-3
+      3: VIC-500-HWTS-ROTS-3
+      4: hwts lyps2
+      5: htws lyps1
+      6: VIC-500-HWTS-TX-A4
+      7: VIC-500-SMTS-HWTS-2
+      8: VIC-500-HWTS-TX-A3
+      9: VIC-500-SMTS-HWTS-1
+      10: VIC-500-HWTS-TX-A1
+      11: VIC-500-HWTS-TX-A2
+
+    objects:
+      - type: tx-lr
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 25
+        rel_y: 0
+        connections:
+          1: VIC-500-HWTS-TX-A1
+          2: VIC-220-HWPS-TX-A1/LINE-1
+      - type: tx-lr
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 25
+        rel_y: 4
+        connections:
+          1: VIC-500-HWTS-TX-A2
+          2: VIC-220-HWPS-TX-A2/LINE-2
+      - type: tx-lr
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 25
+        rel_y: 8
+        connections:
+          1: VIC-500-HWTS-TX-A3
+          2: VIC-220-HWPS-TX-A3/LINE-3
+      - type: tx-lr
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 25
+        rel_y: 12
+        connections:
+          1: VIC-500-HWTS-TX-A4
+          2: VIC-220-HWPS-TX-A4/LINE-4
+
   - name: Heywood (HYTS)
     lat: -38.180772
     long: 141.639092
@@ -2258,11 +2339,23 @@ substations:
       - JLTS
       - Jeeralang
     def: |
-      1?|
+      1/|EEE||/2
+      |x3EE||x4
+      |x5x6x||
+      |x7x8x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-JLTS
+      1: VIC-220-JLTS-B
+      2: VIC-220-JLTS-A
+      3: VIC-220-JLTS-HWPS-1
+      4: VIC-220-JLTS-HWPS-2
+      5: VIC-220-JLTS-MWTS-1
+      6: VIC-220-JLTS-HWPS-4
+      7: VIC-220-JLTS-MWTS-2
+      8: VIC-220-JLTS-HWPS-3
+
   # - name: Koorangie (KOTS)
   #   lat: -35.73
   #   long: 143.753333
@@ -2276,19 +2369,38 @@ substations:
   #     1: ""
   #   connections:
   #     1: VIC-220-KOTS
-  - name: Loy Yang PS (LYPS)
+  - name: Loy Yang Power (LYPS)
     lat: -38.256497
     long: 146.573861
-    voltage_kv: 220
-    tags:
-      - LYPS
-      - Loy Yang PS
+    voltage_kv: 500
     def: |
-      1?|
+      1x|||x2x||||
+      |||x3x||||
+      |||E4x||||x5
+      iEEt
+      |x6x||
+      |E7x||
+      |x8x||
+      |x9x||
+      10x|x11xx||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
+      4: "4"
     connections:
-      1: VIC-220-LYPS
+      1: lyps a1 tx for valley power
+      2: lyps bllc
+      3: lyps unt B2
+      4: lyps unit B1
+      5: VIC-500-LYPS-HWTS-3
+      6: VIC-500-LYPS-HWTS-2
+      7: lyps A4
+      8: lyps a3
+      9: lyps a2
+      10: lyps a1
+      11: VIC-500-LYPS-HWTS-1
+      
   - name: Malvern (MTS)
     lat: -37.877828
     long: 145.084433
@@ -2455,26 +2567,26 @@ substations:
       5: ""
     connections:
       1: VIC-220-ROTS-TTS
-      2: hwps1 rots
+      2: VIC-220-HWPS-ROTS-1
       3: VIC-220-ERTS-ROTS-2
-      4: hwps2 rots
+      4: VIC-220-HWPS-ROTS-2
       5: VIC-220-ERTS-ROTS-1
       6: VIC-220-RTS-ROTS-1
       7: VIC-220-ROTS-TIE-BUS2
       8: VIC-220-ROTS-TIE-BUS4
-      9: rots yps5
+      9: VIC-220-ROTS-YPS-5
       10: VIC-220-ROTS-RTS-4
       11: VIC-ROTS-SVC-1
       12: VIC-220-SVTS-ROTS2
       13: VIC-ROTS-SVC-2
       14: VIC-220-ROTS-TX-A1
       15: VIC-220-ROTS-MTS-1
-      16: yps6 rots
+      16: VIC-220-ROTS-YPS-6
       17: VIC-220-ROTS-TSTS
       18: VIC-220-ROTS-MTS-3
-      19: rots yps7
+      19: VIC-220-ROTS-YPS-7
       20: VIC-220-ROTS-RWTS
-      21: rots yps8
+      21: VIC-220-ROTS-YPS-8
       22: VIC-220-SVTS-ROTS1
 
 
@@ -2522,8 +2634,8 @@ substations:
         rel_y: 0
         connections:
           1: VIC-500-CBTS-ROTS-4
-          2: rots hwts3
-          3: rots smts3
+          2: VIC-500-HWTS-ROTS-3
+          3: VIC-500-ROTS-SMTS-3
           4: VIC-500-ROTS-TX-A1
           5: VIC-500-ROTS-TX-A2
 
@@ -2582,9 +2694,9 @@ substations:
       1: "2"
       2: "1"
     connections:
-      1: VIC-500-SMTS-HWTS-1 todo
+      1: VIC-500-SMTS-HWTS-1
       2: VIC-500-SMTS-SYTS-1
-      3: VIC-500-SMTS-HWTS-2 todo
+      3: VIC-500-SMTS-HWTS-2
       4: VIC-500-SMTS-SYTS-2
       5: VIC-500-ROTS-SMTS-3
       6: VIC-500-KTS-ROTS
@@ -3062,15 +3174,56 @@ substations:
     lat: -38.174139
     long: 146.349914
     voltage_kv: 220
-    tags:
-      - YPS
-      - Yallourn
     def: |
-      1?|
+      1x|x2E||x3
+      |x4x||
+      |x5x||
+      |x6E||
+      |x7x||
+      8x|EE||x9
+      |x10x||
+      |E11x||x12
+      |x13E||
+      |xx||
     buses:
       1: ""
     connections:
-      1: VIC-220-YPS
+      1: yps unknown tx
+      2: VIC-220-ROTS-YPS-8
+      3: VIC-220-ROTS-YPS-7
+      4: VIC-220-ROTS-YPS-6
+      5: VIC-220-ROTS-YPS-5
+      6: VIC-220-YPS-TX-W4
+      7: VIC-220-YPS-TX-W3
+      8: yps - hwps 1
+      9: VIC-220-YPS-TX-W2
+      10: todo yps tie W1
+      11: todo hwps2 line
+      12: VIC-220-YPS-TX-DTR
+      13: VIC-220-YPS-TX-ETR
+      # TODO YPS TXs, GENS
+
+
+
+    # child_definitions:
+    #   - def: |
+    #       |x1x2x||
+    #       |x3x4x||
+    #       |dx5x||
+    #     buses:
+    #       1: "2"
+    #       2: "1"
+    #     voltage_kv: 500
+    #     rel_x: -10
+    #     rel_y: 0
+    #     connections:
+    #       1: VIC-500-CBTS-ROTS-4
+    #       2: rots hwts3
+    #       3: rots smts3
+    #       4: VIC-500-ROTS-TX-A1
+    #       5: VIC-500-ROTS-TX-A2
+
+
   - name: John Lysaght (JLA)
     lat: -38.282032
     long: 145.207282
