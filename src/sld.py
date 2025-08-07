@@ -468,7 +468,7 @@ class Substation:
                 parent_group.append(
                     draw.Text(
                         text,
-                        font_size=params.grid_step * 0.98,
+                        font_size=params.grid_step * 0.9,
                         x=circle_center_x,
                         y=circle_center_y,
                         text_anchor="middle",
@@ -520,7 +520,7 @@ def get_substation_bbox_from_svg(
     temp_drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
 
     # Save to a temporary file
-    temp_svg_path = f"temp_{substation.name.replace('/', '_').replace('(', '_').replace(')', '_')}.svg"
+    temp_svg_path = f"temp_{substation.name.replace('?', '').replace('/', '_').replace('(', '_').replace(')', '_')}.svg"
     temp_drawing.save_svg(temp_svg_path)
 
     try:
@@ -1951,10 +1951,13 @@ def generate_substation_documentation_svgs(
 
     for substation in substations:
         # Create a safe filename from the substation name
-        safe_name = "".join(
-            c for c in substation.name if c.isalnum() or c in (" ", "-", "_")
-        ).rstrip()
-        safe_name = safe_name.replace(" ", "_")
+        safe_name = (
+            substation.name.replace("/", "_")
+            .replace("(", "_")
+            .replace(")", "_")
+            .replace(" ", "_")
+        )
+        safe_name = "".join(c for c in safe_name if c.isalnum() or c in ("_", "-"))
         filename = os.path.join(output_dir, f"{safe_name}.svg")
 
         try:

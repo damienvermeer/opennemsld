@@ -10,8 +10,8 @@ substations:
       |/1x2x||d5
       |x3x4x||
     buses:
-      1: '?'
-      2: '?'
+      1: ''
+      2: ''
     connections:
       1: VIC-220-MRTS-KMTS-1
       2: VIC-220-KIAMALSF-TX1
@@ -41,7 +41,7 @@ substations:
         metadata:
           w1: 220
           w2: 1
-        rel_x: 4
+        rel_x: 5
         rel_y: 6
         connections:
           1: VIC-220-KIAMALSC
@@ -52,7 +52,7 @@ substations:
           info: |
             Kiamal Synchronous Condenser
             190 MVAr
-        rel_x: 9
+        rel_x: 10
         rel_y: 6
     child_definitions:
       - def: |
@@ -68,23 +68,21 @@ substations:
           - type: gen
             metadata:
               voltage: 33
-              text: SF
+              text: PV
               info: |
                 Kiamal Solar Farm
-                200 MW
+                150 x 1.598 = 239.7 MVA (200 MW)
             rel_x: 1
             rel_y: 4
           - type: gen
             metadata:
               voltage: 33
-              text: SF
+              text: PV
               info: |
                 Kiamal Solar Farm
-                200 MW
+                150 x 1.598 = 239.7 MVA (200 MW)
             rel_x: 3
             rel_y: 4
-
-
 
   - name: Ararat (ARTS)
     lat: -37.163597
@@ -117,7 +115,7 @@ substations:
           text: WF
           info: |
             Ararat Wind Farm
-            75x 3.2 = 240 MW
+            75 x 3.2 = 240 MW
         rel_x: 10
         rel_y: 3
   - name: Waubra (WBTS)
@@ -147,7 +145,7 @@ substations:
           text: WF
           info: |
             Waubra Wind Farm
-            128x 1.5 = 192 MW
+            128 x 1.5 = 192 MW
         rel_x: 1
         rel_y: -8
       - type: tx-ud
@@ -162,7 +160,7 @@ substations:
           text: WF
           info: |
             Waubra Wind Farm
-            128x 1.5 = 192 MW
+            128 x 1.5 = 192 MW
         rel_x: 3
         rel_y: -8
   - name: Crowlands (CWTS)
@@ -196,7 +194,7 @@ substations:
           text: WF
           info: |
             Crowlands Wind Farm
-            80 MW
+            39 x 2.05 = 80 MW
         rel_x: -6
         rel_y: 3
   - name: Ballarat (BATS)
@@ -261,8 +259,8 @@ substations:
           voltage: 33
           text: WF
           info: |
-            Bulgana Green Power Hub
-            194 MW
+            Bulgana Wind Farm
+            56 x 3.45 = 194 MW
         rel_x: 1
         rel_y: 8
       - type: gen
@@ -270,8 +268,8 @@ substations:
           voltage: 33
           text: WF
           info: |
-            Bulgana Green Power Hub
-            194 MW
+            Bulgana Wind Farm
+            56 x 3.45 = 194 MW
         rel_x: 3
         rel_y: 8
 
@@ -295,17 +293,18 @@ substations:
         metadata:
           w1: 220
           w2: 33
-        rel_x: -3
+        rel_x: 1
         rel_y: 3
         connections:
           1: VIC-220-MRTS-MMWF-TX-220
           2: VIC-220-MRTS-MMWF-TX-33
     child_definitions:
       - def: |
-          1dsx
           sx
+          s
+          1sx
         voltage_kv: 33
-        rel_x: -3
+        rel_x: -1
         rel_y: 10
         connections:
           1: VIC-220-MRTS-MMWF-TX-33
@@ -316,8 +315,8 @@ substations:
               text: WF
               info: |
                 Murra Warra Wind Farm 1
-                226 MW
-            rel_x: 1
+                64 x 3.70 = 226 MW
+            rel_x: 2
             rel_y: 4
           - type: gen
             metadata:
@@ -325,8 +324,8 @@ substations:
               text: WF
               info: |
                 Murra Warra Wind Farm 2
-                209 MW
-            rel_x: 3
+                38 x 5.5 = 209 MW
+            rel_x: 6
             rel_y: 4
   - name: Horsham (HOTS)
     lat: -36.722206
@@ -371,8 +370,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 9
-        rel_y: 6
+        rel_x: 4
+        rel_y: 8
         connections:
           1: HOTS-B3-TX-220
           2: HOTS-B3-TX-66
@@ -445,7 +444,7 @@ substations:
         2: VIC-66-RCTS-TX1B
     child_definitions:
       - def: |
-          1x|
+          1x|?5
           i
           2x|
           t
@@ -458,6 +457,7 @@ substations:
           2: VIC-66-RCTS-TX2B
           3: VIC-66-RCTS-TX1B
           4: VIC-66-RCTS-KSF
+          5: VIC-66-RCTS-YSF
 
 
   - name: Wemen (WETS)
@@ -503,12 +503,14 @@ substations:
           x|x2
           i
           x|x1
+          |?3
         voltage_kv: 66
         rel_x: 0
         rel_y: 9
         connections:
           2: VIC-66-WEMENSF
           1: VIC-66-WETS-BSP
+          3: VIC-66-HTH-WETS
   - name: Wemen Solar Farm
     lat: -34.7882127
     long: 142.5414514
@@ -532,10 +534,10 @@ substations:
       - type: gen
         metadata:
           voltage: 33
-          text: SF
+          text: PV
           info: |
             Wemen Solar Farm
-            97.5 MW
+            97.5 MW / 110 MWp
         rel_x: 1
         rel_y: 5
         connections: {}
@@ -653,16 +655,13 @@ substations:
     connections:
       1: VIC-220-BETS-FVTS-1
       2: VIC-220-SHTS-FVTS-1
-      3: FVTS-Load
     objects:
       - type: tx-ud
         metadata:
           w1: 220
           w2: 11
         rel_x: 3
-        rel_y: 4
-        connections:
-          1: FVTS-Load
+        rel_y: 3
   - name: Shepparton (SHTS)
     lat: -36.342814
     long: 145.414578
@@ -695,7 +694,7 @@ substations:
       |x3x4x||
       |x/x||
     buses:
-      1: '1 GNTS'
+      1: '1'
       2: '2'
     connections:
       1: VIC-220-GNTS-DDTS-1
@@ -770,7 +769,7 @@ substations:
           text: WF
           info: |
             Challicum Hills Wind Farm
-            53 MW
+            35x 1.5 = 52.5 MW
         rel_x: 1
         rel_y: 8
       - type: gen
@@ -779,7 +778,7 @@ substations:
           text: WF
           info: |
             Challicum Hills Wind Farm
-            53 MW
+            35x 1.5 = 52.5 MW
         rel_x: 5
         rel_y: 8
   - name: Ballarat North (BAN)
@@ -975,19 +974,19 @@ substations:
       - type: gen
         metadata:
           voltage: 66
-          text: SF
+          text: PV
           info: |
             Bannerton Solar Park
-            110 MW
+            88 MW / 110 MWp
         rel_x: 1
         rel_y: 4
       - type: gen
         metadata:
           voltage: 66
-          text: SF
+          text: PV
           info: |
             Bannerton Solar Park
-            110 MW
+            88 MW / 110 MWp
         rel_x: 3
         rel_y: 4
   - name: Robinvale (RVL)
@@ -1024,10 +1023,10 @@ substations:
       - type: gen
         metadata:
           voltage: 66
-          text: SF
+          text: PV
           info: |
             Karadoc Solar Farm
-            90 MW
+            90 MW / 112.5 MWp
         rel_x: 1
         rel_y: 4
   - name: Swan Hill (SHL)
@@ -1076,16 +1075,16 @@ substations:
           - type: gen
             metadata:
               voltage_kv: 33
-              text: SF
+              text: PV
               info: |
                 Gannawarra Solar Farm
-                50 MW
+                50 MW / 60 MWp
             rel_x: 1
             rel_y: 4
           - type: gen
             metadata:
               voltage_kv: 33
-              text: B
+              text: BESS
               info: |
                 Gannawarra BESS
                 25 MW / 50 MWh
@@ -1559,7 +1558,7 @@ substations:
           3: "1"
         voltage_kv: 66
         rel_x: 12
-        rel_y: 14
+        rel_y: 13
         connections:
           1: VIC-66-FBTS-TX-B4
           2: VIC-66-FBTS-TX-B3
@@ -1975,7 +1974,7 @@ substations:
         metadata:
           w1: 330
           w2: 220
-        rel_x: -1
+        rel_x: 3
         rel_y: 10
         connections:
           1: VIC-330-DDTS-TX-H1
@@ -1984,7 +1983,7 @@ substations:
         metadata:
           w1: 330
           w2: 220
-        rel_x: 3
+        rel_x: 5
         rel_y: 10
         connections:
           1: VIC-330-DDTS-TX-H2
@@ -1993,7 +1992,7 @@ substations:
         metadata:
           w1: 330
           w2: 220
-        rel_x: 6
+        rel_x: 7
         rel_y: 10
         connections:
           1: VIC-330-DDTS-TX-H3
@@ -2056,7 +2055,7 @@ substations:
           text: G
           info: |
             Eildon Power Station
-            2x 60 = 120 MW
+            2 x 60 = 120 MW
         rel_x: 1
         rel_y: 5
       - type: tx-ud # ?2 tx
@@ -2071,21 +2070,19 @@ substations:
           text: G
           info: |
             Eildon Power Station
-            2x 60 = 120 MW
+            2 x 60 = 120 MW
         rel_x: 9
         rel_y: 5
     child_definitions:
       - def: |
+          s
           s1
-          s3
-          s2
+          s
         voltage_kv: 220
         rel_x: 2
         rel_y: 3
         connections:
           1: VIC-220-EPS-TTS
-          2: EPS-TIE
-          3: EPS-TIE
   - name: East Rowville (ERTS)
     lat: -37.940958
     long: 145.236342
@@ -2266,19 +2263,19 @@ substations:
       1: ""
     connections:
       1: VIC-220-JLTS
-  - name: Koorangie (KOTS)
-    lat: -35.73
-    long: 143.753333
-    voltage_kv: 220
-    tags:
-      - KOTS
-      - Koorangie
-    def: |
-      1?|
-    buses:
-      1: ""
-    connections:
-      1: VIC-220-KOTS
+  # - name: Koorangie (KOTS)
+  #   lat: -35.73
+  #   long: 143.753333
+  #   voltage_kv: 220
+  #   tags:
+  #     - KOTS
+  #     - Koorangie
+  #   def: |
+  #     1?|
+  #   buses:
+  #     1: ""
+  #   connections:
+  #     1: VIC-220-KOTS
   - name: Loy Yang PS (LYPS)
     lat: -38.256497
     long: 146.573861
@@ -2655,7 +2652,7 @@ substations:
           1: VIC-220-SMTS-TX-B1
           2: VIC-220-SMTS-TX-B2
           3: VIC-220-SMTS-TX-H2
-          4: VIC-220-SMTS-TTS-2
+          4: VIC-220-SMTS-TTS-1
           5: VIC-220-SMTS-TX-H1
           6: VIC-220-SMTS-TTS-2
         objects:
@@ -2688,8 +2685,8 @@ substations:
           2: ""
           3: ""
         voltage_kv: 66
-        rel_x: -6
-        rel_y: 26
+        rel_x: -3
+        rel_y: 24
         connections:
           1: VIC-66-SMTS-TX-B1
           3: VIC-66-SMTS-TX-B2
@@ -2865,9 +2862,9 @@ substations:
       1: "1"
       2: "2"
     connections:
-      1: "b3 tx"
-      2: "b2 tx"
-      3: b1 tx
+      1: VIC-220-TSTS-TX-B3
+      2: VIC-220-TSTS-TX-B2
+      3: VIC-220-TSTS-TX-B1
       4: VIC-220-RWTS-TTS
       5: VIC-220-ROTS-TSTS
     objects:
@@ -2875,7 +2872,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 2
+        rel_x: 1
         rel_y: 12
         connections:
           1: VIC-220-TSTS-TX-B3
@@ -2884,7 +2881,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
+        rel_x: 5
         rel_y: 12
         connections:
           1: VIC-220-TSTS-TX-B2
@@ -2893,7 +2890,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
+        rel_x: 9
         rel_y: 12
         connections:
           1: VIC-220-TSTS-TX-B1
@@ -2910,7 +2907,7 @@ substations:
           2: "2"
           3: "1"
         voltage_kv: 66
-        rel_x: 1
+        rel_x: 0
         rel_y: 18
         connections:
           4: VIC-66-TSTS-TIE
@@ -2928,6 +2925,7 @@ substations:
       - Thomastown
     def: |
       |xd1Ndx|||
+      |EENEE|||
       |E2x||EE|||
       |x3E||EE|||
       |EE||E4x|||
@@ -3214,8 +3212,8 @@ substations:
               text: G
               info: |
                 West Kiewa Power Station
-                4x 18.5 = 74 MW
-            rel_x: 1
+                4 x 18.5 = 74 MW
+            rel_x: 0
             rel_y: 7
           - type: gen
             metadata:
@@ -3223,8 +3221,8 @@ substations:
               text: G
               info: |
                 West Kiewa Power Station
-                4x 18.5 = 74 MW
-            rel_x: 3
+                4 x 18.5 = 74 MW
+            rel_x: 2
             rel_y: 7
           - type: gen
             metadata:
@@ -3232,8 +3230,8 @@ substations:
               text: G
               info: |
                 West Kiewa Power Station
-                4x 18.5 = 74 MW
-            rel_x: 5
+                4 x 18.5 = 74 MW
+            rel_x: 4
             rel_y: 7
           - type: gen
             metadata:
@@ -3241,8 +3239,8 @@ substations:
               text: G
               info: |
                 West Kiewa Power Station
-                4x 18.5 = 74 MW
-            rel_x: 7
+                4 x 18.5 = 74 MW
+            rel_x: 6
             rel_y: 7
   - name: Bogong Power Station (BGPS)
     lat: -36.8051893
@@ -3279,7 +3277,7 @@ substations:
           text: G
           info: |
             Bogong Power Station
-            2x 70 = 140 MW
+            2 x 70 = 140 MW
         rel_x: 1
         rel_y: 10
       - type: gen
@@ -3288,7 +3286,7 @@ substations:
           text: G
           info: |
             Bogong Power Station
-            2x 70 = 140 MW
+            2 x 70 = 140 MW
         rel_x: 3
         rel_y: 10
   
@@ -3338,7 +3336,7 @@ substations:
           |x
           |x
         voltage_kv: 22
-        rel_x: -2
+        rel_x: -1
         rel_y: 6
         objects:
           - type: gen
@@ -3348,7 +3346,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 1
+            rel_x: 2
             rel_y: 4
           - type: gen
             metadata:
@@ -3357,7 +3355,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 3
+            rel_x: 4
             rel_y: 4
       - def: |
           |x
@@ -3373,7 +3371,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 1
+            rel_x: 2
             rel_y: 4
           - type: gen
             metadata:
@@ -3382,7 +3380,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 3
+            rel_x: 4
             rel_y: 4
       - def: |
           |x
@@ -3398,7 +3396,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 1
+            rel_x: 2
             rel_y: 4
           - type: gen
             metadata:
@@ -3407,7 +3405,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 3
+            rel_x: 4
             rel_y: 4
 
       # - type: gen
@@ -3447,7 +3445,44 @@ substations:
           text: G
           info: |
             Dartmouth Power station
-            180 MW
+            1 x 180 MW = 180 MW
         rel_x: 1
         rel_y: 5
+        connections: {}
+  - name: Hattah Switching Station (???)
+    lat: -34.760228
+    long: 142.279427
+    voltage_kv: 66
+    def: |
+      1?|?2
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-YSF-HTH
+      2: VIC-66-HTH-WETS
+  - name: Yatpool Solar Farm (YSF)
+    lat: -34.394354
+    long: 142.185096
+    voltage_kv: 66
+    tags:
+      - YSF
+      - Yatpool Solar Farm
+    def: |
+      1?|?3
+      2?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-RCTS-YSF
+      2: VIC-66-YSF-HTH
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: PV
+          info: |
+            Yatpool Solar Farm
+            ?? MW / 106.5 MWp
+        rel_x: 1
+        rel_y: 4
         connections: {}
