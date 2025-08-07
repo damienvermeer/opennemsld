@@ -40,20 +40,20 @@ substations:
       - type: tx-lr
         metadata:
           w1: 220
-          w2: 1
+          w2: 11
         rel_x: 5
-        rel_y: 7
+        rel_y: 8
         connections:
           1: VIC-220-KIAMALSC
       - type: gen
         metadata:
-          voltage: 1
+          voltage: 11
           text: SC
           info: |
             Kiamal Synchronous Condenser
             190 MVAr
         rel_x: 10
-        rel_y: 7
+        rel_y: 8
     child_definitions:
       - def: |
           1dsx
@@ -316,7 +316,7 @@ substations:
               info: |
                 Murra Warra Wind Farm 1
                 64 x 3.70 = 226 MW
-            rel_x: 0
+            rel_x: 1
             rel_y: 4
           - type: gen
             metadata:
@@ -325,7 +325,7 @@ substations:
               info: |
                 Murra Warra Wind Farm 2
                 38 x 5.5 = 209 MW
-            rel_x: 4
+            rel_x: 5
             rel_y: 4
   - name: Horsham (HOTS)
     lat: -36.722206
@@ -1070,11 +1070,10 @@ substations:
           |x
         voltage_kv: 33
         rel_x: 0
-        rel_y: 7
+        rel_y: 8
         objects:
           - type: gen
             metadata:
-              voltage_kv: 33
               text: PV
               info: |
                 Gannawarra Solar Farm
@@ -1083,7 +1082,6 @@ substations:
             rel_y: 4
           - type: gen
             metadata:
-              voltage_kv: 33
               text: BESS
               info: |
                 Gannawarra BESS
@@ -1160,7 +1158,7 @@ substations:
       |x6E||
       |x7x||
       |x8E||
-      NE9||
+      NEx9||
     buses:
       1: '1'
       2: '2'
@@ -1190,8 +1188,8 @@ substations:
           4: "3"
           5: "4"
         voltage_kv: 66
-        rel_x: 2
-        rel_y: 19
+        rel_x: 1
+        rel_y: 16
         connections:
           4: VIC-66-GTS-TIE
           5: VIC-66-GTS-TIE
@@ -1201,7 +1199,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 2
-        rel_y: 13
+        rel_y: 10
         connections:
           1: VIC-220-GTS-TX-B4
           2: VIC-66-GTS-TX-B4
@@ -1210,7 +1208,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 6
-        rel_y: 13
+        rel_y: 10
         connections:
           1: VIC-220-GTS-TX-B3
           2: VIC-66-GTS-TX-B3
@@ -1219,7 +1217,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 10
-        rel_y: 13
+        rel_y: 10
         connections:
           1: VIC-220-GTS-TX-B2
           2: VIC-66-GTS-TX-B2
@@ -1228,7 +1226,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 14
-        rel_y: 13
+        rel_y: 10
         connections:
           1: VIC-220-GTS-TX-B1
           2: VIC-66-GTS-TX-B1
@@ -1843,7 +1841,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
+        rel_x: 2
         rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B3
@@ -1852,7 +1850,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
+        rel_x: 6
         rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B2
@@ -1861,7 +1859,7 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 14
+        rel_x: 10
         rel_y: 14
         connections:
           1: VIC-220-CBTS-TX-B1
@@ -1890,7 +1888,7 @@ substations:
           2: ""
           3: ""
         voltage_kv: 66
-        rel_x: 5
+        rel_x: 1
         rel_y: 21
   - name: Ringwood (RWTS)
     lat: -37.821359
@@ -2241,13 +2239,13 @@ substations:
       2: VIC-220-HWPS-TX-A1/LINE-1
       3: VIC-220-HWPS-ROTS-1
       4: VIC-220-HWPS-TX-A2/LINE-2
-      5: hwps jlts2
-      6: hwps jlts1
+      5: VIC-220-JLTS-HWPS-2
+      6: VIC-220-JLTS-HWPS-1
       7: bus 2 tie hwts3 hwps
       8: bus 3 tie hwts3 hwps
       9: VIC-220-HWPS-TX-A4/LINE-4
-      10: jlts3-hwps
-      11: jlts4-hwps
+      10: VIC-220-JLTS-HWTS-3
+      11: VIC-220-JLTS-HWPS-4
       12: yps1-hwps
       13: mwts hwps
       14: yps2-hwps tie 
@@ -2553,7 +2551,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 1
             50 MW
         rel_x: 1
-        rel_y: 7
+        rel_y: 8
       - type: tx-ud
         metadata:
           w1: 220
@@ -2568,7 +2566,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 2
             50 MW
         rel_x: 3
-        rel_y: 7
+        rel_y: 8
       - type: tx-ud
         metadata:
           w1: 220
@@ -2583,7 +2581,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 3
             50 MW
         rel_x: 5
-        rel_y: 7
+        rel_y: 8
       - type: tx-ud
         metadata:
           w1: 220
@@ -2598,7 +2596,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 4
             50 MW
         rel_x: 7
-        rel_y: 7
+        rel_y: 8
       - type: tx-ud
         metadata:
           w1: 220
@@ -2613,7 +2611,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 5
             50 MW
         rel_x: 9
-        rel_y: 7
+        rel_y: 8
       - type: tx-ud
         metadata:
           w1: 220
@@ -2628,7 +2626,7 @@ substations:
             Valley Power Power Station (VPPS) - Unit 6
             50 MW
         rel_x: 11
-        rel_y: 7
+        rel_y: 8
 
 
   - name: Malvern (MTS)
@@ -2938,7 +2936,7 @@ substations:
           w1: 500
           w2: 330
         rel_x: 9
-        rel_y: 7
+        rel_y: 8
         connections:
           1: VIC-500-SMTS-TX-F2
           2: VIC-330-SMTS-TX-F2
@@ -3012,7 +3010,7 @@ substations:
               w1: 66
               w2: 220
             rel_x: -4
-            rel_y: 7
+            rel_y: 8
             connections:
               1: VIC-66-SMTS-TX-B2
               2: VIC-220-SMTS-TX-B2
@@ -3423,15 +3421,88 @@ substations:
       3: VIC-220-ROTS-YPS-7
       4: VIC-220-ROTS-YPS-6
       5: VIC-220-ROTS-YPS-5
-      6: VIC-220-YPS-TX-W4
-      7: VIC-220-YPS-TX-W3
+      6: VIC-220-YPS-GEN-W4
+      7: VIC-220-YPS-GEN-W3
       8: yps - hwps 1
-      9: VIC-220-YPS-TX-W2
+      9: VIC-220-YPS-GEN-W2
       10: todo yps tie W1
       11: todo hwps2 line
       12: VIC-220-YPS-TX-DTR
       13: VIC-220-YPS-TX-ETR
       # TODO YPS TXs, GENS
+
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 220
+        rel_x: 11
+        rel_y: -7
+        connections:
+          2: VIC-220-YPS-GEN-W4
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Yallourn W Power Station - Unit 4
+            375 MW
+        rel_x: 11
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 220
+        rel_x: 13
+        rel_y: -7
+        connections:
+          2: VIC-220-YPS-GEN-W3
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Yallourn W Power Station - Unit 3
+            375 MW
+        rel_x: 13
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 220
+        rel_x: 15
+        rel_y: -7
+        connections:
+          2: VIC-220-YPS-GEN-W2
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Yallourn W Power Station - Unit 2
+            350 MW
+        rel_x: 15
+        rel_y: -8
+
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 220
+        rel_x: 17
+        rel_y: -7
+        connections:
+          2: VIC-220-YPS-GEN-W1
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Yallourn W Power Station - Unit 1
+            350 MW
+        rel_x: 17
+        rel_y: -8
 
 
 
@@ -3546,12 +3617,12 @@ substations:
       1: ""
     connections:
       1: VIC-220-CBTS-WDP
-  - name: Basslink Converter Station [Victoria] (BLLC)
+  - name: Basslink [Victoria] (BLLC)
     lat: -38.262699
     long: 146.607929
     voltage_kv: 500
     def: |
-      2/|x1
+      1x|/2
     buses:
       1: ""
     connections:
@@ -3560,12 +3631,12 @@ substations:
     objects:
       - type: tx-ud
         metadata:
-          w1: 132
-          w2: 500
+          w1: 500
+          w2: 132
         rel_x: 1
-        rel_y: -7
+        rel_y: 8
         connections:
-          2: VIC-500-BLLC-TX
+          1: VIC-500-BLLC-TX
 
   - name: West Kiewa Power Station (WKPS)
     lat: -36.7598216
@@ -3595,7 +3666,7 @@ substations:
           NE|x
         voltage_kv: 22
         rel_x: -1
-        rel_y: 7
+        rel_y: 8
         objects:
           - type: gen
             metadata:
@@ -3605,7 +3676,7 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 0
-            rel_y: 7
+            rel_y: 8
           - type: gen
             metadata:
               voltage: 22
@@ -3614,7 +3685,7 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 2
-            rel_y: 7
+            rel_y: 8
           - type: gen
             metadata:
               voltage: 22
@@ -3623,7 +3694,7 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 4
-            rel_y: 7
+            rel_y: 8
           - type: gen
             metadata:
               voltage: 22
@@ -3632,7 +3703,7 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 6
-            rel_y: 7
+            rel_y: 8
   - name: Bogong Power Station (BGPS)
     lat: -36.8051893
     long: 147.227913
@@ -3728,8 +3799,17 @@ substations:
           |x
         voltage_kv: 22
         rel_x: -1
-        rel_y: 7
+        rel_y: 8
         objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                McKay Creek power station
+                6x 25 = 150 MW
+            rel_x: 0
+            rel_y: 4
           - type: gen
             metadata:
               voltage: 22
@@ -3739,21 +3819,12 @@ substations:
                 6x 25 = 150 MW
             rel_x: 2
             rel_y: 4
-          - type: gen
-            metadata:
-              voltage: 22
-              text: G
-              info: |
-                McKay Creek power station
-                6x 25 = 150 MW
-            rel_x: 4
-            rel_y: 4
       - def: |
           |x
           |x
         voltage_kv: 22
         rel_x: 5
-        rel_y: 7
+        rel_y: 8
         objects:
           - type: gen
             metadata:
@@ -3778,7 +3849,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: 11
-        rel_y: 7
+        rel_y: 8
         objects:
           - type: gen
             metadata:
@@ -3796,7 +3867,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 4
+            rel_x: 2
             rel_y: 4
 
       # - type: gen
