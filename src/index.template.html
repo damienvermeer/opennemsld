@@ -146,6 +146,30 @@
 
 <div id="map"></div>
 
+<div id="helpModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeHelpModal()">&times;</span>
+        <h2>Help &amp; Information</h2>
+        <p>This is an interactive Single Line Diagram (SLD) of the National Electricity Market (NEM).</p>
+        <ul>
+            <li><b>Pan:</b> Click and drag to move around the map.</li>
+            <li><b>Zoom:</b> Use the scroll wheel or the +/- buttons in the top right.</li>
+            <li><b>Search:</b> Use the search bar (Ctrl+F) to find substations by name.</li>
+            <li><b>Substation Info:</b> Click on a substation name to zoom to it.</li>
+            <li><b>Generator Info:</b> Hover over green circles to see generator details.</li>
+        </ul>
+        <p>For more information, visit the <a href="https://aemo.com.au" target="_blank">AEMO website</a>.</p>
+    </div>
+</div>
+
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeErrorModal()">&times;</span>
+        <h2>Notice an error?</h2>
+        <p>Please provide details of the error you've noticed.</p>
+    </div>
+</div>
+
 <script>
     function showHelp() {
         document.getElementById('helpModal').style.display = 'block';
@@ -418,31 +442,10 @@
             }
         }
     });
+
+    // Show help on page load
+    showHelp();
 </script>
-
-<div id="helpModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeHelpModal()">&times;</span>
-        <h2>Help &amp; Information</h2>
-        <p>This is an interactive Single Line Diagram (SLD) of the National Electricity Market (NEM).</p>
-        <ul>
-            <li><b>Pan:</b> Click and drag to move around the map.</li>
-            <li><b>Zoom:</b> Use the scroll wheel or the +/- buttons in the top right.</li>
-            <li><b>Search:</b> Use the search bar (Ctrl+F) to find substations by name.</li>
-            <li><b>Substation Info:</b> Click on a substation name to zoom to it.</li>
-            <li><b>Generator Info:</b> Hover over green circles to see generator details.</li>
-        </ul>
-        <p>For more information, visit the <a href="https://aemo.com.au" target="_blank">AEMO website</a>.</p>
-    </div>
-</div>
-
-<div id="errorModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeErrorModal()">&times;</span>
-        <h2>Notice an error?</h2>
-        <p>Please provide details of the error you've noticed.</p>
-    </div>
-</div>
 
 </body>
 </html>
