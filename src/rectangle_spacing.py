@@ -13,7 +13,7 @@ def space_rectangles(
     rectangles: List[Tuple[float, float, float, float]],
     grid_size: int = 25,
     debug_images: bool = False,
-    padding_steps: int = 1,
+    padding_steps: Optional[List[int]] = None,
 ) -> List[Tuple[float, float]]:
     """
     Space rectangles to guarantee no overlap/intersection between them.
@@ -29,6 +29,9 @@ def space_rectangles(
     """
     # Track original positions and current positions
     original_positions = rectangles.copy()
+
+    if padding_steps is None:
+        padding_steps = [1] * len(rectangles)
 
     # Snap rectangles to the nearest grid_size (25x25) grid
     current_positions = []
@@ -48,8 +51,8 @@ def space_rectangles(
     # Calculate final target dimensions for each rectangle
     target_half_widths = []
     target_half_heights = []
-    padding = padding_steps * grid_size
-    for x1, y1, x2, y2 in original_positions:
+    for i, (x1, y1, x2, y2) in enumerate(original_positions):
+        padding = padding_steps[i] * grid_size
         width = abs(x2 - x1)
         height = abs(y2 - y1)
         target_half_widths.append(width / 2 + padding)

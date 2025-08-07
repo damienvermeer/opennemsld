@@ -63,7 +63,6 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
-PADDING_STEPS = 10
 VERSION = "1"
 
 # below colours from AEMO NEM SLD pdf for consistency
@@ -1886,7 +1885,7 @@ def render_substation_svg(
     )
 
     # Add grid overlay for documentation (optional - can be removed)
-    grid_colour = "#E0E0E0"
+    grid_colour = "#F2F2F2"
     grid_stroke_width = 0.5
 
     # Vertical grid lines
@@ -2092,6 +2091,24 @@ def main():
             sub_bboxes[sub.name], sub.rotation
         )
 
+    # Calculate dynamic padding for each substation based on its area
+    MIN_PADDING_STEPS = 6
+    PADDING_RATIO = 35
+    paddings_in_steps = []
+    # The order of substations must match the order of initial_rects
+    for sub in substations:
+        min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
+        width_px = max_x - min_x
+        height_px = max_y - min_y
+        width_grid_steps = width_px / params.grid_step
+        height_grid_steps = height_px / params.grid_step
+        area_grid_steps = width_grid_steps * height_grid_steps
+
+        padding = max(MIN_PADDING_STEPS, round(area_grid_steps / PADDING_RATIO))
+        paddings_in_steps.append(padding)
+
+    print(f"Dynamic padding steps (per substation): {paddings_in_steps}")
+
     initial_rects = []
     for sub in substations:
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
@@ -2107,7 +2124,7 @@ def main():
         rectangles=initial_rects,
         grid_size=params.grid_step,
         debug_images=False,
-        padding_steps=PADDING_STEPS,
+        padding_steps=paddings_in_steps,
     )
 
     # 4. Calculate final drawing positions (use_x, use_y)
