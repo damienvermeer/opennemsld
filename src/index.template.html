@@ -70,6 +70,11 @@
     .title-control b {
         font-size: 1.2em;
     }
+    .title-control a {
+        text-decoration: none;
+        font-size: 1.2em;
+        vertical-align: middle;
+    }
     .help-buttons {
         width: 150px;
     }
@@ -139,6 +144,21 @@
     .leaflet-control-search .search-input,
     .leaflet-control-search .search-tooltip {
         font-family: 'Roboto', sans-serif;
+    }
+
+    @media (max-width: 768px) {
+        .title-control {
+            width: 75px;
+            padding: 3px 5px;
+            font-size: 10px;
+        }
+        .help-buttons {
+            width: 75px;
+        }
+        .help-buttons a {
+            font-size: 8px;
+            padding: 4px;
+        }
     }
     </style>
 </head>
@@ -219,7 +239,7 @@
         },
         onAdd: function (map) {
             var container = L.DomUtil.create('div', 'leaflet-control title-control');
-            container.innerHTML = '<b>⚡️NEM SLD</b><hr style="margin: 4px 0; border: 0; border-top: 1px solid #ccc;">Version %%VERSION%% <a href="https://github.com/damienvermeer/opennemsld/releases" target="_blank" title="Changelog" style="text-decoration: none; font-size: 1.2em; vertical-align: middle;">&#x1F517;</a>';
+            container.innerHTML = '<b>⚡️NEM SLD</b><hr style="margin: 4px 0; border: 0; border-top: 1px solid #ccc;">Version %%VERSION%% <a href="https://github.com/damienvermeer/opennemsld/releases" target="_blank" title="Changelog">&#x1F517;</a>';
             L.DomEvent.disableClickPropagation(container);
             return container;
         }
@@ -240,7 +260,6 @@
             helpButton.href = '#';
             helpButton.title = 'Help';
             helpButton.role = 'button';
-            helpButton.style.width = '89%';
             helpButton.style.textAlign = 'center';
             L.DomEvent.on(helpButton, 'click', L.DomEvent.stop);
             L.DomEvent.on(helpButton, 'click', function () {
@@ -254,7 +273,6 @@
             errorButton.href = '#';
             errorButton.title = 'Report an error';
             errorButton.role = 'button';
-            errorButton.style.width = '89%';
             errorButton.style.textAlign = 'center';
             L.DomEvent.on(errorButton, 'click', L.DomEvent.stop);
             L.DomEvent.on(errorButton, 'click', function () {
