@@ -54,6 +54,11 @@
         grid-template-columns: auto auto;
         grid-gap: 10px;
     }
+    .leaflet-top.leaflet-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
     .leaflet-control-search { grid-area: search; align-self: start; }
     .leaflet-control-zoom { grid-area: zoom; }
     .zoom-to-fit-control { grid-area: zoomfit; }
@@ -64,7 +69,7 @@
         border-radius: 4px;
         box-shadow: 0 1px 5px rgba(0,0,0,0.4);
         text-align: center;
-        width: 150px;
+        width: 173px;
         box-sizing: border-box;
     }
     .title-control b {
@@ -80,7 +85,7 @@
     }
     .help-buttons a {
         font-size: 14px;
-        padding: 8px;
+        padding: 6px 8px;
         display: block;
         text-align: center;
     }
@@ -148,7 +153,7 @@
 
     @media (max-width: 768px) {
         .title-control {
-            width: 75px;
+            width: 86px;
             padding: 3px 5px;
             font-size: 10px;
         }
@@ -157,7 +162,7 @@
         }
         .help-buttons a {
             font-size: 8px;
-            padding: 4px;
+            padding: 3px 4px;
         }
     }
     </style>
@@ -260,6 +265,7 @@
             helpButton.href = '#';
             helpButton.title = 'Help';
             helpButton.role = 'button';
+            helpButton.style.width = '89%';
             helpButton.style.textAlign = 'center';
             L.DomEvent.on(helpButton, 'click', L.DomEvent.stop);
             L.DomEvent.on(helpButton, 'click', function () {
@@ -273,6 +279,7 @@
             errorButton.href = '#';
             errorButton.title = 'Report an error';
             errorButton.role = 'button';
+            errorButton.style.width = '89%';
             errorButton.style.textAlign = 'center';
             L.DomEvent.on(errorButton, 'click', L.DomEvent.stop);
             L.DomEvent.on(errorButton, 'click', function () {
