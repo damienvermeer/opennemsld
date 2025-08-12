@@ -457,6 +457,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     text.setAttribute('fill', 'white');
                 }
             });
+            
+            // Change state boundary lines to white
+            const stateBoundaries = svgElement.querySelectorAll('.state-boundary');
+            stateBoundaries.forEach(boundary => {
+                boundary.setAttribute('stroke', 'white');
+            });
         }
 
         function removeDarkModeFromSvg(svgElement) {
@@ -468,6 +474,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentFill === 'white') {
                     text.setAttribute('fill', 'black');
                 }
+            });
+            
+            // Change state boundary lines back to black
+            const stateBoundaries = svgElement.querySelectorAll('.state-boundary');
+            stateBoundaries.forEach(boundary => {
+                boundary.setAttribute('stroke', 'black');
             });
         }
 

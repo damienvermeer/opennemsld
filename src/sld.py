@@ -12,13 +12,15 @@ import yaml
 import svgelements
 import os
 import networkx as nx
+import scour
 
 # Local application/library specific imports
 import findpath
 from rectangle_spacing import space_rectangles
 
 # --- Constants ---
-BASE_MAP_DIMS = 22000  # Base dimensions, will be expanded as needed
+BASE_MAP_DIMS_EAST_WEST = 45000  # Base dimensions, will be expanded as needed
+BASE_MAP_DIMS_NORTH_SOUTH = 22000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -33,7 +35,8 @@ DEFAULT_FONT_FAMILY = "Roboto"
 import pathlib
 
 SCRIPT_DIR = pathlib.Path(__file__).parent
-SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
+PARENT_DIR = SCRIPT_DIR.parent
+SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
@@ -104,6 +107,7 @@ class Substation:
     y: float = 0.0
     use_x: float = 0.0  # Final drawing coordinate
     use_y: float = 0.0  # Final drawing coordinate
+    state_location: str = ""  # State prefix from YAML filename
 
     def __post_init__(self):
         self.grid_points = {}  # Store (x,y) -> weight dictionary for grid points
@@ -694,8 +698,36 @@ def get_rotated_bbox(
 
 
 # --- Data Loading ---
-def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
-    """Load substations from a YAML file into a dictionary.
+def load_all_yaml_files() -> dict[str, Substation]:
+    """Load and merge all YAML files from parent directory and sld-data folder.
+
+    Returns:
+        A dictionary mapping substation names to `Substation` objects.
+    """
+    substations_map = {}
+
+    # Find all YAML files in parent directory
+    parent_yaml_files = list(PARENT_DIR.glob("*.yaml"))
+
+    # Find all YAML files in sld-data directory
+    sld_data_yaml_files = list(SLD_DATA_DIR.glob("*.yaml"))
+
+    # Combine all YAML files
+    all_yaml_files = parent_yaml_files + sld_data_yaml_files
+
+    if not all_yaml_files:
+        print(f"Warning: No YAML files found in {PARENT_DIR} or {SLD_DATA_DIR}")
+        return {}
+
+    # Process each YAML file
+    for yaml_file in all_yaml_files:
+        substations_map.update(_load_single_yaml_file(yaml_file))
+
+    return substations_map
+
+
+def _load_single_yaml_file(filename) -> dict[str, Substation]:
+    """Load substations from a single YAML file into a dictionary.
 
     Args:
         filename: The path to the YAML file containing substation definitions.
@@ -703,32 +735,63 @@ def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
     Returns:
         A dictionary mapping substation names to `Substation` objects.
     """
-    with open(filename, "r") as f:
-        data = yaml.safe_load(f)
+    try:
+        with open(filename, "r") as f:
+            data = yaml.safe_load(f)
 
-    substations_map = {}
+        if not data or "substations" not in data:
+            print(f"Warning: No substations found in {filename}")
+            return {}
 
-    for sub_data in data["substations"]:
-        # Create substation
-        substation = Substation(
-            name=sub_data["name"],
-            lat=sub_data["lat"],
-            long=sub_data["long"],
-            voltage_kv=sub_data["voltage_kv"],
-            tags=sub_data.get("tags", [sub_data["name"]]),
-            rotation=sub_data.get("rotation", 0),
-            definition=sub_data.get("def", ""),
-            buses=sub_data.get("buses", {}),
-            connections=sub_data.get("connections", {}),
-            child_definitions=sub_data.get("child_definitions", []),
-        )
+        # Extract state location from filename prefix
+        import os
+        file_basename = os.path.basename(str(filename))
+        state_location = ""
+        if "_" in file_basename:
+            prefix = file_basename.split("_")[0]
+            state_location = prefix.upper()
 
-        # Add objects to the substation if present in the data
-        if "objects" in sub_data:
-            substation.objects = sub_data["objects"]
+        substations_map = {}
 
-        substations_map[substation.name] = substation
-    return substations_map
+        for sub_data in data["substations"]:
+            # Create substation
+            substation = Substation(
+                name=sub_data["name"],
+                lat=sub_data["lat"],
+                long=sub_data["long"],
+                voltage_kv=sub_data["voltage_kv"],
+                tags=sub_data.get("tags", [sub_data["name"]]),
+                rotation=sub_data.get("rotation", 0),
+                definition=sub_data.get("def", ""),
+                buses=sub_data.get("buses", {}),
+                connections=sub_data.get("connections", {}),
+                child_definitions=sub_data.get("child_definitions", []),
+                state_location=state_location,
+            )
+
+            # Add objects to the substation if present in the data
+            if "objects" in sub_data:
+                substation.objects = sub_data["objects"]
+
+            substations_map[substation.name] = substation
+
+        return substations_map
+    except Exception as e:
+        print(f"Error loading {filename}: {str(e)}")
+        return {}
+
+
+# Keep old function for backward compatibility
+def load_substations_from_yaml(filename: str) -> dict[str, Substation]:
+    """Load substations from a YAML file into a dictionary (backward compatibility).
+
+    Args:
+        filename: The path to the YAML file containing substation definitions.
+
+    Returns:
+        A dictionary mapping substation names to `Substation` objects.
+    """
+    return _load_single_yaml_file(filename)
 
 
 # --- Drawing Helpers ---
@@ -1766,17 +1829,13 @@ def calculate_initial_scaled_positions(substations: list[Substation]):
     y_range = max_y - min_y
 
     # Determine scaling factor for both dimensions
-    scale_factor_x = BASE_MAP_DIMS * 0.9 / x_range if x_range > 0 else 1
-    scale_factor_y = BASE_MAP_DIMS * 0.9 / y_range if y_range > 0 else 1
+    scale_factor_x = BASE_MAP_DIMS_EAST_WEST * 0.9 / x_range if x_range > 0 else 1
+    scale_factor_y = BASE_MAP_DIMS_NORTH_SOUTH * 0.9 / y_range if y_range > 0 else 1
     scale_factor = min(scale_factor_x, scale_factor_y)
 
-    # Apply scaling and translation to fit within BASE_MAP_DIMS
-    # Use margin of 5% on each side (10% total)
-    margin = BASE_MAP_DIMS * 0.05
-
     for sub in substations:
-        sub.scaled_x = (sub.x - min_x) * scale_factor + margin
-        sub.scaled_y = (sub.y - min_y) * scale_factor + margin
+        sub.scaled_x = (sub.x - min_x) * scale_factor + BASE_MAP_DIMS_EAST_WEST * 0.05
+        sub.scaled_y = (sub.y - min_y) * scale_factor + BASE_MAP_DIMS_NORTH_SOUTH * 0.05
 
 
 def calculate_connection_points(
@@ -1956,6 +2015,147 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
         all_paths.append(path)
 
     return all_paths
+
+
+def draw_state_boundaries(
+    drawing: draw.Drawing,
+    substations: list[Substation],
+    sub_bboxes: dict,
+):
+    """Draws state boundary boxes around groups of substations.
+
+    This function groups substations by their state_location and draws
+    dashed boundary boxes around each state group. The boundaries are
+    post-processed to share common borders with no gaps, and only one
+    line is drawn on shared edges to avoid overlapping.
+
+    Args:
+        drawing: The main `draw.Drawing` object.
+        substations: List of all substations.
+        sub_bboxes: Dictionary mapping substation names to their bounding boxes.
+    """
+    # Group substations by state
+    state_groups = {}
+    for sub in substations:
+        if sub.state_location:  # Only include substations with a state location
+            if sub.state_location not in state_groups:
+                state_groups[sub.state_location] = []
+            state_groups[sub.state_location].append(sub)
+
+    if len(state_groups) == 0:
+        return
+
+    # Calculate initial bounding boxes for each state
+    state_bounds = {}
+    for state, state_substations in state_groups.items():
+        if len(state_substations) == 0:
+            continue
+
+        # Calculate the bounding box for all substations in this state
+        min_x = min_y = float('inf')
+        max_x = max_y = float('-inf')
+
+        for sub in state_substations:
+            # Get the rotated bounding box for this substation
+            rotated_bbox = get_rotated_bbox(sub_bboxes[sub.name], sub.rotation)
+            bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y = rotated_bbox
+
+            # Calculate global coordinates
+            global_min_x = sub.use_x + bbox_min_x
+            global_min_y = sub.use_y + bbox_min_y
+            global_max_x = sub.use_x + bbox_max_x
+            global_max_y = sub.use_y + bbox_max_y
+
+            min_x = min(min_x, global_min_x)
+            min_y = min(min_y, global_min_y)
+            max_x = max(max_x, global_max_x)
+            max_y = max(max_y, global_max_y)
+
+        # Add padding around the state boundary
+        padding = 100
+        min_x -= padding
+        min_y -= padding
+        max_x += padding
+        max_y += padding
+
+        state_bounds[state] = (min_x, min_y, max_x, max_y)
+
+    # Post-process boundaries to share common borders - expand to any pixel distance
+    state_list = list(state_bounds.keys())
+    
+    # For each pair of states, check if they should share a border
+    for i in range(len(state_list)):
+        for j in range(i + 1, len(state_list)):
+            state1, state2 = state_list[i], state_list[j]
+            bounds1 = state_bounds[state1]
+            bounds2 = state_bounds[state2]
+            
+            min_x1, min_y1, max_x1, max_y1 = bounds1
+            min_x2, min_y2, max_x2, max_y2 = bounds2
+            
+            # Check for horizontal adjacency (side by side) - any distance
+            if (min_y1 <= max_y2 and max_y1 >= min_y2):  # Y ranges overlap
+                # Find the closest horizontal edges and join them
+                if max_x1 <= min_x2:  # State1 is to the left of State2
+                    # Make them share a common border at the midpoint
+                    shared_x = (max_x1 + min_x2) / 2
+                    state_bounds[state1] = (min_x1, min_y1, shared_x, max_y1)
+                    state_bounds[state2] = (shared_x, min_y2, max_x2, max_y2)
+                elif max_x2 <= min_x1:  # State2 is to the left of State1
+                    # Make them share a common border at the midpoint
+                    shared_x = (max_x2 + min_x1) / 2
+                    state_bounds[state2] = (min_x2, min_y2, shared_x, max_y2)
+                    state_bounds[state1] = (shared_x, min_y1, max_x1, max_y1)
+            
+            # Check for vertical adjacency (top and bottom) - any distance
+            if (min_x1 <= max_x2 and max_x1 >= min_x2):  # X ranges overlap
+                # Find the closest vertical edges and join them
+                if max_y1 <= min_y2:  # State1 is above State2
+                    # Make them share a common border at the midpoint
+                    shared_y = (max_y1 + min_y2) / 2
+                    state_bounds[state1] = (min_x1, min_y1, max_x1, shared_y)
+                    state_bounds[state2] = (min_x2, shared_y, max_x2, max_y2)
+                elif max_y2 <= min_y1:  # State2 is above State1
+                    # Make them share a common border at the midpoint
+                    shared_y = (max_y2 + min_y1) / 2
+                    state_bounds[state2] = (min_x2, min_y2, max_x2, shared_y)
+                    state_bounds[state1] = (min_x1, shared_y, max_x1, max_y1)
+
+    # Track which edges have been drawn to avoid overlapping lines
+    drawn_edges = set()
+    
+    def edge_key(x1, y1, x2, y2):
+        """Create a consistent key for an edge between two points."""
+        return tuple(sorted([(x1, y1), (x2, y2)]))
+
+    # Draw individual line segments for each state boundary, avoiding duplicates
+    for state, (min_x, min_y, max_x, max_y) in state_bounds.items():
+        # Define the four edges of the rectangle
+        edges = [
+            (min_x, min_y, max_x, min_y),  # Top edge
+            (max_x, min_y, max_x, max_y),  # Right edge
+            (max_x, max_y, min_x, max_y),  # Bottom edge
+            (min_x, max_y, min_x, min_y),  # Left edge
+        ]
+        
+        edges_drawn_for_state = 0
+        for x1, y1, x2, y2 in edges:
+            edge = edge_key(x1, y1, x2, y2)
+            if edge not in drawn_edges:
+                # Draw this edge
+                boundary_line = draw.Line(
+                    x1, y1, x2, y2,
+                    stroke="black",
+                    stroke_width=15,
+                    stroke_dasharray="20,10",
+                    stroke_opacity="0.6",
+                    class_="state-boundary"
+                )
+                drawing.append(boundary_line)
+                drawn_edges.add(edge)
+                edges_drawn_for_state += 1
+
+        print(f"  Drew state boundary for {state}: ({min_x:.1f}, {min_y:.1f}) to ({max_x:.1f}, {max_y:.1f}) - {edges_drawn_for_state}/4 edges drawn")
 
 
 def draw_connections(
@@ -2471,6 +2671,29 @@ def generate_output_files(
     with open(OUTPUT_SVG, "r", encoding="utf-8") as f:
         svg_content = f.read()
 
+    # Optimise the SVG using scour before embedding
+    print("Step 6.2: Optimising SVG with scour...")
+    original_size = len(svg_content)
+    try:
+        from scour import scour
+        options = scour.generateDefaultOptions()
+        options.strip_xml_prolog = True
+        options.remove_metadata = True
+        options.strip_comments = True
+        options.enable_viewboxing = True
+        options.strip_xml_space_attribute = True
+        options.remove_titles = True
+        options.remove_descriptions = True
+        options.remove_descriptive_elements = True
+        
+        svg_content = scour.scourString(svg_content, options)
+        optimised_size = len(svg_content)
+        reduction = ((original_size - optimised_size) / original_size) * 100
+        print(f"  SVG optimised: {original_size} -> {optimised_size} chars ({reduction:.1f}% reduction)")
+    except Exception as e:
+        print(f"  Warning: SVG optimisation failed: {e}")
+        print("  Using original SVG content")
+
     with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
         template_content = f.read()
 
@@ -2605,7 +2828,10 @@ def _prepare_substation_layout(
         grid_size=params.grid_step,
         debug_images=True,
         padding_steps=paddings_in_steps,
-        map_bounds=(BASE_MAP_DIMS * 2, BASE_MAP_DIMS * 2),  # Allow much larger bounds
+        map_bounds=(
+            BASE_MAP_DIMS_EAST_WEST * 2,
+            BASE_MAP_DIMS_NORTH_SOUTH * 2,
+        ),  # Allow much larger bounds
     )
 
     print("Step 2.4: Finalizing substation positions...")
@@ -2649,8 +2875,8 @@ def _prepare_substation_layout(
 
     # Calculate required dimensions with padding, ensuring minimum size
     # Use the actual bounds (max_x, max_y) rather than content dimensions to ensure nothing is cut off
-    required_width = max(BASE_MAP_DIMS, int(max_x + padding))
-    required_height = max(BASE_MAP_DIMS, int(max_y + padding))
+    required_width = max(BASE_MAP_DIMS_EAST_WEST, int(max_x + padding))
+    required_height = max(BASE_MAP_DIMS_NORTH_SOUTH, int(max_y + padding))
 
     # Ensure dimensions are multiples of grid step for clean alignment
     required_width = ((required_width // params.grid_step) + 1) * params.grid_step
@@ -2757,7 +2983,7 @@ def _populate_pathfinding_grid(
 def main():
     """Main function to run the SLD generation process."""
     print("Step 1: Loading substation data...")
-    substation_map = load_substations_from_yaml(SUBSTATIONS_DATA_FILE)
+    substation_map = load_all_yaml_files()
     should_exit, use_pretty_pathfinding = _handle_cli_args(substation_map)
     if should_exit:
         return
@@ -2820,7 +3046,11 @@ def main():
         use_pretty_pathfinding,
     )
 
-    # 5. Generate output files
+    # 5.5. Draw state boundaries
+    print("Step 5.5: Drawing state boundaries...")
+    draw_state_boundaries(drawing, substations, sub_bboxes)
+
+    # 6. Generate output files
     print("Step 6: Generating output files...")
     generate_output_files(drawing, substations, sub_bboxes, map_dims)
 
