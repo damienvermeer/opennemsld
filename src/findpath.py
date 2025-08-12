@@ -4,7 +4,7 @@ from the NetworkX library. It is designed to find the shortest path on a 2D grid
 where cells can have different traversal costs (weights).
 """
 
-from typing import List, Tuple, Union
+from typing import List, Literal, Tuple, Union
 
 import networkx as nx
 
@@ -471,6 +471,45 @@ def _try_straighten_one_corner(
     Returns:
         The new corner node if a valid straightening was found, otherwise None.
     """
+
+    def _get_straight_run_length(
+            path: List,
+            i: int,
+            direction: Literal['forward', 'backward'] = 'forward'
+    ) -> Tuple[Union[Literal['hor', 'vert'], None], int]:
+        """
+        Looks for and returns the number of colinear points on the path from index i+/-1
+        and onwards/backwards, until the path turns.
+
+        Args:
+            path: The path within which we are looking for straight runs
+            i: The index of the "L" in the path at which to begin the search
+            direction: foward means we look towards increasing indices, backwards means decreasing
+
+        Returns:
+            The type of straight run ('vert' or 'hor') or None if only one point in the straight run
+            The number of colinear points on the path from index i+/-1 on
+        """
+
+        count = 1
+        s = 1 if direction == 'forward' else -1
+
+        # If we are looking at the final node in the path, return immediately
+        if not i+s*2 in range(len(path)):
+            return None, 1
+
+        # figure out if we're looking for a vertical or horizontal run
+        search_type = 'vert' if path[i+s][0] == path[i+s*2][0] else 'hor'
+
+        while i+s*(count+1) in range(len(path)):
+            p1, p2 = path[i+s*count], path[i+s*(count+1)]
+            if search_type == 'vert' and p1[0] == p2[0] or search_type == 'hor' and p1[1] == p2[1]:
+                count += 1
+            else:
+                break
+
+        return search_type, count
+
     p_prev, p_curr, p_next = path[i - 1], path[i], path[i + 1]
 
     # Check for a corner (not collinear).
@@ -503,9 +542,20 @@ def _try_straighten_one_corner(
     weight_orig = graph.edges[edge1_orig]["weight"] + graph.edges[edge2_orig]["weight"]
     weight_alt = graph.edges[edge1_alt]["weight"] + graph.edges[edge2_alt]["weight"]
 
-    # Tie-break by preferring the lexicographically smaller node to prevent flipping.
-    if abs(weight_orig - weight_alt) < 1e-9 and p_alt < p_curr:
-        return p_alt
+    # If weights are (relatively) similar, prefer a flip which lengthens the straight run within the path
+    if abs(weight_orig - weight_alt) < 100:
+        # get straight run lengths forward and backward
+        forward_run = _get_straight_run_length(path, i, 'forward')
+        backward_run = _get_straight_run_length(path, i, 'backward')
+
+        # determine if max run is forwards or backwards in the path
+        max_run = max((forward_run, backward_run), key=lambda run: run[1])
+        p_check = p_next if forward_run[1] >= backward_run[1] else p_prev
+
+        # choose the alternative if doing so will lengthen our straight run at this point
+        if (max_run[0] == 'vert' and p_alt[0] == p_check[0]
+            or max_run[0] == 'hor' and p_alt[1] == p_check[1]):
+            return p_alt
 
     return None
 
