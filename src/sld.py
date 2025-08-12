@@ -37,7 +37,7 @@ SUBSTATIONS_DATA_FILE = SCRIPT_DIR / "substation_definitions.yaml"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"
 OUTPUT_HTML = "index.html"
-VERSION = "1"
+VERSION = "2"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
