@@ -217,7 +217,7 @@ substations:
     connections:
       1: VIC-220-WBTS-BATS-1
       2: VIC-220-BETS-BATS-1
-      3: VIC-220-TGTS-BATS
+      3: VIC-220-BATS-BBTS
       4: VIC-220-BATS-ELTS
       5: VIC-220-BATS-MLTS-2
       6: VIC-220-BATS-MLTS-1
@@ -1107,9 +1107,6 @@ substations:
     lat: -38.232969
     long: 142.932311
     voltage_kv: 220
-    tags:
-      - TGTS
-      - Terang
     def: |
       |x1EN
       |x2x||x3
@@ -1119,7 +1116,7 @@ substations:
       2: "1"
     connections:
       1: tgts tx1
-      2: VIC-220-TGTS-BATS
+      2: VIC-220-BBTS-TGTS
       3: tgts tx2
       4: VIC-220-MLTS-TGTS
   - name: Elaine (ELTS)
@@ -1790,19 +1787,57 @@ substations:
   #     1: ""
   #   connections:
   #     1: VIC-220-ADTS
-  # - name: Berrybank (BBTS)
-  #   lat: -37.885608
-  #   long: 143.45285
-  #   voltage_kv: 220
-  #   tags:
-  #     - BBTS
-  #     - Berrybank
-  #   def: |
-  #     1?|
-  #   buses:
-  #     1: ""
-  #   connections:
-  #     1: VIC-220-BBTS
+  - name: Berrybank (BBTS)
+    lat: -37.8861302
+    long: 143.4533854
+    voltage_kv: 220
+    def: |
+      |x1x2x||
+      |/3x4/||
+    buses:
+      1: "?"
+      2: "?"
+    connections:
+      1: VIC-220-BBTS-TGTS
+      2: VIC-220-BBWF1-TX
+      3: VIC-220-BATS-BBTS
+      4: VIC-220-BBWF2-TX
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 1
+        rel_y: 11
+        connections:
+          1: VIC-220-BBWF1-TX
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 3
+        rel_y: 11
+        connections:
+          1: VIC-220-BBWF2-TX
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Berrybank Wind Farm (Stage 1)
+            180.6 MW
+        rel_x: 1
+        rel_y: 16
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Berrybank Wind Farm (Stage 2)
+            109.2 MW
+        rel_x: 3
+        rel_y: 16
+
   - name: Cranbourne (CBTS)
     lat: -38.085633
     long: 145.266433
@@ -2380,7 +2415,7 @@ substations:
         w1: 220
         w2: 33
       rel_x: 5
-      rel_y: 5
+      rel_y: 6
       connections:
         1: VIC-220-TX-KOTS-1
     - type: gen
@@ -2390,8 +2425,8 @@ substations:
         info: |
           Koorangie BESS
           185 MW / 370 MWh
-      rel_x: 9
-      rel_y: 5
+      rel_x: 10
+      rel_y: 6
 
 
 
@@ -3604,47 +3639,92 @@ substations:
         connections:
           1: VIC-220-JLA-TX-3
           2: VIC-33-JLA-TX-3
-  - name: WDP Northern Reactive Station (WDPN)
+
+
+  - name: Northern Reactive Compensation Station (NRCS)
     lat: -38.125762
     long: 145.38783
     voltage_kv: 220
-    tags:
-      - WDPN
-      - WDP Northern Reactive Station
     def: |
-      1?|?2
+      1/|/2
+      |x3
+      |x4
     buses:
-      1: ""
+      1: "NRCS"
     connections:
       1: VIC-220-CBTS-WDP-NORTH
       2: VIC-220-CBTS-WDP-SOUTH
-  - name: WDP Southern Reactive Station (WDPS)
+      3: VIC-220-NRCS-TX1
+      4: VIC-220-NRCS-TX2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 3
+        rel_y: 4
+        connections:
+          1: VIC-220-NRCS-TX1
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 5
+        rel_y: 4
+        connections:
+          1: VIC-220-NRCS-TX2
+
+
+
+  - name: Southern Reactive Compensation Station (SRCS)
     lat: -38.3377199
     long: 145.5588388
     voltage_kv: 220
-    tags:
-      - WDPS
-      - WDP Southern Reactive Station
     def: |
-      1?|?2
+      1/|/2
+      |x
+      |x
+      |x
     buses:
-      1: ""
+      1: "SRCS"
     connections:
       1: VIC-220-CBTS-WDP-SOUTH
       2: VIC-220-CBTS-WDP
+
+
   - name: Wonthaggi Desalination Plant (WDP)
     lat: -38.5854383
     long: 145.5252322
     voltage_kv: 220
-    tags:
-      - WDP
-      - Wonthaggi Desalination Plant
     def: |
-      1?|
+      1d|x2
+      |x3
     buses:
-      1: ""
+      1: "WDP"
     connections:
       1: VIC-220-CBTS-WDP
+      2: VIC-220-WDP-BUS1
+      3: VIC-220-WDP-BUS2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 1
+        rel_y: 4
+        connections:
+          1: VIC-220-WDP-BUS1
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 22
+        rel_x: 3
+        rel_y: 4
+        connections:
+          1: VIC-220-WDP-BUS2
+
+
+
   - name: Basslink [Victoria] (BLLC)
     lat: -38.262699
     long: 146.607929
