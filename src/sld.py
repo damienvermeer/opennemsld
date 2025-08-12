@@ -1853,9 +1853,9 @@ def calculate_connection_points(
 def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     """Simple breadth-first search pathfinding for debugging.
     
-    This function uses a basic BFS algorithm that prevents line overlapping
-    but allows lines to cross (share nodes). Lines cannot share edges.
-    Also blocks on elements (high weights) but allows connection points.
+    This function uses a very permissive BFS algorithm that only prevents 
+    line overlapping but allows lines to cross and go through any terrain.
+    All barriers are removed to ensure every line gets a path.
     
     Args:
         path_requests: List of pathfinding requests.
@@ -1869,24 +1869,12 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     # Track used edges to prevent overlapping lines
     used_edges = set()
     
-    # Collect all connection points (start/end points) to allow traversal
-    connection_points = set()
-    for request in path_requests:
-        connection_points.add(request["start"])
-        connection_points.add(request["end"])
-    
     def edge_key(node1, node2):
         """Create a consistent key for an edge between two nodes."""
         return tuple(sorted([node1, node2]))
     
-    def is_blocked(row, col, grid, connection_points):
-        """Check if a grid cell is blocked (high weight element but not a connection point)."""
-        if (row, col) in connection_points:
-            return False  # Connection points are always allowed
-        return grid[row][col] >= ELEMENT_WEIGHT  # Block on elements
-    
-    def bfs_path(start, end, grid, blocked_edges, connection_points):
-        """Basic BFS pathfinding that avoids blocked edges and elements."""
+    def bfs_path(start, end, grid, blocked_edges):
+        """Very permissive BFS pathfinding that only avoids used edges."""
         rows, cols = len(grid), len(grid[0])
         queue = deque([(start, [start])])
         visited = {start}
@@ -1902,9 +1890,9 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
             for dr, dc in directions:
                 new_row, new_col = row + dr, col + dc
                 
+                # Only check grid bounds and if we've visited this node
                 if (0 <= new_row < rows and 0 <= new_col < cols and 
-                    (new_row, new_col) not in visited and
-                    not is_blocked(new_row, new_col, grid, connection_points)):
+                    (new_row, new_col) not in visited):
                     
                     # Check if this edge is already used by another line
                     edge = edge_key((row, col), (new_row, new_col))
@@ -1914,16 +1902,49 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
         
         return []  # No path found
     
+    def bfs_path_no_restrictions(start, end, grid):
+        """Fallback BFS with no restrictions at all - guarantees a path if one exists."""
+        rows, cols = len(grid), len(grid[0])
+        queue = deque([(start, [start])])
+        visited = {start}
+        
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # right, down, left, up
+        
+        while queue:
+            (row, col), path = queue.popleft()
+            
+            if (row, col) == end:
+                return path
+                
+            for dr, dc in directions:
+                new_row, new_col = row + dr, col + dc
+                
+                # Only check grid bounds and if we've visited this node
+                if (0 <= new_row < rows and 0 <= new_col < cols and 
+                    (new_row, new_col) not in visited):
+                    
+                    visited.add((new_row, new_col))
+                    queue.append(((new_row, new_col), path + [(new_row, new_col)]))
+        
+        return []  # No path found
+    
     all_paths = []
-    for request in path_requests:
+    for i, request in enumerate(path_requests):
         start = request["start"]
         end = request["end"]
-        path = bfs_path(start, end, points, used_edges, connection_points)
         
-        # If we found a path, mark all its edges as used
+        # First try with edge restrictions
+        path = bfs_path(start, end, points, used_edges)
+        
+        # If no path found, try without any restrictions
+        if not path:
+            print(f"    No path found with edge restrictions for connection {i}, trying without restrictions...")
+            path = bfs_path_no_restrictions(start, end, points)
+        
+        # If we found a path, mark all its edges as used (only for the restricted version)
         if path and len(path) > 1:
-            for i in range(len(path) - 1):
-                edge = edge_key(path[i], path[i + 1])
+            for j in range(len(path) - 1):
+                edge = edge_key(path[j], path[j + 1])
                 used_edges.add(edge)
         
         all_paths.append(path)
@@ -2108,6 +2129,9 @@ def draw_connections(
                     else:
                         node_orientations[node]["h"].add(path_idx)
 
+        paths_drawn = 0
+        paths_failed = 0
+        
         for i, path in enumerate(all_paths):
             if len(path) > 1:
                 colour = path_metadata[i]["colour"]
@@ -2162,6 +2186,23 @@ def draw_connections(
                         fill="none",
                     )
                 )
+                paths_drawn += 1
+            elif len(path) == 1:
+                # Single node path (start == end)
+                print(f"  WARNING: Path {i} has only 1 node (start == end)")
+                paths_failed += 1
+            else:
+                # No path found
+                request = path_requests[i]
+                start_px = (request["start"][1] * step, request["start"][0] * step)
+                end_px = (request["end"][1] * step, request["end"][0] * step)
+                print(f"  WARNING: No path found for connection {i}")
+                print(f"    Start: grid {request['start']} -> px {start_px}")
+                print(f"    End: grid {request['end']} -> px {end_px}")
+                print(f"    Substations: {request.get('substations', 'unknown')}")
+                paths_failed += 1
+        
+        print(f"  Pathfinding complete: {paths_drawn} paths drawn, {paths_failed} paths failed")
     except Exception as e:
         print(f"Error finding paths: {e}")
 
@@ -2736,11 +2777,28 @@ def main():
         drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
 
     # 4. Prepare for and draw connections
-    print("Step 5: Preparing and drawing connections...")
     points, grid_owners, sub_global_bounds = _populate_pathfinding_grid(
         substations, sub_bboxes, params, map_dims
     )
     all_connections = calculate_connection_points(substations, params, sub_bboxes)
+    
+    # Check for unpaired connections and warn
+    unpaired_connections = []
+    for linedef, connection_points in all_connections.items():
+        if len(connection_points) != 2:
+            unpaired_connections.append((linedef, len(connection_points)))
+    
+    if unpaired_connections:
+        print("WARNING: Found unpaired connections:")
+        for linedef, count in unpaired_connections:
+            if count == 0:
+                print(f"  {linedef}: No connection points found")
+            elif count == 1:
+                print(f"  {linedef}: Only 1 connection point found (need 2)")
+            else:
+                print(f"  {linedef}: {count} connection points found (need exactly 2)")
+    
+    print("Step 5: Preparing and drawing connections...")
     draw_connections(
         drawing, all_connections, points, grid_owners, GRID_STEP, sub_global_bounds, use_pretty_pathfinding
     )

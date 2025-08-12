@@ -172,7 +172,8 @@ def _calculate_busbar_crossing_penalties(
     """Calculates penalties for a path crossing various busbars.
 
     This function determines the penalty for crossing each busbar edge based
-    on the ownership of the path and the busbar.
+    on the ownership of the path and the busbar. It includes hierarchical
+    relationships to prevent crossing foreign busbars at any level.
 
     Args:
         busbar_edges: A dictionary of busbar edges and their owners.
@@ -184,6 +185,24 @@ def _calculate_busbar_crossing_penalties(
     Returns:
         A dictionary mapping busbar edges to their calculated penalty value.
     """
+    def _get_allowed_owners_for_substation(sub_name: str, path_owner: str) -> set:
+        """Get all owner IDs that are allowed for a given substation and path owner."""
+        allowed = {path_owner}
+        
+        # If path owner is main, allow all children
+        if path_owner == "main":
+            # Add all possible child owners (we'll be conservative and allow child_0 through child_9)
+            for i in range(10):
+                allowed.add(f"child_{i}")
+        
+        # If path owner is a child, allow main and all other children
+        elif path_owner.startswith("child_"):
+            allowed.add("main")
+            for i in range(10):
+                allowed.add(f"child_{i}")
+        
+        return allowed
+
     edge_penalties = {}
     for edge, owner in busbar_edges.items():
         if not owner:
@@ -195,21 +214,47 @@ def _calculate_busbar_crossing_penalties(
         # An intra-substation connection
         if start_owner[0] == end_owner[0]:
             path_sub_name = start_owner[0]
+            
             # If path is inside one sub, but crosses busbar of another sub
             if bus_sub_name != path_sub_name:
                 edge_penalties[edge] = busbar_crossing_penalty
-            # If path crosses a busbar within the same sub, but not belonging to start/end owners
-            elif bus_owner_id not in (start_owner[1], end_owner[1]):
-                edge_penalties[edge] = busbar_crossing_penalty
             else:
-                # Crossing its own busbar, small penalty
-                edge_penalties[edge] = 1
+                # Path is within the same substation
+                # Check if the busbar owner is related to either start or end owner
+                start_allowed_owners = _get_allowed_owners_for_substation(path_sub_name, start_owner[1])
+                end_allowed_owners = _get_allowed_owners_for_substation(path_sub_name, end_owner[1])
+                
+                if bus_owner_id in start_allowed_owners or bus_owner_id in end_allowed_owners:
+                    # Crossing a related busbar, small penalty
+                    edge_penalties[edge] = 1
+                else:
+                    # Crossing an unrelated busbar within the same substation
+                    edge_penalties[edge] = busbar_crossing_penalty
+        
         # An inter-substation connection
         else:
             path_sub_names = {start_owner[0], end_owner[0]}
-            # If it crosses a busbar of an unrelated sub
+            
+            # If it crosses a busbar of an unrelated substation
             if bus_sub_name not in path_sub_names:
                 edge_penalties[edge] = busbar_crossing_penalty
+            else:
+                # Busbar belongs to one of the connected substations
+                # Check if the busbar owner is related to the appropriate path owner
+                if bus_sub_name == start_owner[0]:
+                    allowed_owners = _get_allowed_owners_for_substation(bus_sub_name, start_owner[1])
+                elif bus_sub_name == end_owner[0]:
+                    allowed_owners = _get_allowed_owners_for_substation(bus_sub_name, end_owner[1])
+                else:
+                    allowed_owners = set()
+                
+                if bus_owner_id in allowed_owners:
+                    # Crossing a related busbar, small penalty
+                    edge_penalties[edge] = 1
+                else:
+                    # Crossing an unrelated busbar within a connected substation
+                    edge_penalties[edge] = busbar_crossing_penalty
+    
     return edge_penalties
 
 
