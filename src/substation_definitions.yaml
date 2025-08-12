@@ -464,16 +464,14 @@ substations:
     lat: -34.784858
     long: 142.521461
     voltage_kv: 220
-    tags:
-      - wemen terminal station
     def: |
       1/|
       |x
       2/|
     buses:
-      1: ??
+      1: ""
     connections:
-      1: VIC-220-WETS-KGTS-1
+      1: VIC-220-WETS-KOTS-1
       2: VIC-220-RCTS-WETS-1
     objects:
       - type: tx-ud
@@ -557,7 +555,7 @@ substations:
       1: '1'
       2: '2'
     connections:
-      1: VIC-220-WETS-KGTS-1
+      1: VIC-220-KGTS-KOTS-1
       2: VIC-220-BETS-KGTS-1
       3: VIC-220-KGTS-TX2
       4: VIC-220-KGTS-TX1
@@ -680,7 +678,7 @@ substations:
       2: '1'
     connections:
       1: VIC-220-SHTS-FVTS-1
-      2: VIC-220-SHTS-DDTS
+      2: VIC-220-GETS-SHTS
       3: VIC-220-SHTS-GNTS-1
       4: VIC-220-SHTS-GNTS-3
   - name: Glenrowan (GNTS)
@@ -798,8 +796,8 @@ substations:
       2: VIC-66-BATS-BAN2
       3: VIC-66-BGR-BAN
   - name: Tarrone (TRTS)
-    lat: -38.179169
-    long: 142.181072
+    lat: -38.179061
+    long: 142.181112
     voltage_kv: 500
     tags:
       - TRTS
@@ -811,15 +809,16 @@ substations:
       2: '2'
     connections:
       1: VIC-500-HGTS-TRTS
-      2: VIC-500-TRTS-HYTS1
+      2: VIC-500-TRTS-MOPS-1
       3: MCARTHURWF-TX-HV
   - name: Mortlake Power Station (MOPS)
-    lat: -38.062219
-    long: 142.670381
+    lat: -38.062141
+    long: 142.670102
     voltage_kv: 500
     tags:
       - MOPS
     def: |
+      |?5?6?||
       |/x1x2|
       |x3dx||x4
     buses:
@@ -830,9 +829,11 @@ substations:
       2: VIC-500-MOPS-HYTS2
       3: MOPS1-TX-HV
       4: MOPS2-TX-HV
+      5: VIC-500-TRTS-MOPS-1
+      6: VIC-500-HGTS-MOPS-1
   - name: Haunted Gully (HGTS)
-    lat: -38.007833
-    long: 142.312614
+    lat: -38.006784
+    long: 143.315256
     voltage_kv: 500
     tags:
       - HGTS
@@ -844,7 +845,7 @@ substations:
       2: '2'
     connections:
       1: VIC-500-CRTS-HGTS-1
-      2: VIC-500-HGTS-TRTS
+      2: VIC-500-HGTS-MOPS-1
       3: STOCKYARDHILLWF-TX-HV
   - name: Moorabool (MLTS)
     lat: -38.037
@@ -1074,6 +1075,7 @@ substations:
         objects:
           - type: gen
             metadata:
+              voltage: 33
               text: PV
               info: |
                 Gannawarra Solar Farm
@@ -1082,6 +1084,7 @@ substations:
             rel_y: 4
           - type: gen
             metadata:
+              voltage: 33
               text: BESS
               info: |
                 Gannawarra BESS
@@ -2003,7 +2006,7 @@ substations:
           4: VIC-220-DDTS-TX-H1
           5: VIC-220-DDTS-TX-H2
           6: VIC-220-GNTS-DDTS-1
-          7: VIC-220-SHTS-DDTS
+          7: VIC-220-GETS-DDTS
           8: VIC-220-DDTS-TX-H3
 
   - name: Eildon (EPS)
@@ -2091,32 +2094,61 @@ substations:
       6: VIC-220-CBTS-ERTS-2
       7: VIC-220-ERTS-ROTS-2
       8: VIC-220-CBTS-ERTS-1
-  # - name: Goorambat East (GETS)
-  #   lat: -36.426831
-  #   long: 145.925653
-  #   voltage_kv: 220
-  #   tags:
-  #     - GETS
-  #     - Goorambat East
-  #   def: |
-  #     1?|
-  #   buses:
-  #     1: ""
-  #   connections:
-  #     1: VIC-220-GETS
-  # - name: Gnarwarre (GWTS)
-  #   lat: -38.146925
-  #   long: 144.126603
-  #   voltage_kv: 220
-  #   tags:
-  #     - GWTS
-  #     - Gnarwarre
-  #   def: |
-  #     1?|
-  #   buses:
-  #     1: ""
-  #   connections:
-  #     1: VIC-220-GWTS
+  - name: Goorambat East (GETS)
+    lat: -36.426831
+    long: 145.925653
+    voltage_kv: 220
+    tags:
+      - GETS
+      - Goorambat East
+    def: |
+      |x1
+      |/2
+      |/3
+      |x4
+    buses:
+      1: "1"
+    connections:
+      1: VIC-220-GETS-TX1
+      2: VIC-220-GETS-SHTS
+      3: VIC-220-GETS-DDTS
+      4: VIC-220-GETS-TX2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+        connections:
+          1: VIC-220-GETS-TX1
+      - type: tx-ud
+        metadata:
+          w1: 220
+          w2: 33
+        rel_x: 7
+        rel_y: 3
+        connections:
+          1: VIC-220-GETS-TX2
+      - type: gen
+        metadata:
+          voltage: 33
+          text: PV
+          info: |
+            Goorambat East Solar Farm
+            250 MW / ??? MWp
+        rel_x: 1
+        rel_y: 8
+      - type: gen
+        metadata:
+          voltage: 33
+          text: PV
+          info: |
+            Goorambat East Solar Farm
+            250 MW / ??? MWp
+        rel_x: 7
+        rel_y: 8
+
   - name: Heatherton (HTS)
     lat: -37.941128
     long: 145.078233
@@ -2328,19 +2360,41 @@ substations:
       7: VIC-220-JLTS-MWTS-2
       8: VIC-220-JLTS-HWPS-3
 
-  # - name: Koorangie (KOTS)
-  #   lat: -35.73
-  #   long: 143.753333
-  #   voltage_kv: 220
-  #   tags:
-  #     - KOTS
-  #     - Koorangie
-  #   def: |
-  #     1?|
-  #   buses:
-  #     1: ""
-  #   connections:
-  #     1: VIC-220-KOTS
+  - name: Koorangie (KOTS)
+    lat: -35.73
+    long: 143.753333
+    voltage_kv: 220
+    def: |
+      |x1d/||
+      |/2x3x||
+    buses:
+      1: "1"
+      2: "2"
+    connections:
+      1: VIC-220-WETS-KOTS-1
+      2: VIC-220-KGTS-KOTS-1
+      3: VIC-220-TX-KOTS-1
+    objects:
+    - type: tx-lr
+      metadata:
+        w1: 220
+        w2: 33
+      rel_x: 5
+      rel_y: 5
+      connections:
+        1: VIC-220-TX-KOTS-1
+    - type: gen
+      metadata:
+        text: BESS
+        voltage: 33
+        info: |
+          Koorangie BESS
+          185 MW / 370 MWh
+      rel_x: 9
+      rel_y: 5
+
+
+
   - name: Loy Yang Power (LYPS)
     lat: -38.256497
     long: 146.573861
@@ -3989,7 +4043,7 @@ substations:
         metadata:
           w1: 33
           w2: 220
-        rel_x: 3
+        rel_x: 4
         rel_y: -7
         connections:
           2: VIC-220-GPTS-TX-W3
@@ -4000,13 +4054,13 @@ substations:
           info: |
             Golden Plains Wind Farm (Stage 1)
             122 x 6.2 = 756 MW
-        rel_x: 3
+        rel_x: 4
         rel_y: -8
       - type: tx-ud
         metadata:
           w1: 33
           w2: 220
-        rel_x: 5
+        rel_x: 6
         rel_y: -7
         connections:
           2: VIC-220-GPTS-TX-W2
@@ -4017,13 +4071,13 @@ substations:
           info: |
             Golden Plains Wind Farm (Stage 1)
             122 x 6.2 = 756 MW
-        rel_x: 5
+        rel_x: 6
         rel_y: -8
       - type: tx-ud
         metadata:
           w1: 33
           w2: 220
-        rel_x: 7
+        rel_x: 8
         rel_y: -7
         connections:
           2: VIC-220-GPTS-TX-W1
@@ -4034,5 +4088,5 @@ substations:
           info: |
             Golden Plains Wind Farm (Stage 1)
             122 x 6.2 = 756 MW
-        rel_x: 7
+        rel_x: 8
         rel_y: -8
