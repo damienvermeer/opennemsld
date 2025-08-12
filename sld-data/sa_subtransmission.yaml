@@ -1,0 +1,193 @@
+substations:
+- name: Meadows
+  lat: -35.17179024
+  long: 138.7693038
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Balhannah
+  lat: -34.99686935
+  long: 138.8199716
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Harndorf
+  lat: -35.04356677
+  long: 138.8129923
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Strathalbyn
+  lat: -35.27115881
+  long: 138.8961581
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Port Noarlunga
+  lat: -35.17058877
+  long: 138.4800213
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Port Stanvac
+  lat: -35.10874787
+  long: 138.4898636
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Whitmore Square
+  lat: -34.93220069
+  long: 138.5953332
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Keswick
+  lat: -34.94455347
+  long: 138.5787174
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Athol
+  lat: -34.85307832
+  long: 138.5384545
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hillcrest
+  lat: -34.86182773
+  long: 138.6481709
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Clearview
+  lat: -34.86043103
+  long: 138.6105204
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Holden Hill
+  lat: -34.84541475
+  long: 138.6717639
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kilburn South
+  lat: -34.86517949
+  long: 138.5858252
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ingle Farm
+  lat: -34.82141681
+  long: 138.6513279
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Prospect
+  lat: -34.88042344
+  long: 138.5847961
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dry Creek
+  lat: -34.84806897
+  long: 138.5817487
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Torrens North
+  lat: -34.77950772
+  long: 138.5218531
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mayura
+  lat: -37.73782307
+  long: 140.3878323
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: New Osborne
+  lat: -34.79747494
+  long: 138.5057467
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Snowtown Windfarm North
+  lat: -33.71394238
+  long: 138.1401809
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Willunga
+  lat: -35.2598734
+  long: 138.5706626
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Swan Reach
+  lat: -34.50013955
+  long: 139.5683398
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Rudall
+  lat: -33.68694965
+  long: 136.2719513
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Polda
+  lat: -33.50758817
+  long: 135.3395167
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}

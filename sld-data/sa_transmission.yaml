@@ -1,0 +1,761 @@
+substations:
+- name: Clements Gap Wind Farm
+  lat: -33.50825111
+  long: 138.1307158
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Belalie-North Brown Hill Wind Farm
+  lat: -33.30919886
+  long: 138.7273014
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Barker South
+  lat: -35.08473652
+  long: 138.8486143
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: City West
+  lat: -34.93962147
+  long: 138.5798528
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Clare North
+  lat: -33.82332885
+  long: 138.6266519
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Red Hill
+  lat: -33.49520272
+  long: 138.267438
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mokota
+  lat: -33.55676209
+  long: 138.8482594
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Croydon
+  lat: -34.90045641
+  long: 138.5659339
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Waterloo East
+  lat: -34.00172986
+  long: 138.9109335
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wattle Point Wind Farm
+  lat: -35.11033688
+  long: 137.7057851
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Millar Wind Farm
+  lat: -33.62534718
+  long: 136.7037132
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Monash
+  lat: -34.23759866
+  long: 140.5973116
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Roseworthy
+  lat: -34.54869243
+  long: 138.7610627
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Canowie
+  lat: -33.34662887
+  long: 138.7518751
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Olympic Dam West
+  lat: -30.44915239
+  long: 136.8604827
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Prominent Hill
+  lat: -29.73165791
+  long: 135.5595519
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sleaford
+  lat: -34.85000836
+  long: 135.5944207
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Playford B
+  lat: -32.53830988
+  long: 137.7838181
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Torrens Island A
+  lat: -34.80784814
+  long: 138.5231588
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Torrens Island B
+  lat: -34.80615298
+  long: 138.5245982
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Le Fevre
+  lat: -34.77957978
+  long: 138.509278
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Pelican Point
+  lat: -34.76554019
+  long: 138.5069192
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tungkillo
+  lat: -34.8777354
+  long: 139.0595108
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Keith
+  lat: -36.10790045
+  long: 140.2990956
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Olympic Dam North
+  lat: -30.44236047
+  long: 136.8713056
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Penola West
+  lat: -37.45704609
+  long: 140.7817143
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kincraig
+  lat: -36.96512958
+  long: 140.6879668
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Snuggery
+  lat: -37.66422207
+  long: 140.4166293
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Gambier
+  lat: -37.83891859
+  long: 140.8044847
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kilburn
+  lat: -34.84750971
+  long: 138.5806114
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: South East
+  lat: -37.73334959
+  long: 140.8404337
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Whyalla
+  lat: -33.00991206
+  long: 137.5766899
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bungama
+  lat: -33.19540444
+  long: 138.0673124
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Woomera
+  lat: -31.14726258
+  long: 136.8018188
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Morphett Vale East
+  lat: -35.11326947
+  long: 138.5498497
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Brinkworth
+  lat: -33.63126895
+  long: 138.3725434
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Leigh Creek South
+  lat: -30.57024943
+  long: 138.3935725
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Leigh Creek Coalfield
+  lat: -30.52377443
+  long: 138.3877815
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hummocks
+  lat: -34.08787694
+  long: 138.0914479
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Neuroodla
+  lat: -31.8382024
+  long: 138.1104888
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dalrymple
+  lat: -34.93599443
+  long: 137.7442479
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Murray Bridge-Hahndorf No 3
+  lat: -35.05702136
+  long: 139.0164679
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Murray Bridge-Hahndorf No 2
+  lat: -35.09335863
+  long: 139.2098577
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Murray Bridge-Hahndorf No 1
+  lat: -35.09553997
+  long: 139.287477
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Morgan-Whyalla No 4
+  lat: -33.96587598
+  long: 139.0629472
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: MDR Pump MW3
+  lat: -33.97239239
+  long: 139.1889132
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: MDR Pump MW1
+  lat: -34.02077122
+  long: 139.6873305
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Millbrook
+  lat: -34.83359499
+  long: 138.8063701
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mannum-Adelaide Pumping Station 3
+  lat: -34.85020711
+  long: 139.1338631
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mannum-Adelaide Pumping Station 2
+  lat: -34.85741187
+  long: 139.1676069
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mannum-Adelaide Pumping Station 1
+  lat: -34.91903879
+  long: 139.3075433
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kanmantoo Mine
+  lat: -35.09609509
+  long: 139.0127726
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Stony Point
+  lat: -32.9869366
+  long: 137.7741243
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Middleback
+  lat: -33.16718298
+  long: 137.101437
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Parafield Gardens West
+  lat: -34.77685311
+  long: 138.5982433
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Northfield
+  lat: -34.84749997
+  long: 138.6339452
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Magill
+  lat: -34.9107903
+  long: 138.682025
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Happy Valley
+  lat: -35.05196605
+  long: 138.5767345
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: East Terrace
+  lat: -34.92441244
+  long: 138.6103397
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cherry Gardens
+  lat: -35.09496257
+  long: 138.645889
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ardrossan West
+  lat: -34.42915144
+  long: 137.8888494
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Davenport
+  lat: -32.53699598
+  long: 137.8130075
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kadina East
+  lat: -33.97694393
+  long: 137.7296179
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cultana
+  lat: -32.93153443
+  long: 137.5448176
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Gunson
+  lat: -31.4661158
+  long: 137.0880559
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Pimba
+  lat: -31.23475435
+  long: 136.8315284
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yadnarie
+  lat: -33.68947459
+  long: 136.400586
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Port Lincoln
+  lat: -34.69988537
+  long: 135.8047242
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wudinna
+  lat: -33.05234577
+  long: 135.4523821
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Port Pirie
+  lat: -33.17096643
+  long: 138.0070194
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Baroota
+  lat: -32.96764952
+  long: 138.0392881
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Blanche
+  lat: -37.82542908
+  long: 140.7315287
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Berri
+  lat: -34.26976849
+  long: 140.5983263
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: North West Bend
+  lat: -33.9946856
+  long: 139.732325
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tailem Bend
+  lat: -35.27078265
+  long: 139.4924447
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mobilong
+  lat: -35.0645855
+  long: 139.2664106
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mannum
+  lat: -34.9170555
+  long: 139.2644836
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Robertstown
+  lat: -33.95571575
+  long: 139.1272479
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dorrien
+  lat: -34.49180504
+  long: 138.9664103
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Angas Creek
+  lat: -34.84729248
+  long: 138.9368762
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Barker
+  lat: -35.07927148
+  long: 138.8523752
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Waterloo
+  lat: -33.99012186
+  long: 138.8739353
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Templers
+  lat: -34.46265297
+  long: 138.7713553
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Para
+  lat: -34.73567847
+  long: 138.7118892
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Munno Para
+  lat: -34.65315147
+  long: 138.6997306
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Templers West
+  lat: -34.46167888
+  long: 138.7680515
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: MDR Pump MW2
+  lat: -33.97041643
+  long: 139.4231762
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mintaro
+  lat: -33.9027467
+  long: 138.7379642
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Whyalla Central
+  lat: -33.00983922
+  long: 137.5633015
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Lock
+  lat: -33.08575136
+  long: 138.5220142
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Willalo
+  lat: -33.45093661
+  long: 138.7972503
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Corraberra
+  lat: -32.6173475
+  long: 137.5925766
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bungala Solar Farm
+  lat: -32.41451429
+  long: 137.848025
+  voltage_kv: 132
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Torrens Island battery
+  lat: -34.80276953
+  long: 138.5194019
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Goyder Substation
+  lat: -33.77837939
+  long: 138.9717811
+  voltage_kv: 275
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}

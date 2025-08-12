@@ -1,0 +1,357 @@
+substations:
+  - name: Wemen Solar Farm
+    lat: -34.7882127
+    long: 142.5414514
+    voltage_kv: 66
+    tags:
+      - wemen solar farm
+    def: |
+      1x|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-WEMENSF
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 0
+        connections: {}
+      - type: gen
+        metadata:
+          voltage: 33
+          text: PV
+          info: |
+            Wemen Solar Farm
+            97.5 MW / 110 MWp
+        rel_x: 1
+        rel_y: 5
+        connections: {}
+  - name: Stawell (STL)
+    lat: -37.0582013
+    long: 142.7523823
+    voltage_kv: 66
+    tags:
+      - STL
+    def: |
+      1x|x2
+      3x|E
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-HOTS-STL1
+      2: VIC-66-HOTS-STL2
+      3: VIC-66-STL-ART
+  - name: Ararat (ART)
+    lat: -37.268485
+    long: 142.923999
+    voltage_kv: 66
+    tags:
+      - ART
+    def: |
+      1x|x2
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-STL-ART
+      2: VIC-66-ART-BGR
+  - name: Buangor (BGR)
+    lat: -37.3592765
+    long: 143.1523484
+    voltage_kv: 66
+    tags:
+      - BGR
+    def: |
+      1/|x3
+      t
+      2/|x4
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-ART-BGR
+      2: VIC-66-BGR-BAN
+      3: VIC-66-CHWF1
+      4: VIC-66-CHWF2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+        connections:
+          1: VIC-66-CHWF1
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 5
+        rel_y: 3
+        connections:
+          1: VIC-66-CHWF2
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Challicum Hills Wind Farm
+            35x 1.5 = 52.5 MW
+        rel_x: 1
+        rel_y: 8
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Challicum Hills Wind Farm
+            35x 1.5 = 52.5 MW
+        rel_x: 5
+        rel_y: 8
+  - name: Ballarat North (BAN)
+    lat: -37.534507
+    long: 143.847329
+    voltage_kv: 66
+    tags:
+      - BAN
+    def: |
+      x|xx||x2
+      3x|x1
+    buses:
+      1: '1'
+      2: '2'
+    connections:
+      1: VIC-66-BATS-BAN1
+      2: VIC-66-BATS-BAN2
+      3: VIC-66-BGR-BAN
+  - name: Kiata
+    lat: -36.3973561
+    long: 141.7477619
+    voltage_kv: 66
+    tags:
+      - KWF
+    def: |
+      x|x
+      t
+      1d|x
+    buses:
+      1: '1'
+    connections:
+      1: VIC-66-HOTS-KWF
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Kiata Wind Farm
+            31.05 MW
+        rel_x: 1
+        rel_y: 8
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 5
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Kiata Wind Farm
+            31.05 MW
+        rel_x: 5
+        rel_y: 8
+  - name: Bannerton Solar Park (BSSP)
+    lat: -34.6881867
+    long: 142.7807748
+    voltage_kv: 66
+    tags:
+      - BSSP
+      - BSP
+      - Bannerton Solar Park
+    def: |
+      1ds/
+      3xs/
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-WETS-BSP
+      3: VIC-66-BSP-RVL
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: PV
+          info: |
+            Bannerton Solar Park
+            88 MW / 110 MWp
+        rel_x: 1
+        rel_y: 4
+      - type: gen
+        metadata:
+          voltage: 66
+          text: PV
+          info: |
+            Bannerton Solar Park
+            88 MW / 110 MWp
+        rel_x: 3
+        rel_y: 4
+  - name: Robinvale (RVL)
+    lat: -34.6217676
+    long: 142.7661335
+    voltage_kv: 66
+    tags:
+      - RVL
+    def: |
+      2dsxs
+      tsEts
+      1dsxs
+    buses:
+      1: 
+    connections:
+      1: VIC-66-BSP-RVL
+      2: VIC-66-RVL-KSF
+  - name: Karadoc Solar Farm (KSF)
+    lat: -34.4156052
+    long: 142.2520746
+    voltage_kv: 66
+    tags:
+      - KSF
+      - Karadoc Solar Farm
+    def: |
+      3xsx
+      s/1
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-RVL-KSF
+      3: VIC-66-RCTS-KSF
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: PV
+          info: |
+            Karadoc Solar Farm
+            90 MW / 112.5 MWp
+        rel_x: 1
+        rel_y: 4
+  - name: Swan Hill (SHL)
+    lat: -35.3455287
+    long: 143.5222635
+    voltage_kv: 66
+    tags:
+      - SHL
+      - Swan Hill
+    def: |
+      1?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-GSF-SHL
+  - name: Gannawarra (GSF/GESS)
+    lat: -35.7330445
+    long: 143.7804412
+    voltage_kv: 66
+    tags:
+      - GSF
+      - Gannawarra Solar Farm
+    def: |
+      3xs
+      1/sx
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-KGTS-GSF/SHL
+      3: VIC-66-GSF-SHL
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 3
+        rel_y: 3
+    child_definitions:
+      - def: |
+          |x
+          |x
+        voltage_kv: 33
+        rel_x: 0
+        rel_y: 8
+        objects:
+          - type: gen
+            metadata:
+              voltage: 33
+              text: PV
+              info: |
+                Gannawarra Solar Farm
+                50 MW / 60 MWp
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 33
+              text: BESS
+              info: |
+                Gannawarra BESS
+                25 MW / 50 MWh
+            rel_x: 3
+            rel_y: 4
+  - name: Cohuna
+    lat: -35.8803326
+    long: 144.2189295
+    voltage_kv: 66
+    tags:
+      - Cohuna
+    def: |
+      1?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-KGTS-COH
+  - name: Hattah Switching Station (???)
+    lat: -34.760228
+    long: 142.279427
+    voltage_kv: 66
+    def: |
+      1?|?2
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-YSF-HTH
+      2: VIC-66-HTH-WETS
+  - name: Yatpool Solar Farm (YSF)
+    lat: -34.394354
+    long: 142.185096
+    voltage_kv: 66
+    tags:
+      - YSF
+      - Yatpool Solar Farm
+    def: |
+      1?|?3
+      2?|
+    buses:
+      1: ""
+    connections:
+      1: VIC-66-RCTS-YSF
+      2: VIC-66-YSF-HTH
+    objects:
+      - type: gen
+        metadata:
+          voltage: 66
+          text: PV
+          info: |
+            Yatpool Solar Farm
+            ?? MW / 106.5 MWp
+        rel_x: 1
+        rel_y: 4
+        connections: {}
