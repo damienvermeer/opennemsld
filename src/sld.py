@@ -745,6 +745,7 @@ def _load_single_yaml_file(filename) -> dict[str, Substation]:
 
         # Extract state location from filename prefix
         import os
+
         file_basename = os.path.basename(str(filename))
         state_location = ""
         if "_" in file_basename:
@@ -2052,8 +2053,8 @@ def draw_state_boundaries(
             continue
 
         # Calculate the bounding box for all substations in this state
-        min_x = min_y = float('inf')
-        max_x = max_y = float('-inf')
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
 
         for sub in state_substations:
             # Get the rotated bounding box for this substation
@@ -2078,52 +2079,59 @@ def draw_state_boundaries(
         max_x += padding
         max_y += padding
 
+        # Snap to 25px grid
+        grid_step = 25
+        min_x = (min_x // grid_step) * grid_step
+        min_y = (min_y // grid_step) * grid_step
+        max_x = ((max_x // grid_step) + 1) * grid_step
+        max_y = ((max_y // grid_step) + 1) * grid_step
+
         state_bounds[state] = (min_x, min_y, max_x, max_y)
 
     # Post-process boundaries to share common borders - expand to any pixel distance
     state_list = list(state_bounds.keys())
-    
+
     # For each pair of states, check if they should share a border
     for i in range(len(state_list)):
         for j in range(i + 1, len(state_list)):
             state1, state2 = state_list[i], state_list[j]
             bounds1 = state_bounds[state1]
             bounds2 = state_bounds[state2]
-            
+
             min_x1, min_y1, max_x1, max_y1 = bounds1
             min_x2, min_y2, max_x2, max_y2 = bounds2
-            
+
             # Check for horizontal adjacency (side by side) - any distance
-            if (min_y1 <= max_y2 and max_y1 >= min_y2):  # Y ranges overlap
+            if min_y1 <= max_y2 and max_y1 >= min_y2:  # Y ranges overlap
                 # Find the closest horizontal edges and join them
                 if max_x1 <= min_x2:  # State1 is to the left of State2
-                    # Make them share a common border at the midpoint
-                    shared_x = (max_x1 + min_x2) / 2
+                    # Make them share a common border at the midpoint, snapped to grid
+                    shared_x = ((max_x1 + min_x2) / 2 // grid_step) * grid_step
                     state_bounds[state1] = (min_x1, min_y1, shared_x, max_y1)
                     state_bounds[state2] = (shared_x, min_y2, max_x2, max_y2)
                 elif max_x2 <= min_x1:  # State2 is to the left of State1
-                    # Make them share a common border at the midpoint
-                    shared_x = (max_x2 + min_x1) / 2
+                    # Make them share a common border at the midpoint, snapped to grid
+                    shared_x = ((max_x2 + min_x1) / 2 // grid_step) * grid_step
                     state_bounds[state2] = (min_x2, min_y2, shared_x, max_y2)
                     state_bounds[state1] = (shared_x, min_y1, max_x1, max_y1)
-            
+
             # Check for vertical adjacency (top and bottom) - any distance
-            if (min_x1 <= max_x2 and max_x1 >= min_x2):  # X ranges overlap
+            if min_x1 <= max_x2 and max_x1 >= min_x2:  # X ranges overlap
                 # Find the closest vertical edges and join them
                 if max_y1 <= min_y2:  # State1 is above State2
-                    # Make them share a common border at the midpoint
-                    shared_y = (max_y1 + min_y2) / 2
+                    # Make them share a common border at the midpoint, snapped to grid
+                    shared_y = ((max_y1 + min_y2) / 2 // grid_step) * grid_step
                     state_bounds[state1] = (min_x1, min_y1, max_x1, shared_y)
                     state_bounds[state2] = (min_x2, shared_y, max_x2, max_y2)
                 elif max_y2 <= min_y1:  # State2 is above State1
-                    # Make them share a common border at the midpoint
-                    shared_y = (max_y2 + min_y1) / 2
+                    # Make them share a common border at the midpoint, snapped to grid
+                    shared_y = ((max_y2 + min_y1) / 2 // grid_step) * grid_step
                     state_bounds[state2] = (min_x2, min_y2, max_x2, shared_y)
                     state_bounds[state1] = (min_x1, shared_y, max_x1, max_y1)
 
     # Track which edges have been drawn to avoid overlapping lines
     drawn_edges = set()
-    
+
     def edge_key(x1, y1, x2, y2):
         """Create a consistent key for an edge between two points."""
         return tuple(sorted([(x1, y1), (x2, y2)]))
@@ -2137,25 +2145,49 @@ def draw_state_boundaries(
             (max_x, max_y, min_x, max_y),  # Bottom edge
             (min_x, max_y, min_x, min_y),  # Left edge
         ]
-        
+
         edges_drawn_for_state = 0
         for x1, y1, x2, y2 in edges:
             edge = edge_key(x1, y1, x2, y2)
             if edge not in drawn_edges:
                 # Draw this edge
                 boundary_line = draw.Line(
-                    x1, y1, x2, y2,
+                    x1,
+                    y1,
+                    x2,
+                    y2,
                     stroke="black",
                     stroke_width=15,
                     stroke_dasharray="20,10",
                     stroke_opacity="0.6",
-                    class_="state-boundary"
+                    class_="state-boundary",
                 )
                 drawing.append(boundary_line)
                 drawn_edges.add(edge)
                 edges_drawn_for_state += 1
 
-        print(f"  Drew state boundary for {state}: ({min_x:.1f}, {min_y:.1f}) to ({max_x:.1f}, {max_y:.1f}) - {edges_drawn_for_state}/4 edges drawn")
+        print(
+            f"  Drew state boundary for {state}: ({min_x:.1f}, {min_y:.1f}) to ({max_x:.1f}, {max_y:.1f}) - {edges_drawn_for_state}/4 edges drawn"
+        )
+
+    for state_name, state_bound in state_bounds.items():
+        min_x, min_y, max_x, max_y = state_bound
+        center_x = (min_x + max_x) / 2
+        center_y = (min_y + max_y) / 2
+
+        coming_soon_text = draw.Text(
+            state_name,
+            font_size=2000,
+            x=center_x,
+            y=center_y,
+            text_anchor="middle",
+            dominant_baseline="central",
+            fill="black",
+            opacity="0.02",
+            stroke_width=0,
+            font_family=DEFAULT_FONT_FAMILY,
+        )
+        drawing.append(coming_soon_text)
 
 
 def draw_connections(
@@ -2676,6 +2708,7 @@ def generate_output_files(
     original_size = len(svg_content)
     try:
         from scour import scour
+
         options = scour.generateDefaultOptions()
         options.strip_xml_prolog = True
         options.remove_metadata = True
@@ -2685,11 +2718,13 @@ def generate_output_files(
         options.remove_titles = True
         options.remove_descriptions = True
         options.remove_descriptive_elements = True
-        
+
         svg_content = scour.scourString(svg_content, options)
         optimised_size = len(svg_content)
         reduction = ((original_size - optimised_size) / original_size) * 100
-        print(f"  SVG optimised: {original_size} -> {optimised_size} chars ({reduction:.1f}% reduction)")
+        print(
+            f"  SVG optimised: {original_size} -> {optimised_size} chars ({reduction:.1f}% reduction)"
+        )
     except Exception as e:
         print(f"  Warning: SVG optimisation failed: {e}")
         print("  Using original SVG content")
