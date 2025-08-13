@@ -227,10 +227,31 @@ substations:
   lat: -37.83891859
   long: 140.8044847
   voltage_kv: 132
-  def: ?|?
+  def: |
+    1x|x
+    t
+    2x|x
   buses:
-    1: ''
-  connections: {}
+    1: ""
+  connections:
+    1: SA-132-SOUTHEAST-MTGAMBIER
+    2: SA-132-BLANCE-MTGAMBIER
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 132
+        w2: 33
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 132
+        w2: 33
+      rel_x: 5
+      rel_y: 3
+
+
+
 - name: Kilburn
   lat: -34.84750971
   long: 138.5806114
@@ -243,10 +264,62 @@ substations:
   lat: -37.73334959
   long: 140.8404337
   voltage_kv: 275
-  def: ?|?
+  def: |
+    |dx1x||
+    |x2x3x||
+    |x4dx||
+    |x5x6x||
+    |x7x8x||
   buses:
-    1: ''
-  connections: {}
+    1: "N"
+    2: "S"
+  connections:
+    1: SA-275-SOUTHEAST-TX-1
+    2: se hyts 1
+    3: SA-275-SOUTHEAST-TX-2
+    4: se hyts 2
+    5: se tailem bend 1
+    6: se svc 1
+    7: se tailem bend 2
+    8: se svc 2
+  objects:
+    - type: tx-lr
+      metadata:
+        w1: 132
+        w2: 275
+      rel_x: -6
+      rel_y: 6
+      connections:
+        2: SA-275-SOUTHEAST-TX-1
+        1: SA-132-SOUTHEAST-TX-1
+    - type: tx-lr
+      metadata:
+        w1: 132
+        w2: 275
+      rel_x: -6
+      rel_y: 11
+      connections:
+        2: SA-275-SOUTHEAST-TX-2
+        1: SA-132-SOUTHEAST-TX-2
+  child_definitions:
+    - def: |
+        |x1x2x||
+        |dx3x||
+        |d4EE||d5
+      buses:
+        1: "E"
+        2: "W"
+      voltage_kv: 132
+      rel_x: -15
+      rel_y: 0
+      connections:
+        1: SA-132-SOUTHEAST-MTGAMBIER
+        2: SA-132-SOUTHEAST-MAYURA/SNUGGERY
+        3: SA-132-SOUTHEAST-PENOLAWEST
+        4: SA-132-SOUTHEAST-TX-1
+        5: SA-132-SOUTHEAST-TX-2
+
+
 - name: Whyalla
   lat: -33.00991206
   long: 137.5766899
