@@ -2170,6 +2170,7 @@ def draw_state_boundaries(
             f"  Drew state boundary for {state}: ({min_x:.1f}, {min_y:.1f}) to ({max_x:.1f}, {max_y:.1f}) - {edges_drawn_for_state}/4 edges drawn"
         )
 
+    # draw a really faint but really big text for each state
     for state_name, state_bound in state_bounds.items():
         min_x, min_y, max_x, max_y = state_bound
         center_x = (min_x + max_x) / 2
@@ -2177,13 +2178,13 @@ def draw_state_boundaries(
 
         coming_soon_text = draw.Text(
             state_name,
-            font_size=2000,
+            font_size=9000,
             x=center_x,
             y=center_y,
             text_anchor="middle",
             dominant_baseline="central",
             fill="black",
-            opacity="0.02",
+            opacity="0.015",  # very VERY faint
             stroke_width=0,
             font_family=DEFAULT_FONT_FAMILY,
         )
