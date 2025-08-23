@@ -245,6 +245,24 @@
     .leaflet-control, .leaflet-control-search .search-tooltip {
         font-family: 'Roboto', sans-serif;
     }
+    #context-path {
+        position: absolute;
+        background-color: #f9f9f9bf;
+        border: 1px solid #4e4848;
+        border-radius: 4px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        color: #333;
+        padding: 2px;
+        z-index: 1000;
+    }
+    .hidden {
+        display: none; /* Hide the menu by default */
+    }
+    path {
+        pointer-events: auto !important;
+        cursor: pointer;
+    }
 
     @media (max-width: 768px) {
         .title-control {
@@ -268,6 +286,9 @@
 <body>
 
 <div id="map"></div>
+
+<div id="context-path" class="hidden">
+</div>
 
 <div id="helpModal" class="modal">
     <div class="modal-content">
@@ -314,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const SVG_CONTENT = `%%SVG_CONTENT%%`;
         const OBJECT_POPUPS = %%OBJECT_POPUPS%%;
         const LOCATIONS_DATA = %%LOCATIONS_DATA%%;
+        const HOVER_HIGHLIGHT_PATH_OPACITY = %%HOVER_HIGHLIGHT_PATH_OPACITY%%;
         
         let isDarkMode = false;
         let currentSvgOverlay = null;
@@ -602,6 +624,32 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const contextPath = document.getElementById('context-path');
+        function setupPathHoverContextDiv() {
+            document.querySelectorAll('.hover-path')
+                .forEach(elem => {
+                    elem.addEventListener('mouseover', e => {
+                        contextPath.classList.remove('hidden');
+                        contextPath.style.left = `${e.clientX+15}px`; // Set X position offset by 15px to avoid overlap with cursor
+                        contextPath.style.top = `${e.clientY}px`;
+                        contextPath.innerHTML = `
+                            <p style="margin: 4px;"><b>CONNECTION NAME: </b>${elem.dataset.connectionName}</p>
+                            <p style="margin: 4px;"><b>SUBSTATION(S): </b>${elem.dataset.substationPair}</p>
+                            <p style="margin: 4px;"><b>VOLTAGE: </b>${elem.dataset.voltage}kV</p>
+                        `
+                        elem.previousElementSibling.setAttribute('opacity', HOVER_HIGHLIGHT_PATH_OPACITY) // Set opacity of highlight path
+                    });
+                    elem.addEventListener('mousemove', e => {
+                        contextPath.style.left = `${e.clientX+15}px`; // Set X position offset by 15px to avoid overlap with cursor
+                        contextPath.style.top = `${e.clientY}px`;
+                    });
+                    elem.addEventListener('mouseleave', e => {
+                        contextPath.classList.add('hidden')
+                        elem.previousElementSibling.setAttribute('opacity', 0) // Hide hightlight path
+                    });
+                })
+        }
+        
         initializeDarkMode();
         const modalActions = initializeModals();
         const map = initializeMap();
@@ -610,6 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addObjectPopups(map);
         setupSearch(map);
         setupKeyboardShortcuts();
+        setupPathHoverContextDiv();
     })();
 });
 </script>

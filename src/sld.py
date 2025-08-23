@@ -70,6 +70,10 @@ LINE_WIDTH_SCALE = {
     500: 2.2,
 }
 
+# Stroke widths for highlighting paths on hover
+HOVER_HIGHLIGHT_PATH_STROKE_WIDTH = 15
+HOVER_HIGHLIGHT_PATH_OPACITY = 0.3
+HOVER_HIGHLIGHT_PATH_HIT_WIDTH = 50
 
 # --- Enums and Dataclasses ---
 @dataclass
@@ -2260,7 +2264,7 @@ def draw_connections(
     path_metadata = []
     all_connection_nodes = set()
 
-    for _, connection_points in sorted_connections:
+    for connection_name, connection_points in sorted_connections:
         start_coord_px = connection_points[0]["coords"]
         end_coord_px = connection_points[1]["coords"]
 
@@ -2330,9 +2334,13 @@ def draw_connections(
         pair_key = tuple(sorted([sub1_name, sub2_name]))
 
         path_requests.append(request)
-        path_metadata.append(
-            {"colour": colour, "line_width": line_width, "substation_pair": pair_key}
-        )
+        path_metadata.append({
+            "colour": colour,
+            "line_width": line_width,
+            "substation_pair": pair_key,
+            "connection_name": connection_name,
+            "voltage": str(voltage1) if voltage1 == voltage2 else 'inconsistent'
+        })
 
     print(f"Step 5.1: Finding {len(path_requests)} paths...")
     try:
@@ -2420,14 +2428,37 @@ def draw_connections(
                         path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
 
                 # Create a single, consolidated path element.
-                drawing.append(
-                    draw.Path(
+                path = draw.Path(
                         d=path_data,
-                        stroke=colour,
-                        stroke_width=line_width,
                         fill="none",
                     )
+                
+                connection_name = path_metadata[i]['connection_name']
+                connection_voltage = path_metadata[i]['voltage']
+                connection_ss_pair = path_metadata[i]['substation_pair']
+                connection_ss_pair = " &#8596; ".join(set(connection_ss_pair))
+                drawing.append(
+                    draw.Group(
+                        [
+                            draw.Use(path, x=0, y=0, stroke=colour, stroke_width=line_width),
+                            draw.Use(path, x=0, y=0, stroke=colour, 
+                                    stroke_width=HOVER_HIGHLIGHT_PATH_STROKE_WIDTH, opacity=0),
+                            draw.Use(
+                                path, 
+                                x=0, 
+                                y=0, 
+                                stroke=colour,
+                                stroke_width=HOVER_HIGHLIGHT_PATH_HIT_WIDTH, 
+                                opacity=0, 
+                                data_connection_name=connection_name,
+                                data_substation_pair=connection_ss_pair,
+                                data_voltage=connection_voltage,
+                                class_='hover-path',
+                            ),
+                        ],
+                    )
                 )
+
                 paths_drawn += 1
             elif len(path) == 1:
                 # Single node path (start == end)
@@ -2740,6 +2771,7 @@ def generate_output_files(
     html_content = html_content.replace("%%OBJECT_POPUPS%%", object_popups_json_string)
     html_content = html_content.replace("%%MAP_WIDTH%%", str(map_width))
     html_content = html_content.replace("%%MAP_HEIGHT%%", str(map_height))
+    html_content = html_content.replace("%%HOVER_HIGHLIGHT_PATH_OPACITY%%", str(HOVER_HIGHLIGHT_PATH_OPACITY))
 
     with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
         f.write(html_content)
