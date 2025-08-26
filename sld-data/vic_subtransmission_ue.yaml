@@ -1,0 +1,128 @@
+substations:
+- name: Carrum (CRM)
+  lat: -38.07188249
+  long: 145.1486649
+  voltage_kv: 66
+  def: 1?|?2
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-CBTS-CRM
+    2: VIC-66-CRM-LWN/FTN-PART1
+- name: Frankston (FTN)
+  lat: -38.11936047
+  long: 145.1390981
+  voltage_kv: 66
+  def: 1?|?2
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-CRM-LWN/FTN-PART2
+    2: VIC-66-FTS-FTN
+- name: Langwarrin (LWN)
+  lat: -38.14075901
+  long: 145.1765456
+  voltage_kv: 66
+  def: |
+    1?s
+    2?s
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-CRM-LWN/FTN-PART1
+    2: VIC-66-CRM-LWN/FTN-PART2
+- name: Frankston Terminal Station (FTS)
+  lat: -38.16294196
+  long: 145.168461
+  voltage_kv: 66
+  def: |
+    5?|?1
+    6?|?2
+    |?3
+    |?4
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-TBTS-FTS
+    2: VIC-66-FTS-FSH
+    3: VIC-66-FTS-LWN
+    4: VIC-66-FTS-FTN
+    5: VIC-66-CBTS-FTS1
+    6: VIC-66-CBTS-FTS2
+- name: Frankston South (FSH)
+  lat: -38.17299621
+  long: 145.1402327
+  voltage_kv: 66
+  def: |
+    1x|d2
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-FSH-MTN
+    2: VIC-66-FTS-FSH
+- name: Mornington (MTN)
+  lat: -38.2434753
+  long: 145.0834729
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-MTN-DMA
+    2: VIC-66-TBTS-MTN2
+    3: VIC-66-TBTS-MTN1
+    4: VIC-66-FSH-MTN
+- name: Hastings (HGS)
+  lat: -38.28875756
+  long: 145.192786
+  voltage_kv: 66
+  def: |
+    1?|
+    2?|
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-HGS-TBTS1
+    2: VIC-66-HGS-TBTS2
+- name: Dromana (DMA)
+  lat: -38.33123574
+  long: 144.9891673
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-DMA-RBD1
+    2: VIC-66-DMA-TBTS
+    3: VIC-66-DMA-RBD2
+    4: VIC-66-MTN-DMA
+- name: Rosebud (RBD)
+  lat: -38.36799164
+  long: 144.8899871
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-RBD-STO1
+    2: VIC-66-DMA-RBD1
+    3: VIC-66-RBD-STO2
+    4: VIC-66-DMA-RBD2
+- name: Sorrento (STO)
+  lat: -38.3567572
+  long: 144.7615498
+  voltage_kv: 66
+  def: |
+    1?|
+    2?|
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-RBD-STO1
+    2: VIC-66-RBD-STO2

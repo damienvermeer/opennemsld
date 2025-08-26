@@ -2869,9 +2869,6 @@ substations:
     lat: -38.267861
     long: 145.201553
     voltage_kv: 220
-    tags:
-      - TBTS
-      - Tyabb
     def: |
       |x1x||x2
       3/|x4E||
@@ -2890,25 +2887,39 @@ substations:
       7: VIC-220-JLA-TBTS-2
     child_definitions:
       - def: |
-          x|
+          10x|
+          |x1
+          |x2
           t
-          x||
+          ||x3
+          11x||x4
+          ||x5
           t
-          x|||
+          12x|||x6
         buses:
-          1: ""
-          2: ""
-          3: ""
+          1: "?"
+          2: "?"
+          3: "?"
         voltage_kv: 66
-        rel_x: 1
+        rel_x: -3
         rel_y: 19
+        connections:
+          1: VIC-66-TBTS-MTN1
+          2: VIC-66-HGS-TBTS2
+          3: VIC-66-DMA-TBTS
+          4: VIC-66-HGS-TBTS1
+          5: VIC-66-TBTS-FTS
+          6: VIC-66-TBTS-MTN2
+          10: VIC-66-TBTS-TX-B1
+          11: VIC-66-TBTS-TX-B2
+          12: VIC-66-TBTS-TX-B3
     objects:
       - type: tx-ud # b1 tx
         metadata:
           w1: 220
           w2: 66
-        rel_x: 2
-        rel_y: 13
+        rel_x: -2
+        rel_y: 10
         connections:
           1: VIC-220-TBTS-TX-B1
           2: VIC-66-TBTS-TX-B1
@@ -2916,8 +2927,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 6
-        rel_y: 13
+        rel_x: 2
+        rel_y: 10
         connections:
           1: VIC-220-TBTS-TX-B2
           2: VIC-66-TBTS-TX-B2
@@ -2925,8 +2936,8 @@ substations:
         metadata:
           w1: 220
           w2: 66
-        rel_x: 10
-        rel_y: 13
+        rel_x: 6  
+        rel_y: 10
         connections:
           1: VIC-220-TBTS-TX-B3
           2: VIC-66-TBTS-TX-B3

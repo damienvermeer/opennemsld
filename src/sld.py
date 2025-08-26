@@ -2865,7 +2865,7 @@ def _prepare_substation_layout(
         )
 
     MIN_PADDING_STEPS = 6
-    PADDING_RATIO = 15
+    PADDING_RATIO = 13
     paddings_in_steps = []
     for sub in substations:
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
