@@ -4,9 +4,97 @@ Fast iterative algorithm to space rectangles to guarantee no overlap/intersectio
 
 import math
 from shapely.geometry import Polygon
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from typing import List, Tuple, Optional
+
+
+def _classify_rectangles(
+    rectangles: List[Tuple[float, float, float, float]]
+) -> Tuple[List[int], List[int]]:
+    """Classifies rectangles into 'large' and 'small' based on area.
+
+    Large rectangles are those in the 75th percentile of area or larger.
+
+    Args:
+        rectangles: List of rectangles (x1, y1, x2, y2).
+
+    Returns:
+        A tuple containing two lists: indices of large rectangles, and indices of small rectangles.
+    """
+    if len(rectangles) < 4:
+        return list(range(len(rectangles))), []
+
+    areas = [abs(r[2] - r[0]) * abs(r[3] - r[1]) for r in rectangles]
+    if not areas:
+        return [], []
+
+    threshold = np.percentile(areas, 75)
+
+    # If threshold is 0, all are large to avoid division issues or strange behavior
+    if threshold == 0:
+        return list(range(len(rectangles))), []
+
+    large_indices = [i for i, area in enumerate(areas) if area >= threshold]
+    small_indices = [i for i, area in enumerate(areas) if area < threshold]
+
+    # Ensure there's at least one large rectangle if possible
+    if not large_indices and small_indices:
+        max_area = -1
+        max_idx = -1
+        for i in small_indices:
+            if areas[i] > max_area:
+                max_area = areas[i]
+                max_idx = i
+        large_indices.append(max_idx)
+        small_indices.remove(max_idx)
+
+    return large_indices, small_indices
+
+
+def _group_small_rectangles(
+    rectangles: List[Tuple[float, float, float, float]],
+    large_indices: List[int],
+    small_indices: List[int],
+) -> dict:
+    """Groups small rectangles with their nearest large rectangle.
+
+    Args:
+        rectangles: List of all rectangles.
+        large_indices: List of indices for large rectangles.
+        small_indices: List of indices for small rectangles.
+
+    Returns:
+        A dictionary mapping each large rectangle index to a list of its associated small rectangle indices.
+    """
+    if not large_indices or not small_indices:
+        return {}
+
+    centers = _get_rectangle_centers(rectangles)
+    large_centers = {i: centers[i] for i in large_indices}
+
+    groups = {i: [] for i in large_indices}
+
+    for small_idx in small_indices:
+        small_center = centers[small_idx]
+
+        # Find closest large rectangle
+        closest_large_idx = -1
+        min_dist_sq = float("inf")
+
+        for large_idx, large_center in large_centers.items():
+            dist_sq = (small_center[0] - large_center[0]) ** 2 + (
+                small_center[1] - large_center[1]
+            ) ** 2
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                closest_large_idx = large_idx
+
+        if closest_large_idx != -1:
+            groups[closest_large_idx].append(small_idx)
+
+    return groups
 
 
 def _get_rectangle_centers(
@@ -283,7 +371,9 @@ def space_rectangles(
     map_bounds: Tuple[float, float] = (22000, 22000),
 ) -> List[Tuple[float, float]]:
     """
-    Space rectangles using fast iterative algorithm to guarantee no overlap.
+    Space rectangles using a hierarchical iterative algorithm to guarantee no overlap.
+    This method first spaces out larger "anchor" rectangles, moves associated smaller
+    rectangles with them, and then performs a final pass to resolve all remaining overlaps.
 
     Args:
         rectangles: List of tuples (x1, y1, x2, y2) representing rectangle corners
@@ -299,12 +389,68 @@ def space_rectangles(
     if padding_steps is None:
         padding_steps = [1] * len(rectangles)
 
-    print("Step 2.3: Using fast iterative algorithm for rectangle spacing...")
+    print("Step 2.3: Using hierarchical iterative algorithm for rectangle spacing...")
 
-    # Separate overlapping rectangles
-    separated_rects = _separate_overlapping_rectangles(
-        rectangles, padding_steps, grid_size
-    )
+    # 1. Classify rectangles into large and small based on area
+    large_indices, small_indices = _classify_rectangles(rectangles)
+
+    # If no meaningful groups can be formed, use the simple single-pass algorithm
+    if not large_indices or not small_indices:
+        print("  No large/small distinction possible, running single-pass separation.")
+        separated_rects = _separate_overlapping_rectangles(
+            rectangles, padding_steps, grid_size
+        )
+    else:
+        print(
+            f"  Classified {len(large_indices)} large and {len(small_indices)} small rectangles."
+        )
+
+        # 2. Group small rectangles with their nearest large one
+        groups = _group_small_rectangles(rectangles, large_indices, small_indices)
+
+        # 3. First pass: space out large rectangles only
+        print("  Running separation pass for large rectangles...")
+        large_rects = [rectangles[i] for i in large_indices]
+        large_padding_steps = [padding_steps[i] for i in large_indices]
+
+        separated_large_rects = _separate_overlapping_rectangles(
+            large_rects, large_padding_steps, grid_size
+        )
+
+        # Calculate shifts for large rectangles
+        large_rect_shifts = {}
+        for i, original_large_index in enumerate(large_indices):
+            orig_rect = rectangles[original_large_index]
+            new_rect = separated_large_rects[i]
+            shift_x = new_rect[0] - orig_rect[0]
+            shift_y = new_rect[1] - orig_rect[1]
+            large_rect_shifts[original_large_index] = (shift_x, shift_y)
+
+        # Apply shifts to create intermediate positions for all rectangles
+        intermediate_rects = [list(r) for r in rectangles]
+        for large_index, shift in large_rect_shifts.items():
+            # Apply shift to the large rectangle itself
+            r_large = intermediate_rects[large_index]
+            r_large[0] += shift[0]
+            r_large[1] += shift[1]
+            r_large[2] += shift[0]
+            r_large[3] += shift[1]
+
+            # Apply the same shift to all associated small rectangles
+            for small_index in groups.get(large_index, []):
+                r_small = intermediate_rects[small_index]
+                r_small[0] += shift[0]
+                r_small[1] += shift[1]
+                r_small[2] += shift[0]
+                r_small[3] += shift[1]
+
+        intermediate_rects_tuples = [tuple(r) for r in intermediate_rects]
+
+        # 4. Second pass: run separation on all rectangles from their new positions
+        print("  Running final separation pass for all rectangles...")
+        separated_rects = _separate_overlapping_rectangles(
+            intermediate_rects_tuples, padding_steps, grid_size
+        )
 
     print("Rectangle separation completed")
 
