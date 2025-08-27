@@ -1273,8 +1273,8 @@ substations:
       1: VIC-220-FBTS-WMTS2
       2: b4 tx wmts
       3: VIC-220-KTS-WMTS2
-      4: b3 tx
-      5: b2 tx
+      4: wmts b3 tx
+      5: wmts b2 tx
       6: VIC-220-FBTS-WMTS1
       7: VIC-220-KTS-WMTS1
       8: b1 tx wmts
@@ -1588,7 +1588,7 @@ substations:
     child_definitions:
       - def: |
           |/1xs
-          |x2xs3
+          |x2xsd3
         buses:
           1: "1"
         voltage_kv: 500
@@ -1804,10 +1804,10 @@ substations:
       1: "1"
       2: "4"
     connections:
-      1: b1 tx
-      2: b2 tx
-      3: b3 tx
-      4: b4 tx
+      1: erts b1 tx
+      2: erts b2 tx
+      3: erts b3 tx
+      4: erts b4 tx
       5: VIC-220-ERTS-ROTS-1
       6: VIC-220-CBTS-ERTS-2
       7: VIC-220-ERTS-ROTS-2
