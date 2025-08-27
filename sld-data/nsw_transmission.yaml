@@ -1,0 +1,537 @@
+substations:
+- name: Beaconsfield North
+  lat: -33.91432003
+  long: 151.1879091
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Beaconsfield South
+  lat: -33.91558421
+  long: 151.1866685
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Williamsdale
+  lat: -35.58531516
+  long: 149.1333295
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Eraring
+  lat: -33.06098434
+  long: 151.51547
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Capital Hill Wind Farm
+  lat: -35.18738594
+  long: 149.5230148
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mamre
+  lat: -33.81193134
+  long: 150.7953587
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wollar
+  lat: -32.41165865
+  long: 149.9532719
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dumeresq
+  lat: -29.20310725
+  long: 151.328869
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bayswater
+  lat: -32.39944548
+  long: 150.9461045
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Liddell
+  lat: -32.37122801
+  long: 150.975044
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Vales Point
+  lat: -33.15915176
+  long: 151.5416701
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Munmorah
+  lat: -33.20978888
+  long: 151.5401083
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Eraring
+  lat: -33.06258466
+  long: 151.5154365
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Coffs Harbour
+  lat: -30.25282493
+  long: 153.036916
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tamworth
+  lat: -31.14680015
+  long: 150.9513728
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Armidale
+  lat: -30.53268609
+  long: 151.713001
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Beaconsfield West
+  lat: -33.91505537
+  long: 151.1872409
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Haymarket
+  lat: -33.88140464
+  long: 151.2022522
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Macarthur
+  lat: -34.0852686
+  long: 150.766317
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Liverpool
+  lat: -33.93266005
+  long: 150.8657786
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kangaroo Valley
+  lat: -34.72378752
+  long: 150.4817193
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lower Tumut
+  lat: -35.60646039
+  long: 148.288663
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Buronga
+  lat: -34.10281616
+  long: 142.2595198
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sydney North
+  lat: -33.6556178
+  long: 151.030108
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sydney East
+  lat: -33.72580982
+  long: 151.208287
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bannaby
+  lat: -34.44173271
+  long: 150.0510645
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wallerawang
+  lat: -33.40639905
+  long: 150.0810754
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wallerawang
+  lat: -33.40316832
+  long: 150.0807607
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mount Piper
+  lat: -33.36387175
+  long: 150.0261198
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wellington
+  lat: -32.52715739
+  long: 148.9631706
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tumut 2
+  lat: -35.88137118
+  long: 148.367223
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Murray
+  lat: -36.22553671
+  long: 148.1442761
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Coleambally
+  lat: -34.74099991
+  long: 145.9537131
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wagga 330
+  lat: -35.20042047
+  long: 147.3935562
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yass
+  lat: -34.86258645
+  long: 148.9040685
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Jindera
+  lat: -35.92533347
+  long: 146.9085518
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Koolkhan
+  lat: -29.61616158
+  long: 152.9328655
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Upper Tumut
+  lat: -35.91089408
+  long: 148.3860426
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Balranald
+  lat: -34.77559345
+  long: 143.5251083
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Broken Hill
+  lat: -31.98624345
+  long: 141.4192631
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tuggerah
+  lat: -33.30799633
+  long: 151.433466
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tomago
+  lat: -32.82176132
+  long: 151.7141569
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Waratah West
+  lat: -32.89015536
+  long: 151.709952
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Regentville
+  lat: -33.78799526
+  long: 150.648529
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Vineyard
+  lat: -33.65707528
+  long: 150.843479
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sydney West
+  lat: -33.81606379
+  long: 150.8279519
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ingleburn
+  lat: -34.01432979
+  long: 150.8513325
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kemps Creek
+  lat: -33.90063778
+  long: 150.808539
+  voltage_kv: 500
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sydney South
+  lat: -33.9786418
+  long: 151.0129014
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Canberra
+  lat: -35.21877263
+  long: 148.9963366
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Marulan
+  lat: -34.61532372
+  long: 150.051936
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dapto
+  lat: -34.53461928
+  long: 150.7811844
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Avon
+  lat: -34.44725688
+  long: 150.7438327
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lismore 330
+  lat: -28.89045651
+  long: 153.188644
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Darlington Point
+  lat: -34.64890989
+  long: 146.0351686
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Muswellbrook 330
+  lat: -32.22219828
+  long: 150.9416787
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Newcastle
+  lat: -32.92759434
+  long: 151.5615375
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Rookwood Road
+  lat: -33.89414667
+  long: 151.0370071
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Holroyd
+  lat: -33.83471021
+  long: 150.9191519
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Gullen Range Wind Farm
+  lat: -34.61402868
+  long: 149.4576872
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sapphire
+  lat: -29.69948895
+  long: 151.4126678
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Stockdill
+  lat: -35.24588897
+  long: 148.9833352
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Perilya Mine
+  lat: -31.98960606
+  long: 141.4431516
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: New England Solar farm
+  lat: -30.62518955
+  long: 151.6163976
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Rye Park Wind Farm
+  lat: -34.76862762
+  long: 149.0112905
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Rye Park Wind Farm Collector
+  lat: -34.5509178
+  long: 148.9553552
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Crookwell East
+  lat: -34.55685825
+  long: 149.609586
+  voltage_kv: 330
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}

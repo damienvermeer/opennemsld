@@ -13,6 +13,7 @@ import svgelements
 import os
 import networkx as nx
 import scour
+from shapely.geometry import MultiPoint, Polygon
 
 # Local application/library specific imports
 import findpath
@@ -20,7 +21,7 @@ from rectangle_spacing import space_rectangles
 
 # --- Constants ---
 BASE_MAP_DIMS_EAST_WEST = 45000  # Base dimensions, will be expanded as needed
-BASE_MAP_DIMS_NORTH_SOUTH = 45000
+BASE_MAP_DIMS_NORTH_SOUTH = 75000
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -38,9 +39,9 @@ SCRIPT_DIR = pathlib.Path(__file__).parent
 PARENT_DIR = SCRIPT_DIR.parent
 SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
-OUTPUT_SVG = "sld.svg"
+OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "4"
+VERSION = "5"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -1940,6 +1941,15 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     def bfs_path(start, end, grid, blocked_edges):
         """Very permissive BFS pathfinding that only avoids used edges."""
         rows, cols = len(grid), len(grid[0])
+
+        # --- Bounding box optimization ---
+        margin = 50  # grid units
+        min_r = max(0, min(start[0], end[0]) - margin)
+        max_r = min(rows - 1, max(start[0], end[0]) + margin)
+        min_c = max(0, min(start[1], end[1]) - margin)
+        max_c = min(cols - 1, max(start[1], end[1]) + margin)
+        # ---
+
         queue = deque([(start, [start])])
         visited = {start}
 
@@ -1954,10 +1964,10 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
             for dr, dc in directions:
                 new_row, new_col = row + dr, col + dc
 
-                # Only check grid bounds and if we've visited this node
+                # Check bounding box and visited status
                 if (
-                    0 <= new_row < rows
-                    and 0 <= new_col < cols
+                    min_r <= new_row <= max_r
+                    and min_c <= new_col <= max_c
                     and (new_row, new_col) not in visited
                 ):
                     # Check if this edge is already used by another line
@@ -2022,23 +2032,37 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     return all_paths
 
 
+
+
 def draw_state_boundaries(
     drawing: draw.Drawing,
     substations: list[Substation],
     sub_bboxes: dict,
+    text_opacity: float = 0.015,
+    text_font_size: int = 9000,
+    boundary_opacity: float = 0.6,
+    boundary_stroke_width: int = 15,
+    boundary_dasharray: str = "20,10",
 ):
-    """Draws state boundary boxes around groups of substations.
+    """Draws state boundary polygons around groups of substations.
 
-    This function groups substations by their state_location and draws
-    dashed boundary boxes around each state group. The boundaries are
-    post-processed to share common borders with no gaps, and only one
-    line is drawn on shared edges to avoid overlapping.
+    This function groups substations by state, calculates a convex hull
+    around all substation bounding boxes within each state, adds padding,
+    resolves any overlaps between state polygons, and then draws the
+    resulting shapes.
 
     Args:
         drawing: The main `draw.Drawing` object.
         substations: List of all substations.
         sub_bboxes: Dictionary mapping substation names to their bounding boxes.
+        text_opacity: The opacity of the state name text.
+        text_font_size: The font size of the state name text.
+        boundary_opacity: The opacity of the state boundary line.
     """
+    from itertools import combinations
+    from shapely.ops import split
+    import shapely.geometry
+
     # Group substations by state
     state_groups = {}
     for sub in substations:
@@ -2047,152 +2071,281 @@ def draw_state_boundaries(
                 state_groups[sub.state_location] = []
             state_groups[sub.state_location].append(sub)
 
-    if len(state_groups) == 0:
+    if not state_groups:
         return
 
-    # Calculate initial bounding boxes for each state
-    state_bounds = {}
+    # For each state, collect all corner points of its substations' bboxes
+    state_points = {}
     for state, state_substations in state_groups.items():
-        if len(state_substations) == 0:
-            continue
-
-        # Calculate the bounding box for all substations in this state
-        min_x = min_y = float("inf")
-        max_x = max_y = float("-inf")
-
+        points = []
         for sub in state_substations:
-            # Get the rotated bounding box for this substation
             rotated_bbox = get_rotated_bbox(sub_bboxes[sub.name], sub.rotation)
             bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y = rotated_bbox
 
-            # Calculate global coordinates
-            global_min_x = sub.use_x + bbox_min_x
-            global_min_y = sub.use_y + bbox_min_y
-            global_max_x = sub.use_x + bbox_max_x
-            global_max_y = sub.use_y + bbox_max_y
+            # Global coordinates of the bbox corners
+            points.extend([
+                (sub.use_x + bbox_min_x, sub.use_y + bbox_min_y),
+                (sub.use_x + bbox_max_x, sub.use_y + bbox_min_y),
+                (sub.use_x + bbox_max_x, sub.use_y + bbox_max_y),
+                (sub.use_x + bbox_min_x, sub.use_y + bbox_max_y),
+            ])
+        state_points[state] = points
 
-            min_x = min(min_x, global_min_x)
-            min_y = min(min_y, global_min_y)
-            max_x = max(max_x, global_max_x)
-            max_y = max(max_y, global_max_y)
+    # Calculate centroids of original points for each state
+    state_centroids = {}
+    for state, points in state_points.items():
+        if points:
+            state_centroids[state] = MultiPoint(points).centroid
 
-        # Add padding around the state boundary
-        padding = 100
-        min_x -= padding
-        min_y -= padding
-        max_x += padding
-        max_y += padding
-
-        # Snap to 25px grid
-        grid_step = 25
-        min_x = (min_x // grid_step) * grid_step
-        min_y = (min_y // grid_step) * grid_step
-        max_x = ((max_x // grid_step) + 1) * grid_step
-        max_y = ((max_y // grid_step) + 1) * grid_step
-
-        state_bounds[state] = (min_x, min_y, max_x, max_y)
-
-    # Post-process boundaries to share common borders - expand to any pixel distance
-    state_list = list(state_bounds.keys())
-
-    # For each pair of states, check if they should share a border
-    for i in range(len(state_list)):
-        for j in range(i + 1, len(state_list)):
-            state1, state2 = state_list[i], state_list[j]
-            bounds1 = state_bounds[state1]
-            bounds2 = state_bounds[state2]
-
-            min_x1, min_y1, max_x1, max_y1 = bounds1
-            min_x2, min_y2, max_x2, max_y2 = bounds2
-
-            # Check for horizontal adjacency (side by side) - any distance
-            if min_y1 <= max_y2 and max_y1 >= min_y2:  # Y ranges overlap
-                # Find the closest horizontal edges and join them
-                if max_x1 <= min_x2:  # State1 is to the left of State2
-                    # Make them share a common border at the midpoint, snapped to grid
-                    shared_x = ((max_x1 + min_x2) / 2 // grid_step) * grid_step
-                    state_bounds[state1] = (min_x1, min_y1, shared_x, max_y1)
-                    state_bounds[state2] = (shared_x, min_y2, max_x2, max_y2)
-                elif max_x2 <= min_x1:  # State2 is to the left of State1
-                    # Make them share a common border at the midpoint, snapped to grid
-                    shared_x = ((max_x2 + min_x1) / 2 // grid_step) * grid_step
-                    state_bounds[state2] = (min_x2, min_y2, shared_x, max_y2)
-                    state_bounds[state1] = (shared_x, min_y1, max_x1, max_y1)
-
-            # Check for vertical adjacency (top and bottom) - any distance
-            if min_x1 <= max_x2 and max_x1 >= min_x2:  # X ranges overlap
-                # Find the closest vertical edges and join them
-                if max_y1 <= min_y2:  # State1 is above State2
-                    # Make them share a common border at the midpoint, snapped to grid
-                    shared_y = ((max_y1 + min_y2) / 2 // grid_step) * grid_step
-                    state_bounds[state1] = (min_x1, min_y1, max_x1, shared_y)
-                    state_bounds[state2] = (min_x2, shared_y, max_x2, max_y2)
-                elif max_y2 <= min_y1:  # State2 is above State1
-                    # Make them share a common border at the midpoint, snapped to grid
-                    shared_y = ((max_y2 + min_y1) / 2 // grid_step) * grid_step
-                    state_bounds[state2] = (min_x2, min_y2, max_x2, shared_y)
-                    state_bounds[state1] = (min_x1, shared_y, max_x1, max_y1)
-
-    # Track which edges have been drawn to avoid overlapping lines
-    drawn_edges = set()
-
-    def edge_key(x1, y1, x2, y2):
-        """Create a consistent key for an edge between two points."""
-        return tuple(sorted([(x1, y1), (x2, y2)]))
-
-    # Draw individual line segments for each state boundary, avoiding duplicates
-    for state, (min_x, min_y, max_x, max_y) in state_bounds.items():
-        # Define the four edges of the rectangle
-        edges = [
-            (min_x, min_y, max_x, min_y),  # Top edge
-            (max_x, min_y, max_x, max_y),  # Right edge
-            (max_x, max_y, min_x, max_y),  # Bottom edge
-            (min_x, max_y, min_x, min_y),  # Left edge
-        ]
-
-        edges_drawn_for_state = 0
-        for x1, y1, x2, y2 in edges:
-            edge = edge_key(x1, y1, x2, y2)
-            if edge not in drawn_edges:
-                # Draw this edge
-                boundary_line = draw.Line(
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    stroke="black",
-                    stroke_width=15,
-                    stroke_dasharray="20,10",
-                    stroke_opacity="0.6",
-                    class_="state-boundary",
+    # Calculate padded convex hull for each state
+    state_polygons = {}
+    padding = 100
+    for state, points in state_points.items():
+        if len(points) < 3:
+            # Fallback for states with one or two substations: create a padded bounding box
+            if points:
+                min_x = min(p[0] for p in points) - padding
+                min_y = min(p[1] for p in points) - padding
+                max_x = max(p[0] for p in points) + padding
+                max_y = max(p[1] for p in points) + padding
+                state_polygons[state] = Polygon(
+                    [(min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, max_y)]
                 )
-                drawing.append(boundary_line)
-                drawn_edges.add(edge)
-                edges_drawn_for_state += 1
+            continue
 
-        print(
-            f"  Drew state boundary for {state}: ({min_x:.1f}, {min_y:.1f}) to ({max_x:.1f}, {max_y:.1f}) - {edges_drawn_for_state}/4 edges drawn"
-        )
+        # Use shapely to get the convex hull and buffer it
+        hull = MultiPoint(points).convex_hull
+        state_polygons[state] = hull.buffer(padding, join_style=2)  # Mitered corners
+
+    # Iteratively resolve overlaps between state polygons
+    states = list(state_polygons.keys())
+    for _ in range(len(states) + 1):  # Iterate enough times for changes to propagate
+        changed_in_pass = False
+        for state1, state2 in combinations(states, 2):
+            poly1 = state_polygons[state1]
+            poly2 = state_polygons[state2]
+
+            if not poly1.intersects(poly2):
+                continue
+
+            changed_in_pass = True
+            intersection = poly1.intersection(poly2)
+            if (
+                intersection.is_empty
+                or not isinstance(intersection, shapely.geometry.base.BaseGeometry)
+            ):
+                continue
+
+            # Handle GeometryCollection by extracting only polygonal components
+            if intersection.geom_type == 'GeometryCollection':
+                from shapely.ops import unary_union
+                polygons = [geom for geom in intersection.geoms if geom.geom_type in ('Polygon', 'MultiPolygon')]
+                if not polygons:
+                    # If no polygons in intersection, treat as no overlap for splitting purposes
+                    state_polygons[state1] = poly1.difference(poly2)
+                    continue
+                intersection = unary_union(polygons)
+                # After union, it might be empty if polygons were invalid
+                if intersection.is_empty:
+                    continue
+
+            c1 = state_centroids.get(state1)
+            c2 = state_centroids.get(state2)
+
+            # If centroids are missing, use a simple difference as a fallback
+            if not c1 or not c2:
+                state_polygons[state1] = poly1.difference(poly2)
+                continue
+
+            # Create a separating line based on the perpendicular bisector of the centroids
+            mid_x, mid_y = (c1.x + c2.x) / 2, (c1.y + c2.y) / 2
+            dx, dy = c2.x - c1.x, c2.y - c1.y
+            perp_dx, perp_dy = -dy, dx
+
+            if perp_dx == 0 and perp_dy == 0:  # Centroids are identical
+                state_polygons[state1] = poly1.difference(poly2)
+                continue
+
+            # Create a very long line for splitting
+            L = 1e6
+            p1 = (mid_x - L * perp_dx, mid_y - L * perp_dy)
+            p2 = (mid_x + L * perp_dx, mid_y + L * perp_dy)
+            separating_line = shapely.geometry.LineString([p1, p2])
+
+            # If intersection is just points, splitting is not supported. Fallback to difference.
+            if intersection.geom_type in ["Point", "MultiPoint"]:
+                state_polygons[state1] = poly1.difference(poly2)
+                continue
+
+            # Split the intersection area along the separating line
+            split_intersection = split(intersection, separating_line)
+            if len(split_intersection.geoms) < 2:
+                state_polygons[state1] = poly1.difference(poly2)
+                continue
+
+            part_a, part_b = split_intersection.geoms[0], split_intersection.geoms[1]
+
+            # Get substation locations for checking containment
+            s1_subs = state_groups[state1]
+            s2_subs = state_groups[state2]
+
+            def assign_part(part_geom, s1_subs, s2_subs, c1, c2):
+                """Analyzes a piece of an intersection and assigns it to a state."""
+                from shapely.ops import unary_union
+                if part_geom.is_empty:
+                    return Polygon(), Polygon()
+
+                s1_subs_in_part = [s for s in s1_subs if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))]
+                s2_subs_in_part = [s for s in s2_subs if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))]
+
+                # Case 1: Part contains subs from only one state
+                if s1_subs_in_part and not s2_subs_in_part:
+                    return part_geom, Polygon()
+                if s2_subs_in_part and not s1_subs_in_part:
+                    return Polygon(), part_geom
+
+                # Case 2: Part is empty of substations - assign to closest state
+                if not s1_subs_in_part and not s2_subs_in_part:
+                    if c1.distance(part_geom.centroid) < c2.distance(part_geom.centroid):
+                        return part_geom, Polygon()
+                    else:
+                        return Polygon(), part_geom
+
+                # Case 3: Part is contested (subs from both states) - we must split it
+                local_c1 = MultiPoint([(s.use_x, s.use_y) for s in s1_subs_in_part]).centroid
+                local_c2 = MultiPoint([(s.use_x, s.use_y) for s in s2_subs_in_part]).centroid
+
+                mid_x, mid_y = (local_c1.x + local_c2.x) / 2, (local_c1.y + local_c2.y) / 2
+                dx, dy = local_c2.x - local_c1.x, local_c2.y - local_c1.y
+                perp_dx, perp_dy = -dy, dx
+
+                if perp_dx == 0 and perp_dy == 0:
+                    if len(s1_subs_in_part) >= len(s2_subs_in_part):
+                        return part_geom, Polygon()
+                    else:
+                        return Polygon(), part_geom
+
+                L_local = 1e6
+                p1_local = (mid_x - L_local * perp_dx, mid_y - L_local * perp_dy)
+                p2_local = (mid_x + L_local * perp_dx, mid_y + L_local * perp_dy)
+                local_separator = shapely.geometry.LineString([p1_local, p2_local])
+
+                split_part = split(part_geom, local_separator)
+                if len(split_part.geoms) < 2:
+                    if len(s1_subs_in_part) >= len(s2_subs_in_part):
+                        return part_geom, Polygon()
+                    else:
+                        return Polygon(), part_geom
+
+                sub_part1, sub_part2 = split_part.geoms[0], split_part.geoms[1]
+
+                line_dx = p2_local[0] - p1_local[0]
+                line_dy = p2_local[1] - p1_local[1]
+                side_local_c1 = line_dx * (local_c1.y - p1_local[1]) - line_dy * (local_c1.x - p1_local[0])
+                side_sub_part1 = line_dx * (sub_part1.centroid.y - p1_local[1]) - line_dy * (sub_part1.centroid.x - p1_local[0])
+
+                if (side_local_c1 * side_sub_part1) > 0:
+                    return sub_part1, sub_part2
+                else:
+                    return sub_part2, sub_part1
+
+            # Process both parts of the original intersection
+            p1_share_a, p2_share_a = assign_part(part_a, s1_subs, s2_subs, c1, c2)
+            p1_share_b, p2_share_b = assign_part(part_b, s1_subs, s2_subs, c1, c2)
+
+            # Combine the shares from both parts
+            from shapely.ops import unary_union
+            p1_total_share = unary_union([p1_share_a, p1_share_b])
+            p2_total_share = unary_union([p2_share_a, p2_share_b])
+
+            # Reconstruct polygons by subtracting the other state's share of the intersection.
+            # A buffer(0) call is used to clean up potential geometry issues.
+            state_polygons[state1] = poly1.difference(p2_total_share).buffer(0)
+            state_polygons[state2] = poly2.difference(p1_total_share).buffer(0)
+
+        if not changed_in_pass:
+            break  # No overlaps found in a full pass, so we're done.
+
+
+    # Draw the final polygons
+    for state, poly in state_polygons.items():
+        if poly.is_empty:
+            continue
+
+        # Handle GeometryCollection by extracting all polygons
+        polygons_to_draw = []
+        if poly.geom_type == 'Polygon':
+            polygons_to_draw.append(poly)
+        elif poly.geom_type == 'MultiPolygon':
+            polygons_to_draw.extend(list(poly.geoms))
+        elif poly.geom_type == 'GeometryCollection':
+            for geom in poly.geoms:
+                if geom.geom_type == 'Polygon':
+                    polygons_to_draw.append(geom)
+                elif geom.geom_type == 'MultiPolygon':
+                    polygons_to_draw.extend(list(geom.geoms))
+
+        if not polygons_to_draw:
+            continue
+
+        path_data = ""
+        for p in polygons_to_draw:
+            if p.is_empty:
+                continue
+            path_data += "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in p.exterior.coords) + " Z "
+            for interior in p.interiors:
+                path_data += "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in interior.coords) + " Z "
+
+        if not path_data:
+            continue
+
+        path_params = {
+            "d": path_data,
+            "fill": "none",
+            "stroke": "black",
+            "stroke_width": boundary_stroke_width,
+            "stroke_opacity": str(boundary_opacity),
+            "class_": "state-boundary",
+        }
+        if boundary_dasharray:
+            path_params["stroke_dasharray"] = boundary_dasharray
+        boundary_path = draw.Path(**path_params)
+        drawing.append(boundary_path)
+        print(f"  Drew state boundary for {state} using convex hull.")
 
     # draw a really faint but really big text for each state
-    for state_name, state_bound in state_bounds.items():
-        min_x, min_y, max_x, max_y = state_bound
-        center_x = (min_x + max_x) / 2
-        center_y = (min_y + max_y) / 2
+    for state_name, poly in state_polygons.items():
+        if poly.is_empty:
+            continue
+        center_x = poly.centroid.x
+        center_y = poly.centroid.y
 
-        coming_soon_text = draw.Text(
+        # Approximate font size based on polygon width
+        poly_min_x, _, poly_max_x, _ = poly.bounds
+        poly_width = poly_max_x - poly_min_x
+
+        # A simple heuristic: font size is proportional to width / number of characters
+        # Capped at the maximum specified font size.
+        # The factor 0.9 is a guess to make it fit well.
+        if len(state_name) > 0:
+            approximated_font_size = (poly_width / len(state_name)) * 0.9
+            font_size = min(text_font_size, approximated_font_size)
+        else:
+            font_size = text_font_size
+
+        state_text = draw.Text(
             state_name,
-            font_size=9000,
+            font_size=font_size,
             x=center_x,
             y=center_y,
             text_anchor="middle",
             dominant_baseline="central",
             fill="black",
-            opacity="0.015",  # very VERY faint
+            opacity=str(text_opacity),
             stroke_width=0,
             font_family=DEFAULT_FONT_FAMILY,
         )
-        drawing.append(coming_soon_text)
+        drawing.append(state_text)
 
 
 def draw_connections(
@@ -2661,7 +2814,8 @@ def generate_substation_documentation_svgs(
 
 
 def generate_output_files(
-    drawing: draw.Drawing,
+    sld_drawing: draw.Drawing,
+    state_drawing: draw.Drawing,
     substations: list[Substation],
     sub_bboxes: dict,
     map_dims: tuple[int, int],
@@ -2673,19 +2827,21 @@ def generate_output_files(
     interactive markers into the HTML.
 
     Args:
-        drawing: The final `draw.Drawing` object.
+        sld_drawing: The final `draw.Drawing` object for the SLD.
+        state_drawing: The final `draw.Drawing` object for the state boundaries.
         substations: The list of all `Substation` objects.
         sub_bboxes: A dictionary of substation bounding boxes.
         map_dims: A tuple (width, height) of the SVG dimensions.
     """
     map_width, map_height = map_dims
     # Add Google font embedding for Roboto
-    drawing.embed_google_font(
+    sld_drawing.embed_google_font(
         DEFAULT_FONT_FAMILY, text=None
     )  # None means all characters
+    state_drawing.embed_google_font(DEFAULT_FONT_FAMILY, text=None)
 
-    # Save the SVG with embedded font
-    drawing.save_svg(OUTPUT_SVG)
+    # Save the SLD SVG with embedded font
+    sld_drawing.save_svg(OUTPUT_SVG)
 
     locations_data = []
     object_popups_data = []
@@ -2733,45 +2889,61 @@ def generate_output_files(
     )
 
     with open(OUTPUT_SVG, "r", encoding="utf-8") as f:
-        svg_content = f.read()
+        sld_svg_content = f.read()
+    state_svg_content = state_drawing.as_svg()
 
     # Optimise the SVG using scour before embedding
-    print("Step 6.2: Optimising SVG with scour...")
-    original_size = len(svg_content)
-    try:
-        from scour import scour
+    print("Step 6.2: Optimising SVGs with scour...")
 
-        options = scour.generateDefaultOptions()
-        options.strip_xml_prolog = True
-        options.remove_metadata = True
-        options.strip_comments = True
-        options.enable_viewboxing = True
-        options.strip_xml_space_attribute = True
-        options.remove_titles = True
-        options.remove_descriptions = True
-        options.remove_descriptive_elements = True
+    def optimise_svg(svg_string, name):
+        original_size = len(svg_string)
+        try:
+            from scour import scour
 
-        svg_content = scour.scourString(svg_content, options)
-        optimised_size = len(svg_content)
-        reduction = ((original_size - optimised_size) / original_size) * 100
-        print(
-            f"  SVG optimised: {original_size} -> {optimised_size} chars ({reduction:.1f}% reduction)"
-        )
-    except Exception as e:
-        print(f"  Warning: SVG optimisation failed: {e}")
-        print("  Using original SVG content")
+            options = scour.generateDefaultOptions()
+            options.strip_xml_prolog = True
+            options.remove_metadata = True
+            options.strip_comments = True
+            options.enable_viewboxing = True
+            options.strip_xml_space_attribute = True
+            options.remove_titles = True
+            options.remove_descriptions = True
+            options.remove_descriptive_elements = True
+
+            scoured_svg = scour.scourString(svg_string, options)
+            optimised_size = len(scoured_svg)
+            reduction = ((original_size - optimised_size) / original_size) * 100
+            print(
+                f"  {name} SVG optimised: {original_size} -> {optimised_size} chars ({reduction:.1f}% reduction)"
+            )
+            return scoured_svg
+        except Exception as e:
+            print(f"  Warning: {name} SVG optimisation failed: {e}")
+            print(f"  Using original {name} SVG content")
+            return svg_string
+
+    sld_svg_content = optimise_svg(sld_svg_content, "SLD")
+    state_svg_content = optimise_svg(state_svg_content, "State")
 
     with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
         template_content = f.read()
 
-    svg_content_escaped = svg_content.replace("`", "\\`")
-    html_content = template_content.replace("%%SVG_CONTENT%%", svg_content_escaped)
+    sld_svg_content_escaped = sld_svg_content.replace("`", "\\`")
+    state_svg_content_escaped = state_svg_content.replace("`", "\\`")
+    html_content = template_content.replace(
+        "%%SLD_SVG_CONTENT%%", sld_svg_content_escaped
+    )
+    html_content = html_content.replace(
+        "%%STATE_SVG_CONTENT%%", state_svg_content_escaped
+    )
     html_content = html_content.replace("%%VERSION%%", VERSION)
     html_content = html_content.replace("%%LOCATIONS_DATA%%", locations_json_string)
     html_content = html_content.replace("%%OBJECT_POPUPS%%", object_popups_json_string)
     html_content = html_content.replace("%%MAP_WIDTH%%", str(map_width))
     html_content = html_content.replace("%%MAP_HEIGHT%%", str(map_height))
-    html_content = html_content.replace("%%HOVER_HIGHLIGHT_PATH_OPACITY%%", str(HOVER_HIGHLIGHT_PATH_OPACITY))
+    html_content = html_content.replace(
+        "%%HOVER_HIGHLIGHT_PATH_OPACITY%%", str(HOVER_HIGHLIGHT_PATH_OPACITY)
+    )
 
     with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
         f.write(html_content)
@@ -3075,11 +3247,11 @@ def main():
     # 3. Draw substations onto the main canvas
     print("Step 4: Drawing substations on canvas...")
     map_width, map_height = map_dims
-    drawing = draw.Drawing(map_width, map_height, origin=(0, 0))
-    drawing.append(draw.Rectangle(0, 0, map_width, map_height, fill="transparent"))
+    sld_drawing = draw.Drawing(map_width, map_height, origin=(0, 0))
+    sld_drawing.append(draw.Rectangle(0, 0, map_width, map_height, fill="transparent"))
     for sub in substations:
         print(f"  Drawing {sub.name} at ({sub.use_x}, {sub.use_y})")
-        drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
+        sld_drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
 
     # 4. Prepare for and draw connections
     points, grid_owners, sub_global_bounds = _populate_pathfinding_grid(
@@ -3105,7 +3277,7 @@ def main():
 
     print("Step 5: Preparing and drawing connections...")
     draw_connections(
-        drawing,
+        sld_drawing,
         all_connections,
         points,
         grid_owners,
@@ -3116,11 +3288,26 @@ def main():
 
     # 5.5. Draw state boundaries
     print("Step 5.5: Drawing state boundaries...")
-    draw_state_boundaries(drawing, substations, sub_bboxes)
+    # State boundaries are now drawn on a separate SVG layer.
 
     # 6. Generate output files
     print("Step 6: Generating output files...")
-    generate_output_files(drawing, substations, sub_bboxes, map_dims)
+    # Create state-level drawing
+    state_drawing = draw.Drawing(map_width, map_height, origin=(0, 0))
+    state_drawing.append(draw.Rectangle(0, 0, map_width, map_height, fill="transparent"))
+    print("  Generating state-level SVG...")
+    draw_state_boundaries(
+        drawing=state_drawing,
+        substations=substations,
+        sub_bboxes=sub_bboxes,
+        text_opacity=1.0,
+        boundary_opacity=1.0,
+        text_font_size=9000,
+        boundary_stroke_width=45,
+        boundary_dasharray=None,
+    )
+
+    generate_output_files(sld_drawing, state_drawing, substations, sub_bboxes, map_dims)
 
     print("\nSLD generation complete.")
 

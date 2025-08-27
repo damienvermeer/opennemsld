@@ -1,0 +1,209 @@
+substations:
+- name: Sheffield
+  lat: -41.33575345
+  long: 146.3069743
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: George Town
+  lat: -41.1285545
+  long: 146.8853327
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Palmerston
+  lat: -41.78728251
+  long: 146.9902096
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Waddamana 220
+  lat: -42.12612446
+  long: 146.7456161
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Catagunya
+  lat: -42.45160128
+  long: 146.598649
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Basslink-George Town
+  lat: -41.1143575
+  long: 146.8921367
+  voltage_kv: 400
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cluny
+  lat: -42.50583399
+  long: 146.6796405
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Fisher
+  lat: -41.67329429
+  long: 146.268353
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lemonthyme
+  lat: -41.60415648
+  long: 146.1390646
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cethana
+  lat: -41.47872494
+  long: 146.1349143
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wayatinah
+  lat: -42.42577548
+  long: 146.5347316
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Gordon
+  lat: -42.74048394
+  long: 145.9820057
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Arthurs Lake
+  lat: -41.98800899
+  long: 146.8619977
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Burnie 220
+  lat: -41.07675811
+  long: 145.8912073
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lindisfarne
+  lat: -42.82487092
+  long: 147.3493914
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hadspen
+  lat: -41.50144701
+  long: 147.0953861
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Comalco
+  lat: -41.12386986
+  long: 146.8722209
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Chapel Street
+  lat: -42.84306794
+  long: 147.2549647
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Burnie 110
+  lat: -41.0759348
+  long: 145.8911322
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Farrell
+  lat: -41.7344549
+  long: 145.5309779
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Liapootah
+  lat: -42.37612063
+  long: 146.511721
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Basslink Cable terminal
+  lat: -41.04266906
+  long: 146.8691441
+  voltage_kv: 400
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Reece
+  lat: -41.72035219
+  long: 145.1255809
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Reece Dam
+  lat: -41.7237929
+  long: 145.1362987
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tribute
+  lat: -41.81597674
+  long: 145.6497614
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: John Butters
+  lat: -42.15461431
+  long: 145.534518
+  voltage_kv: 220
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}

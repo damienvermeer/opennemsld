@@ -1,0 +1,1851 @@
+substations:
+- name: Oaklands Hill Wind Farm
+  lat: -37.6814585
+  long: 142.5522663
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mortons Lane Wind Farm
+  lat: -37.83514393
+  long: 142.4662859
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Loy Yang
+  lat: -38.25486202
+  long: 146.5712716
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Somerton
+  lat: -37.62246066
+  long: 144.9486408
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Woodonga
+  lat: -36.11866155
+  long: 146.8806355
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Barnawartha
+  lat: -36.07363227
+  long: 146.7167783
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cobram East
+  lat: -35.97050805
+  long: 145.696566
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Numurkah
+  lat: -36.0694341
+  long: 145.4509466
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Echuca
+  lat: -36.14093204
+  long: 144.7643084
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cohuna Solar Farm
+  lat: -35.88024499
+  long: 144.2194626
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Swan Hill
+  lat: -35.34537299
+  long: 143.5226966
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ouyen
+  lat: -35.05864877
+  long: 142.3155978
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Birdwoodton
+  lat: -34.17466176
+  long: 142.0795089
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mildura
+  lat: -34.20758299
+  long: 142.1568655
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wemen
+  lat: -34.75381074
+  long: 142.6833884
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lake Powell
+  lat: -34.71275729
+  long: 143.0057241
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Shepparton Zone
+  lat: -36.35370514
+  long: 145.4113561
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Shepparton South
+  lat: -36.3841136
+  long: 145.4146537
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mooroopna
+  lat: -36.37557128
+  long: 145.349253
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kyabram
+  lat: -36.31314348
+  long: 145.0326675
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Stanhope
+  lat: -36.44537659
+  long: 144.995493
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Alpine Industries
+  lat: -36.33303576
+  long: 146.3708699
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wangaratta
+  lat: -36.3645036
+  long: 146.3143427
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Aust Forest Industries
+  lat: -36.54292181
+  long: 146.7431033
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Myrtleford
+  lat: -36.56532276
+  long: 146.7029575
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Benalla
+  lat: -36.55591755
+  long: 145.9617922
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mansfield
+  lat: -37.05044175
+  long: 146.0712901
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Merrijig
+  lat: -37.10235874
+  long: 146.2624759
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Seymour
+  lat: -37.03608285
+  long: 145.1545119
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bright
+  lat: -36.72638654
+  long: 146.970145
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kilmore South
+  lat: -37.31802273
+  long: 144.9721257
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yea
+  lat: -37.21152937
+  long: 145.4454083
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Inglewood
+  lat: -36.57894043
+  long: 143.8903796
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Inglewood West
+  lat: -36.53938649
+  long: 143.8131414
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Eaglehawk
+  lat: -36.7359555
+  long: 144.2785602
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bendigo
+  lat: -36.77048879
+  long: 144.2770084
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Charlton
+  lat: -36.27397727
+  long: 143.3632622
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yeungroon
+  lat: -36.41521498
+  long: 143.3801801
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kinglake
+  lat: -37.5143776
+  long: 145.316307
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Gisborne
+  lat: -37.45347761
+  long: 144.5761974
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Woodend
+  lat: -37.33449958
+  long: 144.5177336
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Castlemaine
+  lat: -37.07237605
+  long: 144.2066213
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Maryborough
+  lat: -37.04951545
+  long: 143.754704
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Horsham Zone
+  lat: -36.73492864
+  long: 142.2060392
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Nhill
+  lat: -36.35149183
+  long: 141.6330279
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Charam
+  lat: -36.99455491
+  long: 141.5494291
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cann River
+  lat: -37.57371266
+  long: 149.1272053
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Newmerella
+  lat: -37.73936342
+  long: 148.4252337
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bairnsdale Zone
+  lat: -37.8083389
+  long: 147.6476912
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bairnsdale Switching
+  lat: -37.84472449
+  long: 147.5641885
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sale
+  lat: -38.10117457
+  long: 147.0959127
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Maffra North
+  lat: -37.95050659
+  long: 146.9978495
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Maffra
+  lat: -37.97090816
+  long: 146.9823121
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Traralgon
+  lat: -38.18927971
+  long: 146.5601556
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Maryvale
+  lat: -38.18257836
+  long: 146.4411364
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Morwell North
+  lat: -38.24068667
+  long: 146.3741858
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Morwell South
+  lat: -38.27007044
+  long: 146.3658821
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Moe
+  lat: -38.17047941
+  long: 146.255963
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Foster
+  lat: -38.65969446
+  long: 146.2219838
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Longford
+  lat: -38.22488546
+  long: 147.1603164
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Toora Wind farm
+  lat: -38.65324143
+  long: 146.340162
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Warragul
+  lat: -38.15372112
+  long: 145.9427639
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Leongatha
+  lat: -38.47249442
+  long: 145.9584655
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bald Hills Wind Farm
+  lat: -38.74691084
+  long: 145.949024
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Leongatha South
+  lat: -38.57792694
+  long: 145.8321586
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Wonthaggi
+  lat: -38.59380023
+  long: 145.6098306
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Phillip Island
+  lat: -38.48163573
+  long: 145.2398012
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lang Lang
+  lat: -38.26740893
+  long: 145.5566236
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Pakenham
+  lat: -38.07079549
+  long: 145.4941779
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Officer
+  lat: -38.05118751
+  long: 145.4450322
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Delacombe
+  lat: -37.575183
+  long: 143.8275003
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ballarat Gold Fields
+  lat: -37.58370881
+  long: 143.863316
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bungal
+  lat: -37.6784616
+  long: 144.0752393
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yaloak South Wind Farm
+  lat: -37.72822833
+  long: 144.2406731
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Powercore Bacchus Marsh
+  lat: -37.69956481
+  long: 144.4084799
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cape Nelson South Wind farm
+  lat: -38.41175966
+  long: 141.5433761
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sir William Grant
+  lat: -38.38849779
+  long: 141.6230228
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Codrington Wind Farm
+  lat: -38.27294805
+  long: 141.9730843
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yambuk Wind Farm
+  lat: -38.29905858
+  long: 142.0268547
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Koroit
+  lat: -38.31490588
+  long: 142.4294935
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Warnambool
+  lat: -38.37380577
+  long: 142.4910436
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hamilton
+  lat: -37.75395255
+  long: 142.0093337
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Nareeb
+  lat: -37.80497418
+  long: 142.4720609
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Salt Creek Wind Farm
+  lat: -37.93067222
+  long: 142.7735477
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cobden
+  lat: -38.3415282
+  long: 143.05287
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Camperdown
+  lat: -38.22689008
+  long: 143.1548429
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Colac
+  lat: -38.34058922
+  long: 143.6063263
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Winchelsea
+  lat: -38.23611241
+  long: 144.002835
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Waurn Ponds
+  lat: -38.21574876
+  long: 144.3003849
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Blue Circle geelong
+  lat: -38.21377224
+  long: 144.2830931
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Drysdale
+  lat: -38.18257928
+  long: 144.5642412
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Geelong East
+  lat: -38.17964623
+  long: 144.381427
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Geelong City
+  lat: -38.1523519
+  long: 144.3572851
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Geelong
+  lat: -38.12867175
+  long: 144.3403652
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Geelong B
+  lat: -38.11720712
+  long: 144.3572381
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ford North Shore Customer
+  lat: -38.10256244
+  long: 144.3610483
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Corio
+  lat: -38.09439709
+  long: 144.3697176
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ford North Shore Zone
+  lat: -38.08668632
+  long: 144.3723691
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Shell Refinery
+  lat: -38.08344651
+  long: 144.380878
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sunbury
+  lat: -37.58588252
+  long: 144.722174
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Melton
+  lat: -37.6872604
+  long: 144.585926
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sydenham Zone
+  lat: -37.67603131
+  long: 144.7533623
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Werribee
+  lat: -37.89047363
+  long: 144.6627961
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hoppers Crossing
+  lat: -37.88938014
+  long: 144.7033077
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Laverton
+  lat: -37.85178696
+  long: 144.7276359
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Altrona
+  lat: -37.84759436
+  long: 144.8088652
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Altona Chemical
+  lat: -37.8453773
+  long: 144.8005873
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Toyota Altona
+  lat: -37.83622569
+  long: 144.8271447
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: One Steel Altona
+  lat: -37.83323774
+  long: 144.788739
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Laverton North
+  lat: -37.8275097
+  long: 144.7862718
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Truganina
+  lat: -37.80595298
+  long: 144.7523532
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Air Trunk data
+  lat: -37.80092261
+  long: 144.7726846
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sunshine
+  lat: -37.78310013
+  long: 144.808977
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sunshine East
+  lat: -37.77941613
+  long: 144.8280052
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Braybrook
+  lat: -37.78244934
+  long: 144.874757
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: St Albans
+  lat: -37.7400708
+  long: 144.8253157
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tullamarine
+  lat: -37.71156862
+  long: 144.8590456
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Airport West
+  lat: -37.7150074
+  long: 144.8859059
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Essendon
+  lat: -37.75405195
+  long: 144.8937925
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Melbourne Airport
+  lat: -37.69278205
+  long: 144.8568186
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Pasco Vale
+  lat: -37.72235188
+  long: 144.932975
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tottenham
+  lat: -37.8084435
+  long: 144.848489
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Footscray West
+  lat: -37.81514568
+  long: 144.8728556
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Footscray East
+  lat: -37.81343499
+  long: 144.8964355
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Yarraville
+  lat: -37.82284101
+  long: 144.893705
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Newport
+  lat: -37.83981821
+  long: 144.8937532
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Broadmedows South
+  lat: -37.68660471
+  long: 144.9415059
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Broadmedows
+  lat: -37.66529364
+  long: 144.9430959
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Visy Paper
+  lat: -37.65020407
+  long: 144.9367097
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Coolaroo
+  lat: -37.64207229
+  long: 144.933898
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kalkallo
+  lat: -37.53825533
+  long: 144.9413403
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: South Morang Zone
+  lat: -37.64696391
+  long: 145.0696815
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Flemington
+  lat: -37.7916363
+  long: 144.9320098
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: West brunswick
+  lat: -37.76839773
+  long: 144.9552532
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Coburg South
+  lat: -37.74250551
+  long: 144.9626084
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Coburg North
+  lat: -37.72093432
+  long: 144.9778783
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Epping
+  lat: -37.65262177
+  long: 145.026194
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Fishermans Bend
+  lat: -37.82467133
+  long: 144.9106439
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Westgate
+  lat: -37.82416055
+  long: 144.9225514
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Port Melbourne
+  lat: -37.83275964
+  long: 144.9260193
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Montague
+  lat: -37.82925159
+  long: 144.9454974
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Albert Park
+  lat: -37.8367919
+  long: 144.9581227
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: South Melbourne
+  lat: -37.8283823
+  long: 144.967625
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: McIllwaith Place
+  lat: -37.81141944
+  long: 144.9667748
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Flinders
+  lat: -37.81574332
+  long: 144.9689149
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: McIllraith Place
+  lat: -37.81263954
+  long: 144.9713623
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Doreen
+  lat: -37.60694059
+  long: 145.1333459
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Preston
+  lat: -37.73695628
+  long: 145.0006137
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: East Preston
+  lat: -37.74531729
+  long: 145.0327274
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Nilsen Electrical
+  lat: -37.73222517
+  long: 145.0430013
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: North Heidelberg
+  lat: -37.72952915
+  long: 145.067981
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: North east LLink
+  lat: -37.72263259
+  long: 145.081814
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Watsonia
+  lat: -37.71329723
+  long: 145.0857149
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Northcote
+  lat: -37.77091942
+  long: 145.0032818
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Collingwood
+  lat: -37.7980302
+  long: 144.9872533
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: North Richmond
+  lat: -37.81411341
+  long: 144.9986509
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Tooram
+  lat: -37.84389813
+  long: 145.004633
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: St Kilda
+  lat: -37.86132242
+  long: 144.9832888
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Balaclava
+  lat: -37.86461225
+  long: 144.9998537
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Elwood
+  lat: -37.88225572
+  long: 144.9886597
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Heidelberg
+  lat: -37.75904825
+  long: 145.070189
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Kew
+  lat: -37.79926589
+  long: 145.0363174
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Deepdene
+  lat: -37.81019836
+  long: 145.0637087
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Armadale
+  lat: -37.85548495
+  long: 145.0191782
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Elsternwick
+  lat: -37.88536503
+  long: 145.0154462
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Caulfield
+  lat: -37.88577898
+  long: 145.0364161
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: North Brighton
+  lat: -37.9064256
+  long: 145.0093651
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bentleigh
+  lat: -37.91182017
+  long: 145.033738
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Moorabbin
+  lat: -37.93269406
+  long: 145.0290846
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sandringham
+  lat: -37.94680126
+  long: 145.0229044
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cheltenham
+  lat: -37.95701291
+  long: 145.0390593
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Beaumans
+  lat: -37.98183707
+  long: 145.033344
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Camberwell
+  lat: -37.83054647
+  long: 145.0522775
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Gardner
+  lat: -37.85132424
+  long: 145.0533314
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Riversdale
+  lat: -37.8426283
+  long: 145.0869181
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: East Malvern
+  lat: -37.8787936
+  long: 145.0707545
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ormond
+  lat: -37.90765778
+  long: 145.0623165
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Oakleigh
+  lat: -37.8919481
+  long: 145.0940962
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Oakleigh East
+  lat: -37.90851321
+  long: 145.1009172
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Clarinda
+  lat: -37.92916522
+  long: 145.0997613
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Notting Hill
+  lat: -37.89771275
+  long: 145.1371488
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Heatherton
+  lat: -37.95261024
+  long: 145.0779767
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mentone
+  lat: -37.98056055
+  long: 145.0724036
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mordialloc
+  lat: -37.99951316
+  long: 145.091008
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Eltham
+  lat: -37.71668316
+  long: 145.1388045
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bulleen
+  lat: -37.76071886
+  long: 145.1123856
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: West Doncaster
+  lat: -37.78660204
+  long: 145.102421
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Doncaster
+  lat: -37.79867434
+  long: 145.1353728
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Box Hill
+  lat: -37.8311254
+  long: 145.1357143
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: East Burwood
+  lat: -37.85904846
+  long: 145.1408928
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Glem Waverley
+  lat: -37.88475564
+  long: 145.1569209
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Springvale South
+  lat: -37.96021466
+  long: 145.1300371
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Noble Park
+  lat: -37.97837611
+  long: 145.1664823
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Nunawading
+  lat: -37.81120551
+  long: 145.1779007
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ringwood North
+  lat: -37.79316718
+  long: 145.2345788
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Croydon
+  lat: -37.80218213
+  long: 145.2879412
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Bayswater
+  lat: -37.83482054
+  long: 145.2717512
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Sugarloaf Reservoir
+  lat: -37.68913557
+  long: 145.3120178
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mulgrave
+  lat: -37.92239225
+  long: 145.1849976
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lyndale
+  lat: -37.95595289
+  long: 145.2066717
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Keysborough
+  lat: -37.99508532
+  long: 145.1884383
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dandenong
+  lat: -38.00024815
+  long: 145.2377864
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dandenong South
+  lat: -38.01382637
+  long: 145.2047984
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Dandenong Valley
+  lat: -38.03227481
+  long: 145.2139011
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Carrum
+  lat: -38.07188249
+  long: 145.1486649
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Frankston
+  lat: -38.11936047
+  long: 145.1390981
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Langwarrin
+  lat: -38.14075901
+  long: 145.1765456
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Frankston Terminal Station (FTS)
+  lat: -38.16294196
+  long: 145.168461
+  voltage_kv: 66
+  def: 1?|?
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-TBTS-FTS
+- name: Frankston South
+  lat: -38.17299621
+  long: 145.1402327
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mornington (MTN)
+  lat: -38.2434753
+  long: 145.0834729
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: VIC-66-MTN-DMA
+    2: VIC-66-TBTS-MTN2
+    3: VIC-66-TBTS-MTN1
+    4: VIC-66-FSH-MTN
+  connections: {}
+- name: Hastings (HGS)
+  lat: -38.28875756
+  long: 145.192786
+  voltage_kv: 66
+  def: |
+    1?|
+    2?|
+  buses:
+    1: 
+  connections:
+    1: VIC-66-HGS-TBTS1
+    2: VIC-66-HGS-TBTS2
+- name: Dromana (DMA)
+  lat: -38.33123574
+  long: 144.9891673
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-DMA-RBD1
+    2: VIC-66-DMA-TGTS
+    3: VIC-66-DMA-RBD2
+    4: VIC-66-MTN-DMA
+- name: Rosebud (RBD)
+  lat: -38.36799164
+  long: 144.8899871
+  voltage_kv: 66
+  def: |
+    1?|?2
+    3?|?4
+  buses:
+    1: ''
+  connections: 
+    1: VIC-66-RBD-STO1
+    2: VIC-66-DMA-RBD1
+    3: VIC-66-RBD-STO2
+    4: VIC-66-DMA-RBD2
+- name: Sorrento (STO)
+  lat: -38.3567572
+  long: 144.7615498
+  voltage_kv: 66
+  def: |
+    1?|
+    2?|
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-RBD-STO1
+    2: VIC-66-RBD-STO2
+- name: Chirnside
+  lat: -37.76098773
+  long: 145.312558
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lilydale
+  lat: -37.76351297
+  long: 145.3579871
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Woori Yallock
+  lat: -37.77618224
+  long: 145.5293682
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Boronia
+  lat: -37.86557763
+  long: 145.2537112
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Ferntree Gully
+  lat: -37.8932547
+  long: 145.2924441
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Belgrave
+  lat: -37.93031006
+  long: 145.3610907
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Lysterfield
+  lat: -37.98435603
+  long: 145.2958327
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Narre Warren
+  lat: -38.00365334
+  long: 145.3303826
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Berwick North
+  lat: -38.01369309
+  long: 145.3478788
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Hampton Park
+  lat: -38.0358361
+  long: 145.2665213
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Clyde North
+  lat: -38.09489659
+  long: 145.332942
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Mortlake South Wind Farm
+  lat: -38.14681719
+  long: 142.8533932
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Cherry Tree
+  lat: -37.09814895
+  long: 145.2658394
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}
+- name: Winton Solar Farm
+  lat: -36.49611902
+  long: 146.1310995
+  voltage_kv: 66
+  def: ?|?
+  buses:
+    1: ''
+  connections: {}

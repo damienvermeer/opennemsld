@@ -303,7 +303,7 @@
         </ul>
         
         <h3>NEM SLD? All I see is Victoria!?</h3>
-        <p><b style="color: red;">This is a work in progress! I've so far only implemented parts of Victoria, with much more to come...</b></p>
+        <p><b style="color: red;">This is a work in progress! I've so far added most substations, but details only available for VIC and parts of QLD so far...</b></p>
         
         <h3>Where's the data from?</h3>
         <p>AEMO used to publish the <a href="https://web.archive.org/web/20220119012004if_/https://aemo.com.au/-/media/files/electricity/nem/planning_and_forecasting/maps/nem-slds.pdf#[{%22num%22%3A91%2C%22gen%22%3A0}%2C{%22name%22%3A%22FitR%22}%2C-7%2C0%2C849%2C1181]" target="_blank">NEM SLDs</a> but these haven't been updated since 2019. <a href="https://openinframap.org/#6.89/-36.804/144.698" target="_blank">Open Infrastructure Map</a> has been used for some geographic data.</p>
@@ -332,13 +332,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     (function() {
         const MAP_BOUNDS = [[0, 0], [%%MAP_HEIGHT%%, %%MAP_WIDTH%%]];
-        const SVG_CONTENT = `%%SVG_CONTENT%%`;
+        const SLD_SVG_CONTENT = `%%SLD_SVG_CONTENT%%`;
+        const STATE_SVG_CONTENT = `%%STATE_SVG_CONTENT%%`;
         const OBJECT_POPUPS = %%OBJECT_POPUPS%%;
         const LOCATIONS_DATA = %%LOCATIONS_DATA%%;
         const HOVER_HIGHLIGHT_PATH_OPACITY = %%HOVER_HIGHLIGHT_PATH_OPACITY%%;
+
+        // --- Fading settings for SVG overlays ---
+        const SLD_FADE_START_ZOOM = -5; // Zoom level where SLD starts fading in
+        const SLD_FADE_END_ZOOM = -4;   // Zoom level where SLD is fully opaque
+        const SLD_MIN_OPACITY = 0.05;     // Minimum opacity for SLD layer when zoomed out
+
+        const STATE_FADE_START_ZOOM = -5; // Zoom level where State overlay starts fading out
+        const STATE_FADE_END_ZOOM = -3;   // Zoom level where State overlay reaches minimum opacity
+        const STATE_MIN_OPACITY = 0.015;   // Minimum opacity for State layer when zoomed in
         
         let isDarkMode = false;
-        let currentSvgOverlay = null;
+        let sldOverlay = null;
+        let stateOverlay = null;
 
         function setupModal(modalId, closeButtonSelector) {
             const modal = document.getElementById(modalId);
@@ -366,15 +377,37 @@ document.addEventListener('DOMContentLoaded', () => {
         function initializeMap() {
             const map = L.map('map', {
                 crs: L.CRS.Simple,
-                minZoom: -5,
-                maxZoom: 2,
+                minZoom: -6,
+                maxZoom: 1.75,
                 zoomDelta: 0.02,
                 zoomSnap: 0,
                 zoomControl: false
             });
             L.control.zoom({ position: 'topright' }).addTo(map);
             map.fitBounds(MAP_BOUNDS);
+
+            map.on('zoomend', () => updateOverlayOpacities(map.getZoom()));
+
             return map;
+        }
+
+        function updateOverlayOpacities(zoom) {
+            if (!sldOverlay || !stateOverlay) return;
+
+            // Round zoom to one decimal place to reduce frequency of opacity updates
+            const roundedZoom = Math.round(zoom * 10) / 10;
+
+            // SLD Opacity: Fades in from SLD_MIN_OPACITY to 1.0 between SLD_FADE_START_ZOOM and SLD_FADE_END_ZOOM.
+            let sldOpacity = (roundedZoom - SLD_FADE_START_ZOOM) / (SLD_FADE_END_ZOOM - SLD_FADE_START_ZOOM);
+            sldOpacity = Math.max(0, Math.min(1, sldOpacity)); // Scale to 0-1 range first
+            sldOpacity = SLD_MIN_OPACITY + sldOpacity * (1 - SLD_MIN_OPACITY); // Then scale to min-1 range
+            if (sldOverlay.getElement()) sldOverlay.getElement().style.opacity = sldOpacity;
+
+            // State Opacity: Fades out from 1.0 to STATE_MIN_OPACITY between STATE_FADE_START_ZOOM and STATE_FADE_END_ZOOM.
+            let stateOpacity = 1 - ((roundedZoom - STATE_FADE_START_ZOOM) / (STATE_FADE_END_ZOOM - STATE_FADE_START_ZOOM));
+            stateOpacity = Math.max(0, Math.min(1, stateOpacity)); // Scale to 0-1 range first
+            stateOpacity = STATE_MIN_OPACITY + stateOpacity * (1 - STATE_MIN_OPACITY); // Then scale to min-1 range
+            if (stateOverlay.getElement()) stateOverlay.getElement().style.opacity = stateOpacity;
         }
 
         function createCustomControls(map, modalActions) {
@@ -449,24 +482,31 @@ document.addEventListener('DOMContentLoaded', () => {
             map.addControl(new DarkModeControl());
         }
 
-        function addSvgOverlay(map) {
+        function addSvgOverlays(map) {
             const parser = new DOMParser();
-            const svgDoc = parser.parseFromString(SVG_CONTENT, 'image/svg+xml');
-            const svgElement = svgDoc.documentElement;
 
-            const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-            style.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
-            svgElement.prepend(style);
-            
-            // Apply dark mode styling if needed
-            if (isDarkMode) {
-                applyDarkModeToSvg(svgElement);
-            }
-            
-            if (currentSvgOverlay) {
-                map.removeLayer(currentSvgOverlay);
-            }
-            currentSvgOverlay = L.svgOverlay(svgElement, MAP_BOUNDS).addTo(map);
+            // --- SLD Overlay ---
+            const sldSvgDoc = parser.parseFromString(SLD_SVG_CONTENT, 'image/svg+xml');
+            const sldSvgElement = sldSvgDoc.documentElement;
+            const sldStyle = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+            sldStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
+            sldSvgElement.prepend(sldStyle);
+            if (isDarkMode) applyDarkModeToSvg(sldSvgElement);
+            if (sldOverlay) map.removeLayer(sldOverlay);
+            sldOverlay = L.svgOverlay(sldSvgElement, MAP_BOUNDS).addTo(map);
+
+            // --- State Overlay ---
+            const stateSvgDoc = parser.parseFromString(STATE_SVG_CONTENT, 'image/svg+xml');
+            const stateSvgElement = stateSvgDoc.documentElement;
+            const stateStyle = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+            stateStyle.textContent = "@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'); text { font-family: 'Roboto', sans-serif !important; }";
+            stateSvgElement.prepend(stateStyle);
+            if (isDarkMode) applyDarkModeToSvg(stateSvgElement);
+            if (stateOverlay) map.removeLayer(stateOverlay);
+            stateOverlay = L.svgOverlay(stateSvgElement, MAP_BOUNDS).addTo(map);
+
+            // Set initial opacities based on current zoom
+            updateOverlayOpacities(map.getZoom());
         }
 
         function applyDarkModeToSvg(svgElement) {
@@ -510,15 +550,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.toggle('dark-mode', isDarkMode);
             document.body.classList.toggle('dark-mode', isDarkMode);
             
-            // Update the existing SVG overlay instead of recreating it
-            if (currentSvgOverlay) {
-                const svgElement = currentSvgOverlay.getElement();
-                if (isDarkMode) {
-                    applyDarkModeToSvg(svgElement);
-                } else {
-                    removeDarkModeFromSvg(svgElement);
+            // Update the existing SVG overlays instead of recreating them
+            const overlays = [sldOverlay, stateOverlay];
+            overlays.forEach(overlay => {
+                if (overlay && overlay.getElement()) {
+                    const svgElement = overlay.getElement();
+                    if (isDarkMode) {
+                        applyDarkModeToSvg(svgElement);
+                    } else {
+                        removeDarkModeFromSvg(svgElement);
+                    }
                 }
-            }
+            });
             
             // Update the dark mode button text
             const darkModeButton = document.querySelector('.dark-mode-control a');
@@ -654,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalActions = initializeModals();
         const map = initializeMap();
         createCustomControls(map, modalActions);
-        addSvgOverlay(map);
+        addSvgOverlays(map);
         addObjectPopups(map);
         setupSearch(map);
         setupKeyboardShortcuts();
