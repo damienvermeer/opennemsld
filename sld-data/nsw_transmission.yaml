@@ -59,10 +59,18 @@ substations:
   lat: -29.20310725
   long: 151.328869
   voltage_kv: 330
-  def: ?|?
+  def: |
+    |x1x2x||
+    |x3dd||
+    |4EEE||
   buses:
-    1: ''
-  connections: {}
+    1: 'B'
+    2: 'A'
+  connections:
+    1: QLD-330-R3-Dumeresq-8M #QNI
+    2: NSW-330-Dumeresq-Armidale-8C
+    3: QLD-330-R3-Dumeresq-8L #QNI
+    4: NSW-330-Dumeresq-Sapphire-8J
 - name: Bayswater
   lat: -32.39944548
   long: 150.9461045
