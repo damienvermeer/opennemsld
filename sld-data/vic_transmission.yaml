@@ -675,17 +675,113 @@ substations:
     long: 142.181112
     voltage_kv: 500
     tags:
-      - TRTS
+      - Tarrone Terminal Station
     def: |
+      |/3x4/||
       |x1x2x||
-      |/d3/|
     buses:
       1: '1'
       2: '2'
     connections:
-      1: VIC-500-HGTS-TRTS
-      2: VIC-500-TRTS-MOPS-1
-      3: MCARTHURWF-TX-HV
+      1: VIC-500-TRTS-MOPS-1
+      2: VIC-500-HYTS-TRTS-1
+      3: VIC-TRTS-K2-HV
+      4: VIC-TRTS-K1-HV
+    objects:
+      - type: tx-lr # K2
+        metadata:
+          w1: 132
+          w2: 500
+        rel_x: -4
+        rel_y: 3
+        connections:
+          1: VIC-TRTS-K2-LV
+          2: VIC-TRTS-K2-HV
+      - type: tx-lr # K1
+        metadata:
+          w1: 132
+          w2: 500
+        rel_x: -4
+        rel_y: 6
+        connections:
+          1: VIC-TRTS-K1-LV
+          2: VIC-TRTS-K1-HV
+    child_definitions:
+      - def: |
+          |x3xd||
+          |x2x1x||
+        buses:
+          1: ""
+          1: ""
+        voltage_kv: 132
+        rel_x: -12
+        rel_y: 0
+        connections:
+          1: VIC-TRTS-K1-LV
+          2: VIC-132-TRTS-MCWF2
+          3: VIC-132-TRTS-MCWF1
+        objects:
+          - type: gen
+            metadata:
+              voltage: 132
+              text: WF
+              info: |
+                Macarthur
+                140x3= 420MW
+            rel_x: 0
+            rel_y: -4
+          - type: gen
+            metadata:
+              voltage: 132
+              text: WF
+              info: |
+                Macarthur
+                140x3= 420MW
+            rel_x: 2
+            rel_y: -4
+      - def: |
+          Nd1
+          Nd2
+        buses:
+          1: ""
+        voltage_kv: 132
+        rel_x: -13
+        rel_y: -3
+        connections:
+          1: VIC-132-TRTS-MCWF1
+          2: VIC-132-TRTS-MCWF2
+      - def: |
+          1x|
+          2x|d3
+        buses:
+          1: ""
+        voltage_kv: 132
+        rel_x: -7
+        rel_y: 0
+        connections:
+          1: VIC-132-TRTS-HDCS
+          2: VIC-132-TRTS-RCCS
+          3: VIC-TRTS-K2-LV
+        objects:
+          - type: gen
+            metadata:
+              voltage: 132
+              text: WF
+              info: |
+                Hawkesdale
+                23x4.2= 96MW
+            rel_x: 2
+            rel_y: -4
+          - type: gen
+            metadata:
+              voltage: 132
+              text: WF
+              info: |
+                Ryan Corner
+                52x4.2= 218MW
+            rel_x: 4
+            rel_y: -4
+
   - name: Mortlake Power Station (MOPS)
     lat: -38.062141
     long: 142.670102
@@ -693,19 +789,91 @@ substations:
     tags:
       - MOPS
     def: |
-      |?5?6?||
-      |/x1x2|
-      |x3dx||x4
+      |x5x6x||
+      |/1x2x||
+      |x7x3x||
+      NEE4x||
     buses:
       1: '1'
       2: '2'
     connections:
       1: VIC-500-CRTS-MOPS-2
-      2: VIC-500-MOPS-HYTS2
+      2: VIC-500-HYTS-MOPS-2
       3: MOPS1-TX-HV
       4: MOPS2-TX-HV
-      5: VIC-500-TRTS-MOPS-1
-      6: VIC-500-HGTS-MOPS-1
+      5: VIC-500-HGTS-MOPS-1
+      6: VIC-500-TRTS-MOPS-1
+      7: VIC-500-MOPS-BGS
+    objects:
+      - type: tx-ud # G11
+        metadata:
+          w1: 500
+          w2: 22
+        rel_x: 6
+        rel_y: 10
+        connections:
+          1: MOPS1-TX-HV
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G11
+          info: |
+            2 x 283 = 566MW
+        rel_x: 6
+        rel_y: 15
+      - type: tx-ud # G11
+        metadata:
+          w1: 500
+          w2: 22
+        rel_x: 8
+        rel_y: 10
+        connections:
+          1: MOPS2-TX-HV
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G12
+          info: |
+            2 x 283 = 566MW
+        rel_x: 8
+        rel_y: 15
+  - name: Blue Gum Sub (BGS)
+    lat: -38.061075
+    long: 142.676555
+    voltage_kv: 500
+    tags:
+      - BGS
+    def: |
+      1/N
+    buses:
+      1: ""
+    connections:
+      1: VIC-500-MOPS-BGS
+    objects:
+      - type: tx-ud # T1
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 1
+        rel_y: 0
+      - type: gen
+        metadata:
+         voltage: 220
+         text: WF
+         info: |
+           Dundonnell
+           80x4.2 = 336MW 
+        rel_x: 1
+        rel_y: 8
+    child_definitions:
+      - def: |
+          xN
+        buses:
+          1: ""
+        voltage_kv: 220
+        rel_x: 0
+        rel_y: 7
+
   - name: Haunted Gully (HGTS)
     lat: -38.006784
     long: 143.315256
@@ -713,15 +881,145 @@ substations:
     tags:
       - HGTS
     def: |
-      |x1x2x||
       3/|/d/||
+      |x1x2x||
     buses:
       1: '1'
       2: '2'
     connections:
       1: VIC-500-CRTS-HGTS-1
       2: VIC-500-HGTS-MOPS-1
-      3: STOCKYARDHILLWF-TX-HV
+      3: HGTS-K1-TX-HV
+    objects:
+      - type: tx-ud # K1 tx
+        metadata:
+          w1: 500
+          w2: 132
+        rel_x: -3
+        rel_y: -3
+        connections:
+          1: HGTS-K1-TX-HV
+    child_definitions:
+      - def: |
+          2x|
+          1x|
+          d|
+        buses:
+          1: ""
+        voltage_kv: 132
+        rel_x: -8
+        rel_y: 4
+        connections:
+          1: VIC-132-HGTS-SHWF-1
+          2: VIC-132-HGTS-SHWF-2
+
+  - name: Stockyard Hill South (SHWS)
+    lat: -37.626121
+    long: 143.412404
+    voltage_kv: 132
+    tags:
+      - SHWS
+    def: |
+      1|2
+      |x
+    buses:
+      1: ''
+    connections:
+      1: VIC-132-HGTS-SHWF-1
+      2: VIC-132-SHWS-SHWE-1
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 132
+          w2: 33
+        rel_x: 3
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Stockyard Hill South
+            37 x 3.54 = 135MW
+        rel_x: 3
+        rel_y: 8
+
+  - name: Stockyard Hill East (SHWE)
+    lat: -37.512148
+    long: 143.379596
+    voltage_kv: 132
+    tags:
+      - SHWE
+    def: |
+      |x
+      |1
+    buses:
+      1: ''
+    connections:
+      1: VIC-132-SHWS-SHWE-1
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 132
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Stockyard Hill East
+            43 x 3.54 = 152MW
+        rel_x: 1
+        rel_y: 8
+
+  - name: Stockyard Hill West (SHWW)
+    lat: -37.555716
+    long: 143.294624
+    voltage_kv: 132
+    tags:
+      - SHWW
+    def: |
+      |x
+      |x
+      |1 
+    buses:
+      1: ''
+    connections:
+      1: VIC-132-HGTS-SHWF-2
+    objects:
+      - type: tx-ud
+        metadata:
+          w1: 132
+          w2: 33
+        rel_x: 1
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Stockyard Hill
+            68 x 3.54 = 241MW
+        rel_x: 1
+        rel_y: 8
+      - type: tx-ud
+        metadata:
+          w1: 132
+          w2: 33
+        rel_x: 3
+        rel_y: 3
+      - type: gen
+        metadata:
+          voltage: 33
+          text: WF
+          info: |
+            Stockyard Hill
+            149 x 3.54 = 528MW
+        rel_x: 3
+        rel_y: 8
+
   - name: Moorabool (MLTS)
     lat: -38.037
     long: 144.296808
@@ -913,7 +1211,7 @@ substations:
         connections:
           1: VIC-220-GTS-TX-B1
           2: VIC-66-GTS-TX-B1
-  - name: APD (Alcoa Portland)
+  - name: Alcoa Portland (APD)
     lat: -38.386731
     long: 141.624475
     voltage_kv: 500
@@ -921,11 +1219,193 @@ substations:
       - APD
       - Alcoa Portland
     def: |
-      1?|
+      1x|||/5
+      t
+      ||/4
+      t
+      2x|/3
     buses:
-      1: ""
+      1: "1"
+      2: "2"
+      3: "3"
     connections:
-      1: VIC-500-APD
+      1: VIC-500-APD-HYTS-1
+      2: VIC-500-APD-HYTS-2
+      3: VIC-500-APD-A2-HV
+      4: VIC-500-APD-A3-HV
+      5: VIC-500-APD-A4-HV
+    objects:
+      - type: tx-ud # A4
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 1
+        rel_y: 2
+        connections:
+          1: VIC-500-APD-A4-HV
+          2: VIC-220-APD-A4-LV
+      - type: tx-ud # A3
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 5
+        rel_y: 2
+        connections:
+          1: VIC-500-APD-A3-HV
+          2: VIC-220-APD-A3-LV
+      - type: tx-ud # A2
+        metadata:
+          w1: 500
+          w2: 220
+        rel_x: 9
+        rel_y: 2
+        connections:
+          1: VIC-500-APD-A2-HV
+          2: VIC-220-APD-A2-LV
+    child_definitions:
+      - def: |
+          |/1
+          |x9x2x||
+          |x3x4x||
+          |x5x6x||
+          |x7x8x||
+        voltage_kv: 220
+        buses:
+          1: "1"
+          2: "2"
+        connections:
+          1: VIC-220-APD-L7-HV
+          2: VIC-220-APD-L6-HV
+          3: VIC-220-APD-A4-LV
+          4: VIC-220-APD-W5-HV
+          5: VIC-220-APD-A3-LV
+          6: VIC-220-APD-W2-HV
+          7: VIC-220-APD-A2-LV
+          8: VIC-220-APD-W1-HV
+          9: VIC-220-APD-P3C
+        rel_x: -1
+        rel_y: 8
+        objects:
+         - type: tx-ud # L7
+           metadata:
+            w1: 220
+            w2: 22
+           rel_x: 0
+           rel_y: 3
+           connections:
+             1: VIC-220-APD-L7-HV
+         - type: tx-ud # L6
+           metadata:
+            w1: 220
+            w2: 22
+           rel_x: 1
+           rel_y: 10
+           connections:
+             1: VIC-220-APD-L6-HV
+         - type: tx-ud # W5
+           metadata:
+            w1: 220
+            w2: 33
+           rel_x: 3
+           rel_y: 10
+           connections:
+             1: VIC-220-APD-W5-HV
+         - type: tx-ud # W2
+           metadata:
+            w1: 220
+            w2: 33
+           rel_x: 5
+           rel_y: 10
+           connections:
+             1: VIC-220-APD-W2-HV
+         - type: tx-ud # W1
+           metadata:
+            w1: 220
+            w2: 33
+           rel_x: 7
+           rel_y: 10
+           connections:
+             1: VIC-220-APD-W1-HV
+
+  - name: Portland 3 Capes (P3C)
+    lat: -38.388152
+    long: 141.623585
+    voltage_kv: 220
+    tags:
+      - P3C
+      - Portland 3 Capes
+    def: |
+      s/2
+      1/s
+      s/3
+    buses:
+      1: ''
+    connections:
+      1: VIC-220-APD-P3C
+      2: VIC-220-P3C-T1-HV
+      3: VIC-220-P3C-T2-HV
+    child_definitions:
+      - def: |
+          1x|x
+          t
+          2x||x
+          ||x
+        buses:
+          1: ""
+        voltage_kv: 66
+        rel_x: 0
+        rel_y: 11
+        connections:
+          1: VIC-220-P3C-T1-LV
+          2: VIC-220-P3C-T2-LV
+    objects:
+      - type: tx-ud # T1
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 1
+        rel_y: 3
+        connections:
+          1: VIC-220-P3C-T1-HV
+          2: VIC-220-P3C-T1-LV
+      - type: tx-ud # T2
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 5
+        rel_y: 3
+        connections:
+          1: VIC-220-P3C-T2-HV
+          2: VIC-220-P3C-T2-LV
+      - type: gen
+        metadata:
+         voltage: 66
+         text: WF
+         info: |
+           Cape Bridgewater
+           29x2= 58MW 
+        rel_x: 1
+        rel_y: 15
+      - type: gen
+        metadata:
+         voltage: 66
+         text: WF
+         info: |
+           Cape Nelson South
+           22x2.05= 45MW 
+        rel_x: 5
+        rel_y: 15
+      - type: gen
+        metadata:
+         voltage: 66
+         text: WF
+         info: |
+           Cape Nelson North
+           Cape Sir William Grant
+           23x2.05= 47MW 
+        rel_x: 7
+        rel_y: 15
+
   - name: Deer Park (DPTS)
     lat: -37.777564
     long: 144.735572
@@ -2043,16 +2523,72 @@ substations:
   - name: Heywood (HYTS)
     lat: -38.180772
     long: 141.639092
-    voltage_kv: 220
+    voltage_kv: 500
     tags:
       - HYTS
       - Heywood
     def: |
-      1?|
+     |x3dx||
+     |EE2/||
+     |/1EE||
+     |x4d5x||
+     |x6d7x||
     buses:
-      1: ""
+      1: "1"
+      2: "2"
     connections:
-      1: VIC-220-HYTS
+      1: VIC-500-HYTS-M1-HV
+      2: VIC-500-HYTS-M2-HV
+      3: VIC-500-HYTS-M3-HV
+      4: VIC-500-HYTS-TRTS-1
+      5: VIC-500-APD-HYTS-1
+      6: VIC-500-HYTS-MOPS-2
+      7: VIC-500-APD-HYTS-2
+    objects:
+      - type: tx-ud # M3
+        metadata:
+          w1: 500
+          w2: 275
+        rel_x: 0
+        rel_y: 10
+        connections:
+          1: VIC-500-HYTS-M3-HV
+          2: VIC-275-HYTS-M3-LV
+      - type: tx-ud # M2
+        metadata:
+          w1: 500
+          w2: 275
+        rel_x: 2
+        rel_y: 10
+        connections:
+          1: VIC-500-HYTS-M2-HV
+          2: VIC-275-HYTS-M2-LV
+      - type: tx-ud # M1
+        metadata:
+          w1: 500
+          w2: 275
+        rel_x: 4
+        rel_y: 10
+        connections:
+          1: VIC-500-HYTS-M1-HV
+          2: VIC-275-HYTS-M1-LV
+    child_definitions:
+      - def: |
+          3dx|
+          2x5x|
+          1x4x|x?
+        buses:
+          1: "1"
+        voltage_kv: 275
+        rel_x: -1
+        rel_y: 21
+        connections:
+          1: VIC-275-HYTS-M1-LV
+          2: VIC-275-HYTS-M2-LV
+          3: VIC-275-HYTS-M3-LV
+          4: SV-275-HYTS-SESS-1
+          5: SV-275-HYTS-SESS-2
+
   - name: Jeeralang (JLTS)
     lat: -38.276922
     long: 146.424483
@@ -3464,6 +4000,7 @@ substations:
       - def: |
           NE|x
           sx|x
+          s
           sx|x
           NE|x
         voltage_kv: 22
@@ -3472,13 +4009,13 @@ substations:
         objects:
           - type: gen
             metadata:
-              voltage: 22`
+              voltage: 22
               text: G
               info: |
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 0
-            rel_y: 6
+            rel_y: 7
           - type: gen
             metadata:
               voltage: 22
@@ -3487,16 +4024,7 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 2
-            rel_y: 6
-          - type: gen
-            metadata:
-              voltage: 22
-              text: G
-              info: |
-                West Kiewa Power Station
-                4 x 18.5 = 74 MW
-            rel_x: 4
-            rel_y: 6
+            rel_y: 7
           - type: gen
             metadata:
               voltage: 22
@@ -3505,16 +4033,26 @@ substations:
                 West Kiewa Power Station
                 4 x 18.5 = 74 MW
             rel_x: 6
-            rel_y: 6
-  - name: Bogong Power Station (BGPS)
+            rel_y: 7
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                West Kiewa Power Station
+                4 x 18.5 = 74 MW
+            rel_x: 8
+            rel_y: 7
+  - name: Bogong Power Station (BOPS)
     lat: -36.8051893
     long: 147.227913
     voltage_kv: 220
     tags:
-      - BGPS
+      - BOPS
       - Bogong Power Station
     def: |
       1sx|/
+      sE|
       2sE|/
     buses:
       1: ""
@@ -3533,26 +4071,35 @@ substations:
         metadata:
           w1: 220
           w2: 22
-        rel_x: 3
+        rel_x: 5
         rel_y: 5
-      - type: gen
-        metadata:
-          voltage: 22
-          text: G
-          info: |
-            Bogong Power Station
-            2 x 70 = 140 MW
-        rel_x: 1
-        rel_y: 10
-      - type: gen
-        metadata:
-          voltage: 22
-          text: G
-          info: |
-            Bogong Power Station
-            2 x 70 = 140 MW
-        rel_x: 3
-        rel_y: 10
+    child_definitions:
+      - def: |
+          |x
+          E
+          |x
+        voltage_kv: 22
+        rel_x: 0
+        rel_y: 9
+        objects:
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                Bogong Power Station
+                2 x 70 = 140 MW
+            rel_x: 1
+            rel_y: 4
+          - type: gen
+            metadata:
+              voltage: 22
+              text: G
+              info: |
+                Bogong Power Station
+                2 x 70 = 140 MW
+            rel_x: 5
+            rel_y: 4 
   
   - name: McKay Creek Power Station (MKPS)
     lat: -36.8583086
@@ -3601,7 +4148,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: -1
-        rel_y: 7
+        rel_y: 6
         objects:
           - type: gen
             metadata:
@@ -3626,7 +4173,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: 5
-        rel_y: 7
+        rel_y: 6
         objects:
           - type: gen
             metadata:
@@ -3651,7 +4198,7 @@ substations:
           |x
         voltage_kv: 22
         rel_x: 11
-        rel_y: 7
+        rel_y: 6
         objects:
           - type: gen
             metadata:
@@ -3660,7 +4207,7 @@ substations:
               info: |
                 McKay Creek power station
                 6x 25 = 150 MW
-            rel_x: 2
+            rel_x: 0
             rel_y: 4
           - type: gen
             metadata:
@@ -3671,16 +4218,6 @@ substations:
                 6x 25 = 150 MW
             rel_x: 2
             rel_y: 4
-
-      # - type: gen
-      #   metadata:
-      #     voltage: 220
-      #     text: PS
-      #     info: |
-      #       McKay Creek power station
-      #       150 MW
-      #   rel_x: 1
-      #   rel_y: 4
   
   - name: Dartmouth Power station (DPS)
     lat: -36.5564405
