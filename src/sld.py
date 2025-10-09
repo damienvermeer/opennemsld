@@ -2115,7 +2115,24 @@ def draw_state_boundaries(
 
         # Use shapely to get the convex hull and buffer it
         hull = MultiPoint(points).convex_hull
-        state_polygons[state] = hull.buffer(padding, join_style=2)  # Mitered corners
+        buffered_poly = hull.buffer(padding, join_style=2)  # Mitered corners
+        
+        # Clean the geometry to fix any topology issues
+        if not buffered_poly.is_valid:
+            buffered_poly = buffered_poly.buffer(0)  # This often fixes invalid geometries
+        
+        # If still invalid, use a simple bounding box as fallback
+        if not buffered_poly.is_valid:
+            print(f"Warning: Could not create valid polygon for state {state}, using bounding box")
+            min_x = min(p[0] for p in points) - padding
+            min_y = min(p[1] for p in points) - padding
+            max_x = max(p[0] for p in points) + padding
+            max_y = max(p[1] for p in points) + padding
+            buffered_poly = Polygon(
+                [(min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, max_y)]
+            )
+        
+        state_polygons[state] = buffered_poly
 
     # Iteratively resolve overlaps between state polygons
     states = list(state_polygons.keys())
@@ -2125,7 +2142,24 @@ def draw_state_boundaries(
             poly1 = state_polygons[state1]
             poly2 = state_polygons[state2]
 
-            if not poly1.intersects(poly2):
+            # Validate geometries before intersection check
+            if not poly1.is_valid:
+                poly1 = poly1.buffer(0)
+                state_polygons[state1] = poly1
+            if not poly2.is_valid:
+                poly2 = poly2.buffer(0)
+                state_polygons[state2] = poly2
+
+            # Skip if either polygon is still invalid
+            if not poly1.is_valid or not poly2.is_valid:
+                print(f"Warning: Skipping intersection check for {state1}-{state2} due to invalid geometry")
+                continue
+
+            try:
+                if not poly1.intersects(poly2):
+                    continue
+            except Exception as e:
+                print(f"Warning: Error checking intersection for {state1}-{state2}: {e}")
                 continue
 
             changed_in_pass = True
