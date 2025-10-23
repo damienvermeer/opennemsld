@@ -134,7 +134,7 @@ class Substation:
         This method iterates through a list of object definitions, draws them
         onto the provided parent group, and marks their positions on the
         substation's pathfinding grid. It handles various object types like
-        transformers and generators.
+        transformers, generators, capacitors, reactors & DC convertors.
 
         Args:
             parent_group: The `draw.Group` to which the objects will be added.
@@ -1697,7 +1697,7 @@ def _draw_standard_element_symbol(
 
     Args:
         parent_group: The `draw.Group` to draw on.
-        subtype: The subtype of the element ('cb', 'isolator', 'unknown').
+        subtype: The subtype of the element ('cb', 'isolator', 'unknown', 'cap' , 'reac').
         xoff: The x-coordinate for the element.
         y_pos: The starting y-coordinate for the element.
         colour: The stroke colour for the symbol.
