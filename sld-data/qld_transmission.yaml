@@ -134,7 +134,7 @@ substations:
       |x3
       |x1
     connections: 
-      1: QLD-132-T32-T210-7114/1
+      1: QLD-132-T31-T210-7114/1
       2: QLD-132-T32-T210-7114/2
       3: QLD-132-T32-T210-7114/3
   - name: Gregory T97
@@ -774,7 +774,7 @@ substations:
       - H5
     def: |
       |x1x2x||
-      3x|EEE||
+      |x3EE||
       |dx4x||
       |x5x6x||
       |x7x8x9||
@@ -792,6 +792,77 @@ substations:
       7: QLD-275-H5-H2-807
       8: QLD-275-H6-H5-816
       9: QLD-275-H6-H5-815
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 275
+        rel_x: 2
+        rel_y: -5
+        connections:
+          1: QLD-132-H5-TX3
+          2: QLD-275-H5-TX3
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 275
+        rel_x: 6
+        rel_y: -5
+        connections:
+          1: QLD-132-H5-TX5
+          2: QLD-275-H5-TX5
+      - type: gen
+        metadata:
+          voltage: 275
+          text: CAP
+          info: |
+            Capacitor
+            MVa/MVAr 
+        rel_x: 3
+        rel_y: 4
+    child_definitions:
+      - def: |
+          |d11d||
+          |d12d||
+          |xd||
+          |d13d||
+          14x|E15x||
+          |d16d||
+          |d17d||
+          |d18d||
+          |d19d||
+        voltage_kv: 132
+        rel_x: -4
+        rel_y: -16
+        connections:
+          11: QLD-132-H5-T12-764
+          12: QLD-132-H5-T12-765
+          13: QLD-132-H5-TX5
+          14: QLD-132-H5-CAP1
+          15: QLD-132-H5-CAP2
+          16: QLD-132-H5-T123-7190
+          17: QLD-132-H5-TX3
+          18: QLD-132-H5-T8-748/2
+          19: QLD-132-H5-T8-747/2
+        objects:
+          - type: gen
+            metadata:
+              voltage: 132
+              text: CAP
+              info: |
+                Capacitor
+                MVa/MVAr 
+            rel_x: 9
+            rel_y: -4
+          - type: gen
+            metadata:
+              voltage: 132
+              text: CAP
+              info: |
+                Capacitor
+                MVa/MVAr 
+            rel_x: 9
+            rel_y: 2
   - name: Palmwoods H9 
     lat: -26.7071891474412 
     long: 152.9363313502972
@@ -1702,8 +1773,7 @@ substations:
       5:
       6: QLD-22-R2-TX1
       7:
-      8: QLD-22-R2-TX4
-  
+      8: QLD-22-R2-TX4 
   - name: Bulli Creek R3
     lat: -27.9211170606382 
     long: 150.84329054832523
@@ -2623,4 +2693,346 @@ substations:
         connections:
           1: QLD-66-T123-TX2
           2: QLD-132-T123-TX2
-
+  - name: Kilkivan T12
+    lat: -26.08205078273374 
+    long: 152.25858088311284
+    voltage_kv: 132
+    tags:
+      - Kilkivan
+      - T12
+    def: |
+      |x1
+      i
+      2d|
+      i
+      i
+      3d|x4
+      i
+      5x|
+    connections:
+      1: QLD-132-H5-T12-764
+      2: QLD-132-T12-TX3
+      3: QLD-132-T12-TX1
+      4: QLD-132-H5-T12-765
+      5: QLD-132-T12-T173-7331
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 66
+          w2: 132
+        rel_x: 5
+        rel_y: -5
+        connections:
+          1: QLD-66-T12-TX3
+          2: QLD-132-T12-TX3
+      - type: tx-ud  
+        metadata:
+          w1: 66
+          w2: 132
+        rel_x: 11
+        rel_y: -5
+        connections:
+          1: QLD-66-T12-TX1
+          2: QLD-132-T12-TX1
+    child_definitions:
+      - def: |
+          |d11
+          d|
+          |d12
+        voltage_kv: 66
+        rel_x: 6
+        rel_y: -8 
+        connections:
+          11: QLD-66-T12-TX3
+          12: QLD-66-T12-TX1
+  - name: Howard Tee
+    lat: -25.288933028164816 
+    long: 152.41171114870238
+    voltage_kv: 66
+    def: |
+      d|1
+      |2
+    connections:
+      1: QLD-66-T131-M022
+      2: QLD-66-T131-M022/3
+  - name: Isis T131
+    lat: -25.255247243369826 
+    long: 152.36681415754467
+    voltage_kv: 132
+    tags:
+      - Isis
+      - T131
+    def: |
+      |x1
+      2x|x3
+      t
+      4x|
+      5x|
+      |x6
+    connections:
+      1: QLD-132-T131-T173-784
+      2: QLD-132-T131-T20-7215
+      3: QLD-132-T131-TX1
+      4: Q:D-132-T131-T20-7328
+      5: QLD-132-T131-T173-785
+      6: QLD-132-T131-TX2
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 3
+        rel_y: 2
+        connections:
+          1: QLD-132-T131-TX1
+          2: QLD-66-T131-TX1
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 11
+        rel_y: 2
+        connections:
+          1: QLD-132-T131-TX2
+          2: QLD-66-T131-TX2  
+    child_definitions:
+      - def: |
+          11x|
+          |d
+          |
+          |x12
+          13x|
+        voltage_kv: 66
+        rel_x: 2
+        rel_y: 8 
+        connections:
+          11: QLD-66-T131-TX1   
+          12: QLD-66-T131-M022
+          13: QLD-66-T131-TX2  
+  - name: Childers Solar Farm
+    lat: -25.296568749137936 
+    long: 152.40844757937583
+    voltage_kv: 33
+    tags:
+      - Childers Solar Farm
+    def: |
+     E|x1
+     t
+     2x|
+    connections:
+      1: QLD-33-T131-TX1
+      2: QLD-33-T131-TX2
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 33
+          w2: 22
+        rel_x: 1
+        rel_y: 2
+        connections:
+          1: QLD-33-T131-TX1
+          2: 
+      - type: tx-ud  
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 5
+        rel_y: -7
+        connections:
+          1: QLD-66-T131
+          2: QLD-33-T131-TX2    
+      - type: gen
+        metadata:
+          voltage: 22
+          text: GEN
+          info: |
+            Childers Solar Farm
+            64.4MW 
+        rel_x: 1
+        rel_y: 7
+    child_definitions:
+      - def: |
+          11x12
+        voltage_kv: 66
+        rel_x: 4
+        rel_y: -9
+        connections:
+          12: QLD-66-T131-TX1   
+          11: QLD-66-T131-M022/3
+  - name: Susan River Tee
+    lat: -25.42313245653958 
+    long: 152.74463401604416
+    voltage_kv: 66
+    def: |
+      1|2
+      |3
+    connections:
+      1: QLD-66-T59-M020/1
+      2: QLD-66-T59-M020/3
+      3: QLD-66-T59-M020/2
+  - name: Susan River Solar Farm
+    lat: -25.414153617254083 
+    long: 152.7486483926393
+    voltage_kv: 33
+    tags:
+      - Susan River Solar Farm
+    def: |
+     E|x1
+     t
+     2x|
+    connections:
+      1: QLD-33-SRSF-TX1
+      2: QLD-33-SRSF-TX2
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 33
+          w2: 22
+        rel_x: 1
+        rel_y: 2
+        connections:
+          1: QLD-33-SRSF-TX1
+          2: 
+      - type: tx-ud  
+        metadata:
+          w1: 66
+          w2: 33
+        rel_x: 5
+        rel_y: -7
+        connections:
+          1: QLD-66-T59-M020/3
+          2: QLD-33-SRSF-TX2    
+      - type: gen
+        metadata:
+          voltage: 22
+          text: GEN
+          info: |
+            Susan River Solar Farm
+            85.3MW 
+        rel_x: 1
+        rel_y: 7
+    # child_definitions: #todo resolve error this code creates
+    #   - def: |
+    #       11x12
+    #     voltage_kv: 66
+    #     rel_x: 4
+    #     rel_y: -9
+    #     connections:
+    #       12: QLD-66-SRSF-TX1   
+    #       11: QLD-66-SRSF-M020/3
+  - name: Baralaba
+    lat: -24.190963141407394 
+    long: 149.874017426173
+    voltage_kv: 132
+    tags:
+      - T13
+      - Baralaba
+    def: |
+      |//||
+      1x|EE||x2
+      3x|EE||x4
+    connections:
+      1: QLD-132-T31-T32-71131/2
+      2: QLD-132-T31-T210-7114/1
+      3: QLD-132-T31-T22-7111
+      4: QLD-132-T31-T27-7112
+  - name: Moura #todo def based on AEMO SLD - update to include additional bus for Moura Solar Farm
+    lat: -24.513590103335215 
+    long: 150.06543803830502
+    voltage_kv: 132
+    tags:
+      - Moura
+      - T27
+    def: |
+      1x|x||x2
+      3x|E||
+      4x|E||x5
+    connections:
+      1: QLD-132-T31-T27-7112
+      2: QLD-132-T27-T26-7110/3
+      3: QLD-132-T27-CAP1
+      4: QLD-132-T27-TX2
+      5: QLD-132-T27-TX1
+    objects:
+      - type: tx-lr  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 5
+        rel_y: -3
+        connections:
+          1: QLD-132-T27-TX2
+          2: QLD-66-T27-TX2
+      - type: tx-lr  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 5
+        rel_y: 6
+        connections:
+          1: QLD-132-T27-TX1
+          2: QLD-66-T27-TX1
+      - type: gen # TODO Update
+        metadata:
+          voltage: 132
+          text: CAP
+          info: |
+            Capacitor
+            MVa/MVAr 
+        rel_x: 3
+        rel_y: -4
+    child_definitions:
+      - def: |
+          12x|x11
+          |
+        voltage_kv: 66
+        rel_x: 9
+        rel_y: 0
+        connections:
+          12: QLD-66-T27-TX2   
+          11: QLD-66-T27-TX1
+  - name: Biloela
+    lat: -24.401303788594458 
+    long: 150.50763864467496
+    voltage_kv: 132
+    tags:
+      - Biloela
+      - T26
+    def: |
+      |x||x1
+      3x|E||x2
+      4x|E||
+    connections:
+      1: QLD-132-T27-T26-7110/3
+      2: QLD-132-T26-TX1
+      3: QLD-132-T26-T22-7109
+      4: QLD-132-T26-TX2
+    objects:
+      - type: tx-lr  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 5
+        rel_y: -3
+        connections:
+          1: QLD-132-T26-TX2
+          2: QLD-66-T26-TX2
+      - type: tx-lr  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 5
+        rel_y: 6
+        connections:
+          1: QLD-132-T26-TX1
+          2: QLD-66-T26-TX1
+    child_definitions:
+      - def: |
+          12x|x11
+          |
+        voltage_kv: 66
+        rel_x: 9
+        rel_y: 0
+        connections:
+          12: QLD-66-T26-TX2   
+          11: QLD-66-T26-TX1
