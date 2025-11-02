@@ -65,6 +65,8 @@ The bay definition language uses a compact, symbolic representation to define th
 | Symbol | Description |
 |--------|-------------|
 | `x`    | Circuit breaker. |
+| 'c'    | Series capacitor. |
+| 'r'    | Series reactor. |
 | `?`    | Unknown switch type (drawn as a question mark). |
 | `/`    | Isolator (diagonal line). |
 | `d`    | Direct connection (no switch). |
@@ -118,6 +120,66 @@ Generators are defined with the following attributes:
   rel_x: 1           # Relative x position (grid steps) relative to the parent substation origin
   rel_y: 4           # Relative y position (grid steps) relative to the parent substation origin
 ```
+
+### Capacitors
+
+Shunt capacitors are defined with the followin attributes:
+
+```yaml
+- type: cap-d
+  metadata:
+    voltage: 66      # Capacitor voltage in kV
+  rel_x: 1           # Relative x position (grid steps) relative to the parent substation origin
+  rel_y: 4           # Relative y position (grid steps) relative to the parent substation origin
+  connections:
+    1: "Cap Connection"   # connection point for cap bank
+```
+Capacitor types:
+- `cap-d`: Capacitor with connection at the top (vertical orientation)
+- `cap-u`: Capacitor with connection at the bottom (vertical orientation)
+- `cap-l`: Capacitor with connection at the right (horizontal orientation)
+- `cap-r`: Capacitor with connection at the left (horizontal orientation)
+
+### Reactors
+
+Shunt reactors are defined with the followin attributes:
+
+```yaml
+- type: reac-d
+  metadata:
+    voltage: 66      # Reactor voltage in kV
+  rel_x: 1           # Relative x position (grid steps) relative to the parent substation origin
+  rel_y: 4           # Relative y position (grid steps) relative to the parent substation origin
+  connections:
+    1: "Reactor Connection"   # connection point for reactor
+```
+Capacitor types:
+- `reac-d`: Reactor with connection at the top (vertical orientation)
+- `reac-u`: Reactor with connection at the bottom (vertical orientation)
+- `reac-l`: Reactor with connection at the right (horizontal orientation)
+- `reac-r`: Reactor with connection at the left (horizontal orientation)
+
+### DC Converters
+
+DC convertors are defined with the followin attributes:
+
+```yaml
+- type: dc-d
+  metadata:
+    AC_kv: 220      # AC side voltage in kV
+    DC_kv: 220      # DC side voltage in kV
+  rel_x: 1           # Relative x position (grid steps) relative to the parent substation origin
+  rel_y: 4           # Relative y position (grid steps) relative to the parent substation origin
+  connections:
+    1: "AC Connection"   # AC side connection
+    2: "DC Connection"   # DC side connection
+```
+DC converter types:
+- `dc-d`: DC converter with AC connection at the top (vertical orientation)
+- `dc-u`: DC converter with AC connection at the bottom (vertical orientation)
+- `dc-l`: DC converter with AC connection at the right (horizontal orientation)
+- `dc-r`: DC converter with AC connection at the left (horizontal orientation)
+
 
 ## Child Definitions
 
