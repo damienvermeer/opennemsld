@@ -417,7 +417,7 @@ class Substation:
                                 "owner": owner_id,
                             }
 
-            elif obj["type"] in ["dc-r", "dc-l", "dc-u", "dc-d"):
+            elif obj["type"] in ["dc-r", "dc-l", "dc-u", "dc-d"]:
                 AC_voltage = obj.get("metadata", {}).get("AC_kv")
                 DC_voltage = obj.get("metadata", {}).get("DC_kv")
                 colour1 = COLOUR_MAP.get(AC_voltage, "black")
