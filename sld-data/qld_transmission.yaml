@@ -7,8 +7,8 @@ substations:
       - Gladstone South Ergon
       - T19
     def: |
-      1d
-      2d
+      1
+      2
     buses:
       1: ""
     connections:
@@ -130,8 +130,7 @@ substations:
     tags:
       - Duringa Switching Station
     def: |
-      |x2
-      |x3
+      3x|x2
       |x1
     connections: 
       1: QLD-132-T31-T210-7114/1
@@ -368,7 +367,7 @@ substations:
       1: "2"
       2: "1"
     connections:
-      1: QLD-132-T199-YARWUM_1
+      1: QLD-132-T199-YARWUN_1
       2: QLD-132-T199-T130-7290
       3: QLD-132-T199-Yarwun-3
       4: QLD-132-T199-T130-7291
@@ -400,7 +399,35 @@ substations:
         rel_x: 8
         rel_y: -6
         connections:
-          2: QLD-132-T199-Yarwun-2                     
+          2: QLD-132-T199-Yarwun-2
+      - type: tx-ud
+        metadata:
+          w1: 22
+          w2: 132 
+        rel_x: 2
+        rel_y: -6
+        connections:
+          1: QLD-22-T199-YARWUN_1
+          2: QLD-132-T199-YARWUN_1
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Yarwun Cogen
+            DUID
+            MW
+        rel_x: 2
+        rel_y: -10    
+    child_definitions:
+      - def: |
+          1x|2
+        voltage_kv: 22
+        connections:
+          1: 
+          2: QLD-22-T199-YARWUN_1
+        rel_x: 1
+        rel_y: -6
   - name: Kamerunga (T53)
     lat: -16.86610674024463 
     long: 145.6873405166515
@@ -656,6 +683,36 @@ substations:
       10: QLD-275-H24-CPP_3-853
       11: QLD-275-H24-S2-8811
       12: QLD-275-H24-CCP_4-854
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 275
+        rel_x: 6
+        rel_y: -4
+        connections:
+          1: QLD-132-H24-TX1
+          2: QLD-275-H24-TX1
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 275
+        rel_x: 8
+        rel_y: -4
+        connections:
+          1: QLD-132-T22-H24-7161
+          2: QLD-275-H24-TX2
+    child_definitions:
+      - def: |
+          1x|3
+          2x|
+        voltage_kv: 132
+        rel_x: 6
+        rel_y: -5
+        connections:
+          1: QLD-132-T26-T22-7109
+          2: QLD-132-H24-T22-0000   
+          3: QLD-132-H24-TX1
   - name: Wurdong H40
     lat: -23.96064489672159 
     long: 151.28888805120297
@@ -1327,7 +1384,7 @@ substations:
           info: |
             Capacitor Bank
         rel_x: 5
-        rel_y: -5
+        rel_y: -4
   - name: Coppabella T 
     lat: -21.813252754879237 
     long: 148.13254500794818
@@ -2633,8 +2690,7 @@ substations:
       - Clayton
       - T121
     def: |
-      1x|
-      |2
+      1x|2
       3x|
     connections:
       1: QLD-132-T121-TX1
@@ -2667,8 +2723,7 @@ substations:
       - Mungar
       - T123
     def: |
-      1x|
-      |2
+      1x|2
       3x|
     connections:
       1: QLD-132-T123-TX1
@@ -2911,15 +2966,15 @@ substations:
             85.3MW 
         rel_x: 1
         rel_y: 7
-    # child_definitions: #todo resolve error this code creates
-    #   - def: |
-    #       11x12
-    #     voltage_kv: 66
-    #     rel_x: 4
-    #     rel_y: -9
-    #     connections:
-    #       12: QLD-66-SRSF-TX1   
-    #       11: QLD-66-SRSF-M020/3
+    child_definitions:
+      - def: |
+          11x12
+        voltage_kv: 66
+        rel_x: 4
+        rel_y: -9
+        connections:
+          12: QLD-66-SRSF-TX1   
+          11: QLD-66-SRSF-M020/3
   - name: Baralaba
     lat: -24.190963141407394 
     long: 149.874017426173
@@ -2932,7 +2987,7 @@ substations:
       1x|EE||x2
       3x|EE||x4
     connections:
-      1: QLD-132-T31-T32-71131/2
+      1: QLD-132-T31-T32-7113/2
       2: QLD-132-T31-T210-7114/1
       3: QLD-132-T31-T22-7111
       4: QLD-132-T31-T27-7112
@@ -2999,14 +3054,16 @@ substations:
       - Biloela
       - T26
     def: |
-      |x||x1
-      3x|E||x2
+      |x||xd|||5
+      3x|E||x2E|||6
       4x|E||
     connections:
-      1: QLD-132-T27-T26-7110/3
+      1: QLD-132-T27-T26-7110/2
       2: QLD-132-T26-TX1
       3: QLD-132-T26-T22-7109
       4: QLD-132-T26-TX2
+      5: QLD-132-T27-T26-7110/3
+      6: QLD-132-T27-T26-7110/1
     objects:
       - type: tx-lr  
         metadata:
@@ -3036,3 +3093,393 @@ substations:
         connections:
           12: QLD-66-T26-TX2   
           11: QLD-66-T26-TX1
+  - name: Callide A PS # TODO Update for CB's 
+    lat: -24.34243715648789
+    long: 150.6270479164275
+    voltage_kv: 132
+    tags:
+      - T22
+      - Callide A PS 
+    def: |
+      |xd||
+      |d1d||
+      |d2d||21x|||
+      |d3d||22x|||d25
+      |d4d||23x|||d26
+      |d5d||E|||
+      |d6d||24x|||
+      iEEi
+      |d7d||
+      |d8d||
+      |d9d||
+      |d10d||
+      |d11d||
+      |d12d||
+      |d13d||
+    connections:
+      1: QLD-132-T22-INT1
+      2: QLD-132-T22-INT2
+      3: QLD-132-T22-INT3
+      4: QLD-132-T22-CALL_A_1
+      5: QLD-132-T22-INT4
+      6: QLD-132-T22-CALL_A_2
+      7: QLD-132-T22-CALL_A_3
+      8: QLD-132-T22-H30-7159
+      9: QLD-132-T22-CALL_A_4
+      10: QLD-132-T22-H24-7161
+      11: QLD-132-T22-T152-7105
+      12: QLD-132-T22-T152-7104
+      13: QLD-132-H24-T22-0000    
+      21: QLD-132-T22-INT1
+      22: QLD-132-T22-INT2
+      23: QLD-132-T22-INT3
+      24: QLD-132-T22-INT4
+      25: QLD-132-T31-T22-7111
+      26: QLD-132-T27-T26-7110/1
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 22
+          w2: 132
+        rel_x: 10
+        rel_y: -5
+        connections:
+          1: QLD-66-T22-CALL_A_1
+          2: QLD-132-T22-CALL_A_1
+      - type: tx-ud  
+        metadata:
+          w1: 22
+          w2: 132
+        rel_x: 14
+        rel_y: -5
+        connections:
+          1: QLD-66-T22-CALL_A_2
+          2: QLD-132-T22-CALL_A_2
+      - type: tx-ud  
+        metadata:
+          w1: 22
+          w2: 132
+        rel_x: 18
+        rel_y: -5
+        connections:
+          1: QLD-66-T22-CALL_A_3
+          2: QLD-132-T22-CALL_A_3
+      - type: tx-ud  
+        metadata:
+          w1: 22
+          w2: 132
+        rel_x: 22
+        rel_y: -5
+        connections:
+          1: QLD-66-T22-CALL_A_4
+          2: QLD-132-T22-CALL_A_4
+  - name: Callide B Power Station
+    lat: -24.34604830218587 
+    long: 150.61965027226648
+    voltage_kv: 22
+    tags:
+      - Callide B Power Station
+      - H30
+    def: |
+      1|d
+      N
+      2|x  
+      N
+      3|x
+    connections:
+      1: QLD-22-H30-TX1
+      2: QLD-22-H30-TX2
+      3: QLD-22-H30-TX3
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 22
+        rel_x: 1
+        rel_y: -5
+        connections:
+          1: QLD-132-T22-H30-7159
+          2: QLD-22-H30-TX1
+      - type: tx-ud  
+        metadata:
+          w1: 275
+          w2: 22
+        rel_x: 5
+        rel_y: -5
+        connections:
+          1: QLD-275-H24-CALL_B_1-851
+          2: QLD-22-H30-TX2
+      - type: tx-ud  
+        metadata:
+          w1: 275
+          w2: 22
+        rel_x: 9
+        rel_y: -5
+        connections:
+          1: QLD-275-H24-CALL_B_2-852
+          2: QLD-22-H30-TX3
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Callide B1
+            DUID
+            MW
+        rel_x: 5
+        rel_y: 4              
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Callide B2
+            DUID
+            MW
+        rel_x: 9
+        rel_y: 4              
+  - name: Callide C Power Station
+    lat: -24.346030751555528 
+    long: 150.61809266370085 
+    voltage_kv: 22
+    tags:
+      - Callide C Power Station
+      - H50
+    def: |
+      1|x  
+      N
+      2|x
+    connections:
+      1: QLD-22-H50-TX1
+      2: QLD-22-H50-TX2
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 275
+          w2: 22
+        rel_x: 1
+        rel_y: -5
+        connections:
+          1: QLD-275-H24-CPP_3-853
+          2: QLD-22-H50-TX1
+      - type: tx-ud  
+        metadata:
+          w1: 275
+          w2: 22
+        rel_x: 5
+        rel_y: -5
+        connections:
+          1: QLD-275-H24-CCP_4-854
+          2: QLD-22-H50-TX2
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Callide C3
+            DUID
+            MW
+        rel_x: 1
+        rel_y: 4              
+      - type: gen
+        metadata:
+          voltage: 22
+          text: G
+          info: |
+            Callide C4
+            DUID
+            MW
+        rel_x: 5
+        rel_y: 4        
+  - name: Blackwater
+    lat: -23.58769485923668 
+    long: 148.8261859637889
+    voltage_kv: 132
+    tags:
+      - Blackwater
+      - T26
+    def: |
+      |d1d||
+      |EE||2x3 
+      |d4d||
+      5x6|EE||
+      |d7d||
+      8x9|EE||
+      |d10d||
+      11x12|EE||
+      |d13d||
+      |EE||14x15
+      |d16d||
+      |EE||17x18
+      |d19d||
+      |EE||20x21
+      iEEi   
+      |d22d||
+      |EE||23x24
+      |d25d||
+      26x27|EE||
+      |d28d||
+      |EE||29x30
+      |d31d||
+      |EE||32x33            
+      |d34d||
+      |EE||35x36      
+      |d37d||
+      38x39|EE||      
+      |d40d||
+      41x42|EE||
+      |d43d||
+      44x45|EE||
+      |xd||            
+    connections:
+      1: QLD-132-T32-INT1
+      2: QLD-132-T32-INT1
+      3: QLD-132-T32-H15-7310
+      4: QLD-132-T32-INT2
+      5: QLD-132-T32-T102-1
+      6: QLD-132-T32-INT2
+      7: QLD-132-T32-INT3
+      8: QLD-132-T32-T102-2
+      9: QLD-132-T32-INT3
+      10: QLD-132-T32-INT4
+      11: QLD-132-T32-T102-3
+      12: QLD-132-T32-INT4
+      13: QLD-132-T32-INT5
+      14: QLD-132-T32-INT5
+      15: QLD-132-T32-H15-7311
+      16: QLD-132-T32-INT6
+      17: QLD-132-T32-INT6
+      18: QLD-132-T32-TX1
+      19: QLD-132-T32-INT7
+      20: QLD-132-T32-INT7
+      21: QLD-132-T32-TX2 
+      22: QLD-132-T32-INT8
+      23: QLD-132-T32-INT8
+      24: QLD-132-T32-TX3
+      25: QLD-132-T32-INT9
+      26: QLD-132-T32-H15-789
+      27: QLD-132-T32-INT9
+      28: QLD-132-T32-INT10
+      29: QLD-132-T32-INT10
+      30: QLD-132-T32-TX6
+      31: QLD-132-T32-INT11
+      32: QLD-132-T32-INT11
+      33: QLD-132-T32-CAP1
+      34: QLD-132-T32-INT12
+      35: QLD-132-T32-INT12
+      36: QLD-132-T32-T263-7286
+      37: QLD-132-T32-INT13
+      38: QLD-132-T32-T209-7367
+      39: QLD-132-T32-INT13
+      40: QLD-132-T32-INT14
+      41: QLD-132-T32-T210-7114/2
+      42: QLD-132-T32-INT14
+      43: QLD-132-T32-INT15
+      44: QLD-132-T31-T32-7113/2
+      45: QLD-132-T32-INT15
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 23
+        rel_y: 8
+        connections:
+          1: QLD-132-T32-TX1
+          2: QLD-66-T32-TX1
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 27
+        rel_y: 8
+        connections:
+          1: QLD-132-T32-TX2
+          2: QLD-66-T32-TX2
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 33
+        rel_y: 8
+        connections:
+          1: QLD-132-T32-TX3
+          2: QLD-66-T32-TX3
+      - type: tx-ud  
+        metadata:
+          w1: 132
+          w2: 66
+        rel_x: 41
+        rel_y: 8
+        connections:
+          1: QLD-132-T32-TX6
+          2: QLD-66-T32-TX6                   
+      - type: gen
+        metadata:
+          voltage: 66
+          text: SVC
+          info: |
+            Blackwater SVC
+            MVAr/ MVAr
+        rel_x: 41
+        rel_y: 13
+      - type: gen
+        metadata:
+          voltage: 132
+          text: CAP
+          info: |
+            Capacitor
+            MVa/MVAr 
+        rel_x: 45
+        rel_y: 10        
+    child_definitions:
+      - def: |
+          51x|x52
+          53x|
+          54x|d
+        voltage_kv: 66
+        rel_x: 22
+        rel_y: 15
+        connections:
+          51: QLD-66-T32-TX1
+          52: QLD-66-T32-COMET-6011
+          53: QLD-66-T32-TX2
+          54: QLD-66-T32-TX3
+  - name: Rangal
+    lat: -23.58661315857377 
+    long: 148.82672419099754
+    voltage_kv: 132
+    tags:
+      - Rangal
+      - T102
+    def: |
+      N
+    objects:
+      - type: tx-ud  
+        metadata:
+          w1: 50
+          w2: 132
+        rel_x: 1
+        rel_y: 0
+        connections:
+          1: QLD-50-T102-TX1
+          2: QLD-132-T32-T102-1
+      - type: tx-ud  
+        metadata:
+          w1: 50
+          w2: 132
+        rel_x: 3
+        rel_y: 0
+        connections:
+          1: QLD-50-T102-TX1
+          2: QLD-132-T32-T102-2
+      - type: tx-ud  
+        metadata:
+          w1: 50
+          w2: 132
+        rel_x: 5
+        rel_y: 0
+        connections:
+          1: QLD-50-T102-TX1
+          2: QLD-132-T32-T102-3
+
