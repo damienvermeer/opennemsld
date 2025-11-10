@@ -3209,7 +3209,6 @@ def draw_connections(
                 busbar_weight=BUSBAR_WEIGHT,
                 busbar_crossing_penalty=100000,
                 substation_pairs=substation_pairs_info,
-                iterations=PATHFINDING_ITERATIONS,
             )
         else:
             print("  Using simple breadth-first search for debugging...")
