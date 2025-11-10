@@ -184,22 +184,23 @@ def _calculate_busbar_crossing_penalties(
     Returns:
         A dictionary mapping busbar edges to their calculated penalty value.
     """
+
     def _get_allowed_owners_for_substation(sub_name: str, path_owner: str) -> set:
         """Get all owner IDs that are allowed for a given substation and path owner."""
         allowed = {path_owner}
-        
+
         # If path owner is main, allow all children
         if path_owner == "main":
             # Add all possible child owners (we'll be conservative and allow child_0 through child_9)
             for i in range(10):
                 allowed.add(f"child_{i}")
-        
+
         # If path owner is a child, allow main and all other children
         elif path_owner.startswith("child_"):
             allowed.add("main")
             for i in range(10):
                 allowed.add(f"child_{i}")
-        
+
         return allowed
 
     edge_penalties = {}
@@ -213,27 +214,34 @@ def _calculate_busbar_crossing_penalties(
         # An intra-substation connection
         if start_owner[0] == end_owner[0]:
             path_sub_name = start_owner[0]
-            
+
             # If path is inside one sub, but crosses busbar of another sub
             if bus_sub_name != path_sub_name:
                 edge_penalties[edge] = busbar_crossing_penalty
             else:
                 # Path is within the same substation
                 # Check if the busbar owner is related to either start or end owner
-                start_allowed_owners = _get_allowed_owners_for_substation(path_sub_name, start_owner[1])
-                end_allowed_owners = _get_allowed_owners_for_substation(path_sub_name, end_owner[1])
-                
-                if bus_owner_id in start_allowed_owners or bus_owner_id in end_allowed_owners:
+                start_allowed_owners = _get_allowed_owners_for_substation(
+                    path_sub_name, start_owner[1]
+                )
+                end_allowed_owners = _get_allowed_owners_for_substation(
+                    path_sub_name, end_owner[1]
+                )
+
+                if (
+                    bus_owner_id in start_allowed_owners
+                    or bus_owner_id in end_allowed_owners
+                ):
                     # Crossing a related busbar, small penalty
                     edge_penalties[edge] = 1
                 else:
                     # Crossing an unrelated busbar within the same substation
                     edge_penalties[edge] = busbar_crossing_penalty
-        
+
         # An inter-substation connection
         else:
             path_sub_names = {start_owner[0], end_owner[0]}
-            
+
             # If it crosses a busbar of an unrelated substation
             if bus_sub_name not in path_sub_names:
                 edge_penalties[edge] = busbar_crossing_penalty
@@ -241,19 +249,23 @@ def _calculate_busbar_crossing_penalties(
                 # Busbar belongs to one of the connected substations
                 # Check if the busbar owner is related to the appropriate path owner
                 if bus_sub_name == start_owner[0]:
-                    allowed_owners = _get_allowed_owners_for_substation(bus_sub_name, start_owner[1])
+                    allowed_owners = _get_allowed_owners_for_substation(
+                        bus_sub_name, start_owner[1]
+                    )
                 elif bus_sub_name == end_owner[0]:
-                    allowed_owners = _get_allowed_owners_for_substation(bus_sub_name, end_owner[1])
+                    allowed_owners = _get_allowed_owners_for_substation(
+                        bus_sub_name, end_owner[1]
+                    )
                 else:
                     allowed_owners = set()
-                
+
                 if bus_owner_id in allowed_owners:
                     # Crossing a related busbar, small penalty
                     edge_penalties[edge] = 1
                 else:
                     # Crossing an unrelated busbar within a connected substation
                     edge_penalties[edge] = busbar_crossing_penalty
-    
+
     return edge_penalties
 
 
@@ -274,13 +286,13 @@ def _calculate_congestion_usage(
     """
     node_usage = {}
     edge_usage = {}
-    
+
     for other_req_idx, other_path in enumerate(all_paths):
         if other_req_idx == current_path_idx or not other_path:
             continue
 
         path_len = len(other_path)
-        
+
         # Penalize intermediate nodes - direct slice access
         if path_len > 2:
             for node in other_path[1:-1]:
@@ -296,9 +308,9 @@ def _calculate_congestion_usage(
                 edge = (v, u)
             else:
                 edge = (u, v)  # Same node (shouldn't happen but handle gracefully)
-            
+
             edge_usage[edge] = edge_usage.get(edge, 0) + 1
-    
+
     return node_usage, edge_usage
 
 
@@ -333,20 +345,20 @@ def _apply_penalties_to_graph(
         can be reverted later.
     """
     applied_penalties = []
-    
+
     # Direct access to internal graph data structures for maximum performance
     graph_adj = graph._adj
-    
+
     # Batch collect all penalty updates first
     penalty_updates = {}
-    
+
     # Process edge penalties
     for edge, count in edge_usage.items():
         u, v = edge
         if u in graph_adj and v in graph_adj[u]:
             penalty = (count**2) * current_penalty
             penalty_updates[edge] = penalty_updates.get(edge, 0) + penalty
-    
+
     # Process node penalties
     excluded_nodes = {start_node, end_node}
     for node, count in node_usage.items():
@@ -362,7 +374,7 @@ def _apply_penalties_to_graph(
                 else:
                     edge = (node, neighbor)  # Same node (shouldn't happen)
                 penalty_updates[edge] = penalty_updates.get(edge, 0) + penalty
-    
+
     # Apply all penalties in one batch
     for edge, total_penalty in penalty_updates.items():
         u, v = edge
@@ -372,10 +384,10 @@ def _apply_penalties_to_graph(
             if v in graph_adj and u in graph_adj[v]:
                 graph_adj[v][u]["weight"] += total_penalty
             applied_penalties.append((edge, total_penalty))
-    
+
     # Simplified adjacent routing (skip for now to focus on core performance)
     # The adjacency bonus was causing additional expensive graph operations
-    
+
     return applied_penalties
 
 
@@ -388,7 +400,7 @@ def _remove_penalties_from_graph(graph: nx.Graph, applied_penalties: list):
     """
     # Direct access to internal graph data structures for maximum performance
     graph_adj = graph._adj
-    
+
     for edge, penalty in applied_penalties:
         u, v = edge
         if u in graph_adj and v in graph_adj[u]:
@@ -422,7 +434,7 @@ def _block_connection_nodes(
 
     nodes_to_block = all_connection_nodes - {start_node, end_node}
     graph_adj = graph._adj
-    
+
     # Batch collect and apply blocking in one pass
     for node in nodes_to_block:
         if node in graph_adj:
@@ -435,14 +447,14 @@ def _block_connection_nodes(
                     edge_tuple = (neighbor, node)
                 else:
                     edge_tuple = (node, neighbor)  # Same node (shouldn't happen)
-                
+
                 original_weight = graph_adj[node][neighbor]["weight"]
                 blocked_edges.append((edge_tuple, original_weight))
                 graph_adj[node][neighbor]["weight"] = float("inf")
                 # Update both directions for undirected graph
                 if neighbor in graph_adj and node in graph_adj[neighbor]:
                     graph_adj[neighbor][node]["weight"] = float("inf")
-    
+
     return blocked_edges
 
 
@@ -509,10 +521,8 @@ def _try_straighten_one_corner(
     """
 
     def _get_straight_run_length(
-            path: List,
-            i: int,
-            direction: Literal['forward', 'backward'] = 'forward'
-    ) -> Tuple[Union[Literal['hor', 'vert'], None], int]:
+        path: List, i: int, direction: Literal["forward", "backward"] = "forward"
+    ) -> Tuple[Union[Literal["hor", "vert"], None], int]:
         """
         Looks for and returns the number of colinear points on the path from index i+/-1
         and onwards/backwards, until the path turns.
@@ -528,18 +538,23 @@ def _try_straighten_one_corner(
         """
 
         count = 1
-        s = 1 if direction == 'forward' else -1
+        s = 1 if direction == "forward" else -1
 
         # If we are looking at the final node in the path, return immediately
-        if not i+s*2 in range(len(path)):
+        if not i + s * 2 in range(len(path)):
             return None, 1
 
         # figure out if we're looking for a vertical or horizontal run
-        search_type = 'vert' if path[i+s][0] == path[i+s*2][0] else 'hor'
+        search_type = "vert" if path[i + s][0] == path[i + s * 2][0] else "hor"
 
-        while i+s*(count+1) in range(len(path)):
-            p1, p2 = path[i+s*count], path[i+s*(count+1)]
-            if search_type == 'vert' and p1[0] == p2[0] or search_type == 'hor' and p1[1] == p2[1]:
+        while i + s * (count + 1) in range(len(path)):
+            p1, p2 = path[i + s * count], path[i + s * (count + 1)]
+            if (
+                search_type == "vert"
+                and p1[0] == p2[0]
+                or search_type == "hor"
+                and p1[1] == p2[1]
+            ):
                 count += 1
             else:
                 break
@@ -581,16 +596,20 @@ def _try_straighten_one_corner(
     # If weights are (relatively) similar, prefer a flip which lengthens the straight run within the path
     if abs(weight_orig - weight_alt) < 100:
         # get straight run lengths forward and backward
-        forward_run = _get_straight_run_length(path, i, 'forward')
-        backward_run = _get_straight_run_length(path, i, 'backward')
+        forward_run = _get_straight_run_length(path, i, "forward")
+        backward_run = _get_straight_run_length(path, i, "backward")
 
         # determine if max run is forwards or backwards in the path
         max_run = max((forward_run, backward_run), key=lambda run: run[1])
         p_check = p_next if forward_run[1] >= backward_run[1] else p_prev
 
         # choose the alternative if doing so will lengthen our straight run at this point
-        if (max_run[0] == 'vert' and p_alt[0] == p_check[0]
-            or max_run[0] == 'hor' and p_alt[1] == p_check[1]):
+        if (
+            max_run[0] == "vert"
+            and p_alt[0] == p_check[0]
+            or max_run[0] == "hor"
+            and p_alt[1] == p_check[1]
+        ):
             return p_alt
 
     return None
@@ -877,6 +896,7 @@ def _find_simple_path(
 # Cache for path structure analysis to avoid repeated calculations
 _path_structure_cache = {}
 
+
 def _analyze_path_structure(path: list) -> dict:
     """
     Analyze path structure by reading edges directly to identify straight sections and corners.
@@ -931,7 +951,7 @@ def _analyze_path_structure(path: list) -> dict:
             direction = "vertical"
         else:
             direction = "diagonal"  # Shouldn't happen in grid pathfinding
-        
+
         directions.append(direction)
 
     # Process direction changes
@@ -984,11 +1004,11 @@ def _analyze_path_structure(path: list) -> dict:
         "actual_corners": actual_corners,
         "corner_opportunities": corner_opportunities,
     }
-    
+
     # Cache the result (but limit cache size to prevent memory issues)
     if len(_path_structure_cache) < 1000:
         _path_structure_cache[path_key] = result
-    
+
     return result
 
 
@@ -1705,7 +1725,7 @@ def _straighten_paths(
         # Build the set of all occupied nodes and edges once per iteration - optimised
         all_occupied_nodes = set()
         all_occupied_edges = set()
-        
+
         for p in paths_to_modify:
             if p:
                 all_occupied_nodes.update(p)
@@ -1920,21 +1940,27 @@ def run_all_gridsearches(
             if pair not in pair_groups:
                 pair_groups[pair] = []
             pair_groups[pair].append(i)
-        
+
         # Sort groups by the shortest path in each group, then sort within groups
         sorted_group_indices = []
         for pair, indices in pair_groups.items():
             # Sort indices within this group by path length
             group_requests = [(i, path_requests[i]) for i in indices]
-            group_requests.sort(key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]), reverse=True)
-            
+            group_requests.sort(
+                key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]),
+                reverse=True,
+            )
+
             # Use shortest path in group for overall group sorting
-            min_distance = min(manhattan_distance(path_requests[i]["start"], path_requests[i]["end"]) for i in indices)
+            min_distance = min(
+                manhattan_distance(path_requests[i]["start"], path_requests[i]["end"])
+                for i in indices
+            )
             sorted_group_indices.append((min_distance, [x[0] for x in group_requests]))
-        
+
         # Sort groups by their minimum distance
         sorted_group_indices.sort(key=lambda x: x[0], reverse=True)
-        
+
         # Flatten to get final order
         indexed_requests = []
         for _, group_indices in sorted_group_indices:
@@ -1947,7 +1973,7 @@ def run_all_gridsearches(
             key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]),
             reverse=True,
         )
-    
+
     sorted_requests = [req for i, req in indexed_requests]
 
     print("Step 5.1.2: Performing initial routing...")
@@ -1983,13 +2009,20 @@ def run_all_gridsearches(
                 edge_usage[edge] = edge_usage.get(edge, 0) + penalty
 
             # --- Apply Penalties and Blockers ---
-            current_substation_pair = substation_pairs[req_idx] if substation_pairs else None
+            current_substation_pair = (
+                substation_pairs[req_idx] if substation_pairs else None
+            )
             applied_penalties = _apply_penalties_to_graph(
-                graph, edge_usage, node_usage, current_penalty, start_node, end_node,
+                graph,
+                edge_usage,
+                node_usage,
+                current_penalty,
+                start_node,
+                end_node,
                 substation_pair=current_substation_pair,
                 all_paths=all_paths,
                 current_path_idx=req_idx,
-                substation_pairs=substation_pairs
+                substation_pairs=substation_pairs,
             )
             blocked_edges = _block_connection_nodes(
                 graph, all_connection_nodes, start_node, end_node
@@ -2018,7 +2051,6 @@ def run_all_gridsearches(
     final_paths = [path for _, path in sorted(zip(original_indices, all_paths))]
 
     return final_paths
-
 
 
 def run_gridsearch(
@@ -2053,5 +2085,3 @@ def run_gridsearch(
             points[r][c] = path_weight  # Mark path as used in the grid
 
     return path, points, graph
-
-
