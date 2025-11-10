@@ -4,6 +4,8 @@ from the NetworkX library. It is designed to find the shortest path on a 2D grid
 where cells can have different traversal costs (weights).
 """
 
+from corner_minimise import find_alternative_paths, steps_to_segments, segment_to_path
+from queue import Queue
 from typing import List, Literal, Tuple, Union
 import networkx as nx
 
@@ -79,6 +81,7 @@ def find_shortest_path(
     start_node: Tuple[int, int],
     end_node: Tuple[int, int],
     heuristic=None,
+    testing_disable_optimise=True,
 ) -> List[Tuple[int, int]]:
     """
     Finds the shortest path in a graph using the A* algorithm.
@@ -100,7 +103,67 @@ def find_shortest_path(
         path = nx.astar_path(
             graph, start_node, end_node, weight="weight", heuristic=heuristic
         )
-        return path
+
+        # Calculate the total weight of the initial path found by A*.
+        # nx.path_weight sums the 'weight' attribute of all edges in the path.
+        try:
+            weight = nx.path_weight(graph, path, weight="weight")
+        except nx.NodeNotFound:
+            # This can happen if the path is empty or invalid, though astar_path should prevent this.
+            return path
+
+        # --- Path Simplification ---
+        # Convert the path to segments to check for simplification opportunities.
+        starting_point: tuple[int, int] = path[0]
+        normalised_path: list[tuple[int, int]] = [
+            (x - starting_point[0], y - starting_point[1]) for x, y in path
+        ]
+        segment = steps_to_segments(steps=normalised_path)
+
+        # A path needs at least 2 corners (3 segments) to be a candidate for
+        # simplification. Paths with 1 corner (2 segments) or fewer are returned.
+        if len(segment) < 3:
+            return path
+        # find alternative paths
+        alt_path_queue = Queue()
+        alt_paths = find_alternative_paths(segment)
+        search_space: list[list[tuple[int, int]]] = []
+        for x in alt_paths:
+            if x in search_space:
+                continue
+            alt_path_queue.put(x)
+            search_space.append(x)
+
+        best_path_corners = len(segment)
+        best_path = path
+
+        while not alt_path_queue.empty():
+            alt_path = alt_path_queue.get()
+            # convert back to normal path
+            path_to_test: list[tuple[int, int]] = segment_to_path(
+                alt_path, starting_point=starting_point
+            )
+            # use nx to find the weight of the path
+            try:
+                alt_weight = nx.path_weight(graph, path_to_test, weight="weight")
+            except nx.NodeNotFound:
+                # If the path is not valid in the graph, simply skip it and continue.
+                continue
+            if alt_weight <= weight and len(alt_path) <= len(segment):
+                # This path has potential. Explore its alternatives.
+                new_alternatives = find_alternative_paths(alt_path)
+                for new_alt in new_alternatives:
+                    if new_alt not in search_space:
+                        alt_path_queue.put(new_alt)
+                        search_space.append(new_alt)
+
+            # A path is "best" if it has fewer corners than the current best
+            # ... but the same or lower weight (lower is unlikely)
+            if len(alt_path) < best_path_corners and alt_weight <= weight:
+                print("Found better path with ", len(alt_path), " corners")
+                best_path_corners = len(alt_path)
+                best_path = path_to_test
+        return best_path
     except nx.NetworkXNoPath:
         return []
 
@@ -321,10 +384,10 @@ def _apply_penalties_to_graph(
     current_penalty: float,
     start_node: tuple,
     end_node: tuple,
-    substation_pair: tuple = None,
-    all_paths: list = None,
-    current_path_idx: int = None,
-    substation_pairs: list = None,
+    # substation_pair: tuple = None,
+    # all_paths: list = None,
+    # current_path_idx: int = None,
+    # substation_pairs: list = None,
 ) -> list:
     """Temporarily adds penalties to graph edges based on usage.
 
@@ -1709,12 +1772,11 @@ def _straighten_paths(
         A new list of paths with corners potentially straightened and smoothed.
     """
     paths_to_modify = [list(p) for p in all_paths]
-    max_iterations = iterations
 
-    for iter_num in range(max_iterations):
-        print(
-            f"Step 5.1.4.{iter_num + 1}: Smoothing iteration {iter_num + 1}/{max_iterations}..."
-        )
+    iter_num = 0
+    while True:
+        iter_num += 1
+        print(f"Step 5.1.4.{iter_num}: Smoothing iteration {iter_num}...")
         paths_changed_in_iteration = False
         total_nodes_saved = 0
 
@@ -1756,9 +1818,8 @@ def _straighten_paths(
 
             # Keep trying to improve this path until no more improvements can be made
             path_optimization_iterations = 0
-            max_path_iterations = 20
 
-            while path_optimization_iterations < max_path_iterations:
+            while True:
                 path_optimization_iterations += 1
                 path_changed_this_iteration = False
 
@@ -1868,14 +1929,12 @@ def _straighten_paths(
                         f"    Path {original_idx}: {original_length} -> {len(path)} nodes (saved {nodes_saved}, {path_optimization_iterations} optimization iterations)"
                     )
 
-        print(
-            f"  Iteration {iter_num + 1} complete: {total_nodes_saved} total nodes saved"
-        )
+        print(f"  Iteration {iter_num} complete: {total_nodes_saved} total nodes saved")
 
         # If no paths were improved in this iteration, stop the overall process
         if not paths_changed_in_iteration:
             print(
-                f"  No further improvements possible. Stopping after {iter_num + 1} iterations."
+                f"  No further improvements possible. Stopping after {iter_num} iterations."
             )
             break
 
@@ -1934,7 +1993,7 @@ def run_all_gridsearches(
     graph = create_graph_from_grid(points)
 
     # --- Group requests by substation pairs for adjacent routing ---
-    if substation_pairs:
+    if True:
         pair_groups = {}
         for i, pair in enumerate(substation_pairs):
             if pair not in pair_groups:
@@ -1966,85 +2025,81 @@ def run_all_gridsearches(
         for _, group_indices in sorted_group_indices:
             for idx in group_indices:
                 indexed_requests.append((idx, path_requests[idx]))
-    else:
-        # --- Sort requests to route longest paths first ---
-        indexed_requests = sorted(
-            enumerate(path_requests),
-            key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]),
-            reverse=True,
-        )
+    # else:
+    #     # --- Sort requests to route longest paths first ---
+    #     indexed_requests = sorted(
+    #         enumerate(path_requests),
+    #         key=lambda x: manhattan_distance(x[1]["start"], x[1]["end"]),
+    #         reverse=True,
+    # )
 
     sorted_requests = [req for i, req in indexed_requests]
 
     print("Step 5.1.2: Performing initial routing...")
-    all_paths = [
-        find_shortest_path(graph, req["start"], req["end"]) for req in sorted_requests
-    ]
+    # all_paths = [
+    #     find_shortest_path(graph, req["start"], req["end"]) for req in sorted_requests
+    # ]
 
     # --- Iteratively refine paths ---
     busbar_edges = _get_busbar_edges(graph, points, grid_owners, busbar_weight)
 
-    for i in range(iterations):
-        print(f"Step 5.1.3: Refining paths (iteration {i + 1}/{iterations})...")
-        current_penalty = _calculate_congestion_penalty(
-            iterations, i, congestion_penalty_increment
+    # for i in range(iterations):
+    # print(f"Step 5.1.3: Refining paths (iteration {i + 1}/{iterations})...")
+    # current_penalty = _calculate_congestion_penalty(
+    #     iterations, i, congestion_penalty_increment
+    # )
+    all_paths = []
+
+    for req_idx, current_request in enumerate(sorted_requests):
+        start_node = current_request["start"]
+        end_node = current_request["end"]
+
+        # --- Calculate Penalties ---
+        busbar_penalties = _calculate_busbar_crossing_penalties(
+            busbar_edges,
+            current_request["start_owner"],
+            current_request["end_owner"],
+            busbar_crossing_penalty,
+        )
+        node_usage, congestion_usage = _calculate_congestion_usage(all_paths, req_idx)
+        edge_usage = {**congestion_usage}
+        for edge, penalty in busbar_penalties.items():
+            edge_usage[edge] = edge_usage.get(edge, 0) + penalty
+
+        # --- Apply Penalties and Blockers ---
+        current_substation_pair = (
+            substation_pairs[req_idx] if substation_pairs else None
+        )
+        applied_penalties = _apply_penalties_to_graph(
+            graph,
+            edge_usage,
+            node_usage,
+            congestion_penalty_increment,
+            start_node,
+            end_node,
+        )
+        blocked_edges = _block_connection_nodes(
+            graph, all_connection_nodes, start_node, end_node
         )
 
-        for req_idx, current_request in enumerate(sorted_requests):
-            start_node = current_request["start"]
-            end_node = current_request["end"]
+        # --- Reroute Path ---
+        heuristic = (
+            _create_out_of_bounds_heuristic(current_request["bounds"])
+            if "bounds" in current_request
+            else manhattan_distance
+        )
+        print(f"Path finding {start_node} -> {end_node} with id {req_idx}")
+        new_path = find_shortest_path(graph, start_node, end_node, heuristic)
+        if new_path:
+            all_paths.append(new_path)
 
-            # --- Calculate Penalties ---
-            busbar_penalties = _calculate_busbar_crossing_penalties(
-                busbar_edges,
-                current_request["start_owner"],
-                current_request["end_owner"],
-                busbar_crossing_penalty,
-            )
-            node_usage, congestion_usage = _calculate_congestion_usage(
-                all_paths, req_idx
-            )
-            edge_usage = {**congestion_usage}
-            for edge, penalty in busbar_penalties.items():
-                edge_usage[edge] = edge_usage.get(edge, 0) + penalty
-
-            # --- Apply Penalties and Blockers ---
-            current_substation_pair = (
-                substation_pairs[req_idx] if substation_pairs else None
-            )
-            applied_penalties = _apply_penalties_to_graph(
-                graph,
-                edge_usage,
-                node_usage,
-                current_penalty,
-                start_node,
-                end_node,
-                substation_pair=current_substation_pair,
-                all_paths=all_paths,
-                current_path_idx=req_idx,
-                substation_pairs=substation_pairs,
-            )
-            blocked_edges = _block_connection_nodes(
-                graph, all_connection_nodes, start_node, end_node
-            )
-
-            # --- Reroute Path ---
-            heuristic = (
-                _create_out_of_bounds_heuristic(current_request["bounds"])
-                if "bounds" in current_request
-                else manhattan_distance
-            )
-            new_path = find_shortest_path(graph, start_node, end_node, heuristic)
-            if new_path:
-                all_paths[req_idx] = new_path
-
-            # --- Remove Penalties and Blockers ---
-            _unblock_connection_nodes(graph, blocked_edges)
-            _remove_penalties_from_graph(graph, applied_penalties)
+        # --- Remove Penalties and Blockers ---
+        _unblock_connection_nodes(graph, blocked_edges)
+        _remove_penalties_from_graph(graph, applied_penalties)
 
     # --- Post-process and Finalize ---
-    print("Step 5.1.4: Straightening paths...")
-    all_paths = _straighten_paths(all_paths, graph, iterations=10)
+    # print("Step 5.1.4: Straightening paths...")
+    # all_paths = _straighten_paths(all_paths, graph, iterations=10)
 
     # Re-sort paths back to original order
     original_indices = [item[0] for item in indexed_requests]
