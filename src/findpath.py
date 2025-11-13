@@ -159,7 +159,6 @@ def find_shortest_path(
             # A path is "best" if it has fewer corners than the current best
             # ... but the same or lower weight (lower is unlikely)
             if len(alt_path) < best_path_corners and alt_weight <= weight:
-                print("Found better path with ", len(alt_path), " corners")
                 best_path_corners = len(alt_path)
                 best_path = path_to_test
         return best_path
@@ -575,6 +574,8 @@ def run_all_gridsearches(
     print("Step 5.1.1: Creating base pathfinding graph...")
     graph = create_graph_from_grid(points)
 
+    print("Step 5.1.1b: Beginning to group routing requests")
+
     # --- Group requests by substation pairs for adjacent routing ---
     pair_groups = {}
     for i, pair in enumerate(substation_pairs):
@@ -648,7 +649,9 @@ def run_all_gridsearches(
             if "bounds" in current_request
             else manhattan_distance
         )
-        print(f"Path finding {start_node} -> {end_node} with id {req_idx}")
+        if req_idx % 30 == 0:
+            progress = req_idx / len(indexed_requests)
+            print(f"Finding paths  {progress * 100:.2f}%")
         new_path = find_shortest_path(graph, start_node, end_node, heuristic)
         if new_path:
             all_paths.append(new_path)
