@@ -3831,9 +3831,6 @@ def _prepare_substation_layout(
         sub.use_y = (
             round((sub.scaled_y + shift_y) / params.grid_step) * params.grid_step
         )
-        print(
-            f"  {sub.name}: final position = ({sub.use_x:.1f}, {sub.use_y:.1f}), shift = ({shift_x:.1f}, {shift_y:.1f})"
-        )
 
     # Calculate required SVG dimensions based on actual substation positions
     print("Step 2.5: Calculating required SVG dimensions...")
