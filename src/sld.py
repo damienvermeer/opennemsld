@@ -20,8 +20,10 @@ import findpath
 from rectangle_spacing import space_rectangles
 
 # --- Constants ---
-BASE_MAP_DIMS_EAST_WEST = 45000  # Base dimensions, will be expanded as needed
-BASE_MAP_DIMS_NORTH_SOUTH = 75000
+BASE_MAP_DIMS_EAST_WEST = int(
+    45000 * 1.25
+)  # Base dimensions, will be expanded as needed
+BASE_MAP_DIMS_NORTH_SOUTH = int(75000 * 1.25)
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -3207,7 +3209,6 @@ def draw_connections(
                 busbar_weight=BUSBAR_WEIGHT,
                 busbar_crossing_penalty=100000,
                 substation_pairs=substation_pairs_info,
-                iterations=PATHFINDING_ITERATIONS,
             )
         else:
             print("  Using simple breadth-first search for debugging...")
