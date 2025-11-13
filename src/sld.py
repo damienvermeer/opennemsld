@@ -4062,9 +4062,9 @@ def main():
 
 
 if __name__ == "__main__":
-    import cProfile
+    # import cProfile
 
-    with cProfile.Profile() as pr:
-        main()
+    # with cProfile.Profile() as pr:
+    main()
 
-    pr.dump_stats("profile_output.prof")
+    # pr.dump_stats("profile_output.prof")
