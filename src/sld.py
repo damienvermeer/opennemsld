@@ -3716,7 +3716,7 @@ def _handle_cli_args(substation_map: dict[str, Substation]) -> tuple[bool, bool]
     """
     import sys
 
-    use_pretty_pathfinding = "--pretty" in sys.argv or True
+    use_pretty_pathfinding = "--pretty" in sys.argv
 
     if len(sys.argv) > 1:
         if sys.argv[1] == "--docs":
