@@ -31,24 +31,6 @@ substations:
   connections: 
     1: VIC-66-CRM-LWN/FTN-PART1
     2: VIC-66-CRM-LWN/FTN-PART2
-- name: Frankston Terminal Station (FTS)
-  lat: -38.16294196
-  long: 145.168461
-  voltage_kv: 66
-  def: |
-    5?|?1
-    6?|?2
-    |?3
-    |?4
-  buses:
-    1: ''
-  connections: 
-    1: VIC-66-TBTS-FTS
-    2: VIC-66-FTS-FSH
-    3: VIC-66-FTS-LWN
-    4: VIC-66-FTS-FTN
-    5: VIC-66-CBTS-FTS1
-    6: VIC-66-CBTS-FTS2
 - name: Frankston South (FSH)
   lat: -38.17299621
   long: 145.1402327
