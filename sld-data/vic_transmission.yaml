@@ -418,12 +418,11 @@ substations:
       |x4E||
       |x3x||
       |x2x||
-      NEE||x1
+      NEE||x
     buses:
       1: "2"
       2: "1"
     connections:
-      1: HOTS-B2-TX-220
       2: VIC-220-BGTS-HOTS
       3: VIC-220-MRTS-HOTS
       4: HOTS-B3-TX-220
@@ -492,14 +491,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-HOTS-CAP-1A
-            rel_x: 14
+            rel_x: 15
             rel_y: -3
           - type: cap-r
             metadata:
               voltage: 66
             connections:
               1: VIC-66-HOTS-CAP-1B
-            rel_x: 14
+            rel_x: 15
             rel_y: -6
           - type: reac-u
             metadata:
@@ -1137,28 +1136,28 @@ substations:
         - type: cap-l # 3A
           metadata:
            voltage: 66
-          rel_x: 6
+          rel_x: 5
           rel_y: -3
           connections:
             1: VIC-66-SHTS-CAP3A
         - type: cap-l # 3B
           metadata:
            voltage: 66
-          rel_x: 6
+          rel_x: 5
           rel_y: -6
           connections:
             1: VIC-66-SHTS-CAP3B
         - type: cap-l # 2A
           metadata:
            voltage: 66
-          rel_x: 24
+          rel_x: 23
           rel_y: -3
           connections:
             1: VIC-66-SHTS-CAP2A
         - type: cap-l # 2B
           metadata:
            voltage: 66
-          rel_x: 24
+          rel_x: 23
           rel_y: -6
           connections:
             1: VIC-66-SHTS-CAP2B
@@ -2367,14 +2366,14 @@ substations:
               voltage: 66
             connections:
               1: DPTS-66-CAPB
-            rel_x: 0
+            rel_x: -1
             rel_y: 0
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: DPTS-66-CAPA
-            rel_x: 0
+            rel_x: -1
             rel_y: 3
       - def: |
           9x||||x1
@@ -2606,14 +2605,14 @@ substations:
               voltage: 66
             connections:
               1: KTS-66-CAPB
-            rel_x: 3
+            rel_x: 4
             rel_y: 0
           - type: cap-r
             metadata:
               voltage: 66
             connections:
               1: KTS-66-CAPA
-            rel_x: 3
+            rel_x: 4
             rel_y: 3
       - def: |
           ||||/d3
@@ -4635,14 +4634,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-HTS-CAP-1A
-            rel_x: 22
+            rel_x: 21
             rel_y: -3
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: VIC-66-HTS-CAP-1B
-            rel_x: 22
+            rel_x: 21
             rel_y: -6
   - name: Hazelwood Power (HWPS)
     lat: -38.273103
@@ -6219,14 +6218,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-SVTS-CAP-4A
-            rel_x: 2
+            rel_x: 1
             rel_y: -3
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: VIC-66-SVTS-CAP-4B
-            rel_x: 2
+            rel_x: 1
             rel_y: -6
           - type: cap-u
             metadata:
@@ -6239,7 +6238,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: -1
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B4
           2: VIC-66-SVTS-TX-B4
@@ -6248,7 +6247,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 4
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B3
           2: VIC-66-SVTS-TX-B3
@@ -6257,7 +6256,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 9
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B2
           2: VIC-66-SVTS-TX-B2
@@ -6266,7 +6265,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 15
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B1
           2: VIC-66-SVTS-TX-B1
