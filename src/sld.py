@@ -20,10 +20,8 @@ import findpath
 from rectangle_spacing import space_rectangles
 
 # --- Constants ---
-BASE_MAP_DIMS_EAST_WEST = int(
-    45000 * 1.25
-)  # Base dimensions, will be expanded as needed
-BASE_MAP_DIMS_NORTH_SOUTH = int(75000 * 1.25)
+BASE_MAP_DIMS_EAST_WEST = 56250  # Base dimensions, will be expanded as needed
+BASE_MAP_DIMS_NORTH_SOUTH = 93750
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -32,7 +30,7 @@ NEAR_SUB_WEIGHT = 4
 ELEMENT_WEIGHT = 50000
 GRID_STEP = 25
 PATHFINDING_ITERATIONS = 5
-CONGESTION_PENALTY = 19
+CONGESTION_PENALTY = 3
 # Default font family to use for all text
 DEFAULT_FONT_FAMILY = "Roboto"
 import pathlib
@@ -43,7 +41,7 @@ SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "6"
+VERSION = "7"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -3787,7 +3785,7 @@ def _prepare_substation_layout(
         )
 
     MIN_PADDING_STEPS = 6
-    PADDING_RATIO = 13
+    PADDING_RATIO = 25
     paddings_in_steps = []
     for sub in substations:
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
