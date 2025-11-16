@@ -3085,6 +3085,9 @@ def draw_state_boundaries(
         drawing.append(state_text)
 
 
+import json
+
+
 def draw_connections(
     drawing: draw.Drawing,
     all_connections: dict,
@@ -3273,6 +3276,8 @@ def draw_connections(
         paths_drawn = 0
         paths_failed = 0
 
+        paths_dict = {}
+
         for i, path in enumerate(all_paths):
             if len(path) > 1:
                 colour = path_metadata[i]["colour"]
@@ -3325,6 +3330,7 @@ def draw_connections(
                 )
 
                 connection_name = path_metadata[i]["connection_name"]
+                paths_dict[connection_name] = path
                 connection_voltage = path_metadata[i]["voltage"]
                 connection_ss_pair = path_metadata[i]["substation_pair"]
                 connection_ss_pair = " &#8596; ".join(set(connection_ss_pair))
@@ -3373,6 +3379,9 @@ def draw_connections(
                 print(f"    End: grid {request['end']} -> px {end_px}")
                 print(f"    Substations: {request.get('substations', 'unknown')}")
                 paths_failed += 1
+        if False:  # generate paths dict for debugging
+            with open("paths.json", "w") as f:
+                json.dump(paths_dict, f, indent=4)
 
         print(
             f"  Pathfinding complete: {paths_drawn} paths drawn, {paths_failed} paths failed"
