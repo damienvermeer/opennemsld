@@ -43,7 +43,7 @@ SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "7"
+VERSION = "8"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -2780,9 +2780,13 @@ def _draw_internal_paths(drawing, substation, bbox, params):
     min_x, min_y, max_x, max_y = bbox
 
     # 1. Create local pathfinding grid
-    local_points, local_grid_owners, (
-        origin_x,
-        origin_y,
+    (
+        local_points,
+        local_grid_owners,
+        (
+            origin_x,
+            origin_y,
+        ),
     ) = _create_local_pathfinding_grid(substation, bbox, params)
 
     # 2. Create path requests from internal connections
@@ -3639,7 +3643,10 @@ def render_substation_with_connection_status(
             for sub_name, sub in all_substations.items():
                 if sub_name == substation.name:
                     continue
-                if hasattr(sub, "connections") and conn_name in sub.connections.values():
+                if (
+                    hasattr(sub, "connections")
+                    and conn_name in sub.connections.values()
+                ):
                     found = True
                     found_in = sub_name
                     break
