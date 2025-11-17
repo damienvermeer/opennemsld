@@ -104,6 +104,8 @@ Transformers are defined with the following attributes:
 Transformer types:
 - `tx-ud`: Up-down transformer (vertical orientation)
 - `tx-lr`: Left-right transformer (horizontal orientation)
+- `3tx-ud`: Up-down three winding transformer (vertical orientation)
+- `3tx-lr`: Left-right three winding transformer (horizontal orientation)
 
 ### Generators
 

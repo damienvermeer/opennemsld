@@ -231,13 +231,15 @@ substations:
       6: BATS-B2-HV
       7: VIC-220-BATS-BETS
     objects:
-      - type: tx-ud
+      - type: 3tx-ud
         metadata:
           w1: 220
           w2: 66
+          w3: 22
         connections:
           1: BATS-B1-HV
           2: BATS-B1-LV
+          3: BATS-B1-22
         rel_x: 7
         rel_y: 9
       - type: tx-ud
@@ -256,8 +258,8 @@ substations:
           info: |
             Ballarat BESS
             30MW / 30MWh
-        rel_x: 2
-        rel_y: 11
+        rel_x: 9
+        rel_y: 15
     child_definitions:
       - def: |
           x|x1
@@ -281,7 +283,7 @@ substations:
           7: VIC-66-BATS-YDW
           8: VIC-66-BATS-BAS/BGF
         rel_x: 2
-        rel_y: 16
+        rel_y: 20
         objects:
         - type: cap-u
           metadata:
@@ -294,10 +296,9 @@ substations:
           rel_x: 13
           rel_y: -3
       - def: |
-          t
-          |
+          1x
         voltage_kv: 22
-        rel_x: 3
+        rel_x: 8
         rel_y: 11
   - name: Bulgana BGTS
     lat: -37.037044
@@ -556,15 +557,17 @@ substations:
         voltage: 220
       rel_x: 7
       rel_y: 3
-    - type: tx-ud # TX3
+    - type: 3tx-ud # TX3
       metadata:
         w1: 220
         w2: 66
+        w3: 22
       rel_x: 1
       rel_y: 9
       connections:
         1: VIC-220-RCTS-TX3
         2: VIC-66-RCTS-TX3
+        3: VIC-22-RCTS-TX3
     - type: tx-ud # TX2B
       metadata:
         w1: 220
@@ -687,13 +690,6 @@ substations:
               voltage: 22
             rel_x: 8
             rel_y: 3
-      - def: |
-          |1
-        voltage_kv: 22
-        rel_x: 1
-        rel_y: 11
-        connections:
-          1: VIC-22-RCTS-TX3
 
   - name: Wemen (WETS)
     lat: -34.784858
@@ -790,33 +786,39 @@ substations:
             +25 MVAr / -50 MVAr
         rel_x: 9
         rel_y: 4
-      - type: tx-ud # TX1
+      - type: 3tx-ud # TX1
         metadata:
           w1: 220
           w2: 66
+          w3: 22
         rel_x: -1
         rel_y: 9
         connections:
           1: VIC-220-KGTS-TX1
           2: VIC-66-KGTS-TX1
-      - type: tx-ud # TX2
+          3: VIC-22-KGTS-TX1
+      - type: 3tx-ud # TX2
         metadata:
           w1: 220
           w2: 66
+          w3: 22
         rel_x: 3
         rel_y: 9
         connections:
           1: VIC-220-KGTS-TX2
           2: VIC-66-KGTS-TX2
-      - type: tx-ud # TX3
+          3: VIC-22-KGTS-TX2
+      - type: 3tx-ud # TX3
         metadata:
           w1: 220
           w2: 66
+          w3: 22
         rel_x: 9
         rel_y: 9
         connections:
           1: VIC-220-KGTS-TX3
           2: VIC-66-KGTS-TX3
+          3: VIC-22-KGTS-TX3
     child_definitions:
       - def: |
           Ex|x
@@ -854,29 +856,15 @@ substations:
             rel_x: 13
             rel_y: 3
       - def: |
-          |1
-          N
-          |2
-          N
-          N
-          |3
-        voltage_kv: 22
-        connections:
-          1: KGTS-TX1-22 
-          2: KGTS-TX2-22
-          3: KGTS-TX3-22
-        rel_x: -1
-        rel_y: 11
-      - def: |
           1x|
           2x|
           t
           3x|x
         voltage_kv: 22
         connections:
-          1: KGTS-TX1-22 
-          2: KGTS-TX2-22
-          3: KGTS-TX3-22
+          1: VIC-22-KGTS-TX1
+          2: VIC-22-KGTS-TX2
+          3: VIC-22-KGTS-TX3
         rel_x: 11
         rel_y: 19
         objects:
@@ -6641,24 +6629,28 @@ substations:
       3: VN-330-JIND-WOTS-O60
       4: VIC-330-WOTS-TX-2
     objects:
-      - type: tx-ud # 2 tx
+      - type: 3tx-ud # 2 tx
         metadata:
           w1: 330
           w2: 66
+          w3: 22
         rel_x: 1
         rel_y: 9
         connections:
           1: VIC-330-WOTS-TX-2
           2: VIC-66-WOTS-TX-2
-      - type: tx-ud # 1 tx
+          3: VIC-22-WOTS-TX-2
+      - type: 3tx-ud # 1 tx
         metadata:
           w1: 330
           w2: 66
+          w3: 22
         rel_x: 7
         rel_y: 9
         connections:
           1: VIC-330-WOTS-TX-1
           2: VIC-66-WOTS-TX-1
+          3: VIC-22-WOTS-TX-1
     child_definitions:
       - def: |
           4x||
@@ -6688,20 +6680,6 @@ substations:
           2: VIC-22-WOTS-TX-2
         rel_x: 12
         rel_y: 17
-      - def: |
-          s1
-        voltage_kv: 22
-        connections:
-          1: VIC-22-WOTS-TX-1
-        rel_x: 1
-        rel_y: 11
-      - def: |
-          s1
-        voltage_kv: 22
-        connections:
-          1: VIC-22-WOTS-TX-2
-        rel_x: 7
-        rel_y: 11
   - name: Yallourn (YPS)
     lat: -38.174139
     long: 146.349914
