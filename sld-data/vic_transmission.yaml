@@ -2341,7 +2341,7 @@ substations:
       4: DPTS-B4-HV
     child_definitions:
       - def: |
-          1nx2 
+          1Nx2 
         connections:
           1: DPTS-66-CAPB
           2: DPTS-66-CAPA
@@ -2580,7 +2580,7 @@ substations:
             rel_x: 17
             rel_y: 6
       - def: |
-          1nx2 
+          1Nx2 
         connections:
           1: KTS-66-CAPB
           2: KTS-66-CAPA
@@ -6719,7 +6719,7 @@ substations:
       17: VIC-220-HWPS-YPS2
     child_definitions:
       - def: |
-          1n
+          1N
         connections:
           1: VIC-220-HWPS-YPS2 
         voltage_kv: 220
