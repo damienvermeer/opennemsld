@@ -5422,13 +5422,13 @@ substations:
         connections:
           1: VIC-66-MTS-TX-B1
           2: VIC-66-MTS-TX-B3
-          3: VIC-66-MTS-EM
+          3: VIC-66-EM-MTS
           4: VIC-66-MTS-OR
           5: VIC-66-MTS-TX-U1
           6: VIC-66-MTS-TX-U2
-          7: VIC-66-MTS-EM/EL
+          7: VIC-66-EM/E-MTSL
           8: VIC-66-MTS-OAK
-          9: VIC-66-MTS-CFD
+          9: VIC-66-CFD-MTS
         objects:
           - type: tx-ud # U1
             metadata:
