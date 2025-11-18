@@ -477,6 +477,12 @@ def _block_connection_nodes(
         if node in graph_adj:
             # Direct access to neighbors via adjacency dict
             for neighbor in graph_adj[node]:
+                # If the neighbor is also a blocked node, we only process the edge
+                # from one direction (the one with the smaller node ID) to avoid
+                # processing it twice and incorrectly saving an infinite weight.
+                if neighbor in nodes_to_block and node > neighbor:
+                    continue
+
                 # Use conditional instead of min/max for better performance
                 if node < neighbor:
                     edge_tuple = (node, neighbor)

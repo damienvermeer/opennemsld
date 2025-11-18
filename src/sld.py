@@ -19,6 +19,8 @@ from shapely.geometry import MultiPoint, Polygon
 import findpath
 from rectangle_spacing import space_rectangles
 
+from objects.tx_3w import draw_3w_tx_up_down, draw_3w_tx_left_right
+
 # --- Constants ---
 BASE_MAP_DIMS_EAST_WEST = 56250  # Base dimensions, will be expanded as needed
 BASE_MAP_DIMS_NORTH_SOUTH = 93750
@@ -41,7 +43,7 @@ SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "7"
+VERSION = "8"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -164,6 +166,50 @@ class Substation:
 
             # Create a group for this object
             obj_group = draw.Group()
+
+            if obj["type"].startswith("3tx"):
+                conn_points = {}
+                winding_voltages = tuple(obj["metadata"].values())
+                if obj["type"] == "3tx-ud":
+                    obj_group, new_connections, grid_points_to_mark = (
+                        draw_3w_tx_up_down(
+                            obj_x,
+                            obj_y,
+                            params.grid_step,
+                            COLOUR_MAP,
+                            winding_voltages,
+                        )
+                    )
+                elif obj["type"] == "3tx-lr":
+                    obj_group, new_connections, grid_points_to_mark = (
+                        draw_3w_tx_left_right(
+                            obj_x,
+                            obj_y,
+                            params.grid_step,
+                            COLOUR_MAP,
+                            winding_voltages,
+                        )
+                    )
+                else:
+                    raise ValueError(
+                        f"Unknown 3-winding transformer type: {obj['type']}"
+                    )
+                # Store connection points
+                for key, val in new_connections.items():
+                    # look up connection in obj dict
+                    conn_name = obj["connections"][key]
+                    # add owner id
+                    val["owner"] = owner_id
+                    conn_points[conn_name] = val
+                # mark grid points
+                for grid_point in grid_points_to_mark:
+                    mark_grid_point(
+                        self,
+                        grid_point[0],
+                        grid_point[1],
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
 
             if obj["type"] == "tx-ud":
                 # Draw up-down transformer. Winding 1 is at the top.
@@ -1065,7 +1111,8 @@ class Substation:
                 # Apply the same rotation to the connection points
                 if "connections" in obj:
                     rotation_rad = math.radians(rotation)
-                    for conn_id, (px, py) in conn_points.items():
+                    for conn_id, data in conn_points.items():
+                        px, py = data["coords"]
                         # Translate to origin
                         tx = px - obj_x
                         ty = py - obj_y
@@ -1076,8 +1123,10 @@ class Substation:
                         rotated_x = rx + obj_x
                         rotated_y = ry + obj_y
                         # Update the connection point with rotated coordinates
+                        rotated_data = data.copy()
+                        rotated_data["coords"] = (rotated_x, rotated_y)
                         self.connection_points.setdefault(conn_id, []).append(
-                            (rotated_x, rotated_y)
+                            rotated_data
                         )
 
                         # The grid point was already marked with local coordinates.
@@ -2693,6 +2742,173 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     return all_paths
 
 
+def _create_local_pathfinding_grid(
+    substation: Substation,
+    bbox: tuple[float, float, float, float],
+    params: DrawingParams,
+) -> tuple[list[list[int]], list[list[tuple[str, str]]], tuple[float, float]]:
+    """Creates a local pathfinding grid for a single substation."""
+    min_x, min_y, max_x, max_y = bbox
+    padding = 2 * params.grid_step
+
+    origin_x = min_x - padding
+    origin_y = min_y - padding
+
+    grid_width = (max_x - min_x) + 2 * padding
+    grid_height = (max_y - min_y) + 2 * padding
+
+    num_steps_x = int(grid_width // params.grid_step) + 1
+    num_steps_y = int(grid_height // params.grid_step) + 1
+
+    points = [[0 for _ in range(num_steps_x)] for _ in range(num_steps_y)]
+    grid_owners = [[None for _ in range(num_steps_x)] for _ in range(num_steps_y)]
+
+    # Populate grid with substation's grid points (these are unrotated)
+    for (local_x, local_y), (weight, owner_id) in substation.grid_points.items():
+        grid_x = int(round((local_x - origin_x) / params.grid_step))
+        grid_y = int(round((local_y - origin_y) / params.grid_step))
+
+        if 0 <= grid_y < num_steps_y and 0 <= grid_x < num_steps_x:
+            points[grid_y][grid_x] = weight
+            grid_owners[grid_y][grid_x] = (substation.name, owner_id)
+
+    return points, grid_owners, (origin_x, origin_y)
+
+
+def _draw_internal_paths(drawing, substation, bbox, params):
+    """Finds and draws internal connections within a single substation."""
+    min_x, min_y, max_x, max_y = bbox
+
+    # 1. Create local pathfinding grid
+    (
+        local_points,
+        local_grid_owners,
+        (
+            origin_x,
+            origin_y,
+        ),
+    ) = _create_local_pathfinding_grid(substation, bbox, params)
+
+    # 2. Create path requests from internal connections
+    path_requests = []
+    path_metadata = []
+    all_connection_nodes = set()
+
+    internal_connections = {
+        k: v for k, v in substation.connection_points.items() if len(v) == 2
+    }
+
+    for conn_name, conn_points_data in internal_connections.items():
+        p1_data = conn_points_data[0]
+        p2_data = conn_points_data[1]
+
+        start_coord_px = p1_data["coords"]
+        end_coord_px = p2_data["coords"]
+
+        start_grid_x = int(round((start_coord_px[0] - origin_x) / params.grid_step))
+        start_grid_y = int(round((start_coord_px[1] - origin_y) / params.grid_step))
+        end_grid_x = int(round((end_coord_px[0] - origin_x) / params.grid_step))
+        end_grid_y = int(round((end_coord_px[1] - origin_y) / params.grid_step))
+
+        start_node = (start_grid_y, start_grid_x)
+        end_node = (end_grid_y, end_grid_x)
+
+        all_connection_nodes.add(start_node)
+        all_connection_nodes.add(end_node)
+
+        if 0 <= start_node[0] < len(local_points) and 0 <= start_node[1] < len(
+            local_points[0]
+        ):
+            local_points[start_node[0]][start_node[1]] = 0
+        if 0 <= end_node[0] < len(local_points) and 0 <= end_node[1] < len(
+            local_points[0]
+        ):
+            local_points[end_node[0]][end_node[1]] = 0
+
+        request = {
+            "start": start_node,
+            "end": end_node,
+            "substations": {substation.name},
+            "start_owner": (substation.name, p1_data.get("owner", "main")),
+            "end_owner": (substation.name, p2_data.get("owner", "main")),
+        }
+        path_requests.append(request)
+
+        voltage = p1_data["voltage"]
+        colour = COLOUR_MAP.get(voltage, "black")
+        scale_factor = LINE_WIDTH_SCALE.get(voltage, 1.0)
+        line_width = 2 * scale_factor
+
+        path_metadata.append(
+            {
+                "colour": colour,
+                "line_width": line_width,
+                "substation_pair": tuple(sorted([substation.name, substation.name])),
+            }
+        )
+
+    if not path_requests:
+        return
+
+    # 3. Run pathfinding
+    substation_pairs_info = [meta["substation_pair"] for meta in path_metadata]
+    all_paths = findpath.run_all_gridsearches(
+        path_requests=path_requests,
+        points=local_points,
+        grid_owners=local_grid_owners,
+        all_connection_nodes=all_connection_nodes,
+        busbar_weight=BUSBAR_WEIGHT,
+        substation_pairs=substation_pairs_info,
+        verbose=False,
+    )
+
+    # 4. Draw paths
+    rotation_rad = math.radians(substation.rotation)
+    center_x = (min_x + max_x) / 2
+    center_y = (min_y + max_y) / 2
+
+    for i, path in enumerate(all_paths):
+        if len(path) > 1:
+            colour = path_metadata[i]["colour"]
+            line_width = path_metadata[i]["line_width"]
+
+            path_data = ""
+            for j, (row, col) in enumerate(path):
+                # Convert grid coords back to local unrotated pixel coords
+                px_x = col * params.grid_step + origin_x
+                px_y = row * params.grid_step + origin_y
+
+                # Rotate point
+                rel_x = px_x - center_x
+                rel_y = px_y - center_y
+                rotated_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(
+                    rotation_rad
+                )
+                rotated_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                    rotation_rad
+                )
+                rotated_local_x = rotated_x + center_x
+                rotated_local_y = rotated_y + center_y
+
+                # Translate to final SVG position
+                global_x = substation.use_x + rotated_local_x
+                global_y = substation.use_y + rotated_local_y
+
+                if j == 0:
+                    path_data += f"M {global_x:.1f} {global_y:.1f}"
+                else:
+                    path_data += f" L {global_x:.1f} {global_y:.1f}"
+
+            if path_data:
+                path_element = draw.Path(
+                    d=path_data,
+                    fill="none",
+                    stroke=colour,
+                    stroke_width=line_width,
+                )
+                drawing.append(path_element)
+
+
 def draw_state_boundaries(
     drawing: draw.Drawing,
     substations: list[Substation],
@@ -3085,6 +3301,9 @@ def draw_state_boundaries(
         drawing.append(state_text)
 
 
+import json
+
+
 def draw_connections(
     drawing: draw.Drawing,
     all_connections: dict,
@@ -3273,6 +3492,8 @@ def draw_connections(
         paths_drawn = 0
         paths_failed = 0
 
+        paths_dict = {}
+
         for i, path in enumerate(all_paths):
             if len(path) > 1:
                 colour = path_metadata[i]["colour"]
@@ -3325,6 +3546,7 @@ def draw_connections(
                 )
 
                 connection_name = path_metadata[i]["connection_name"]
+                paths_dict[connection_name] = path
                 connection_voltage = path_metadata[i]["voltage"]
                 connection_ss_pair = path_metadata[i]["substation_pair"]
                 connection_ss_pair = " &#8596; ".join(set(connection_ss_pair))
@@ -3373,12 +3595,68 @@ def draw_connections(
                 print(f"    End: grid {request['end']} -> px {end_px}")
                 print(f"    Substations: {request.get('substations', 'unknown')}")
                 paths_failed += 1
+        if False:  # generate paths dict for debugging
+            with open("paths.json", "w") as f:
+                json.dump(paths_dict, f, indent=4)
 
         print(
             f"  Pathfinding complete: {paths_drawn} paths drawn, {paths_failed} paths failed"
         )
     except Exception as e:
         print(f"Error finding paths: {e}")
+
+
+def render_substation_with_connection_status(
+    substation: Substation,
+    all_substations: dict[str, Substation] = None,
+    params: DrawingParams = None,
+    filename: str = None,
+) -> tuple:
+    """Renders a single substation SVG, adding status dots for connections.
+
+    This function calculates whether each connection is found in other substations
+    and passes this status to the main SVG rendering function to draw colored dots.
+
+    Args:
+        substation: The `Substation` object to render.
+        all_substations: Dictionary of all substations for connection checking.
+        params: Drawing parameters. If None, defaults are used.
+        filename: If provided, the SVG is saved to this path.
+
+    Returns:
+        A tuple containing:
+        - The SVG content as a string.
+        - A dictionary with the connection status.
+        - The full path to the saved file, or None.
+    """
+    if params is None:
+        params = DrawingParams()
+
+    connection_status = {}
+    if all_substations and hasattr(substation, "connections"):
+        for conn_id, conn_name in substation.connections.items():
+            if not conn_name:
+                continue
+
+            found = False
+            found_in = None
+            for sub_name, sub in all_substations.items():
+                if sub_name == substation.name:
+                    continue
+                if (
+                    hasattr(sub, "connections")
+                    and conn_name in sub.connections.values()
+                ):
+                    found = True
+                    found_in = sub_name
+                    break
+            connection_status[conn_name] = (found, found_in)
+
+    svg_content = render_substation_svg(substation, params, filename)
+
+    full_file_path = os.path.abspath(filename) if filename else None
+
+    return svg_content, connection_status, full_file_path
 
 
 def render_substation_svg(
@@ -3388,12 +3666,13 @@ def render_substation_svg(
 
     This is primarily used for generating documentation images. It calculates
     the required SVG dimensions, centers the substation, adds a title, and
-    optionally saves it to a file.
+    optionally saves it to a file. It can also draw connection status dots.
 
     Args:
         substation: The `Substation` object to render.
         params: Drawing parameters. If None, defaults are used.
         filename: If provided, the SVG is saved to this path.
+        connection_status: If provided, draws status dots for each connection.
 
     Returns:
         The SVG content as a string.
@@ -3445,6 +3724,9 @@ def render_substation_svg(
 
     # Add the substation to the drawing
     drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
+
+    # Draw internal paths
+    _draw_internal_paths(drawing, temp_sub, bbox, params)
 
     # Add a title
     title_x = svg_width / 2
@@ -3516,7 +3798,7 @@ def render_substation_svg(
     if filename:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(svg_content)
-        print(f"Saved substation SVG to {filename}")
+        # print(f"Saved substation SVG to {filename}") # Reduce console noise
 
     return svg_content
 
@@ -3581,10 +3863,10 @@ def generate_output_files(
     """
     map_width, map_height = map_dims
     # Add Google font embedding for Roboto
-    sld_drawing.embed_google_font(
-        DEFAULT_FONT_FAMILY, text=None
-    )  # None means all characters
-    state_drawing.embed_google_font(DEFAULT_FONT_FAMILY, text=None)
+    # sld_drawing.embed_google_font(
+    #     DEFAULT_FONT_FAMILY, text=None
+    # )  # None means all characters
+    # state_drawing.embed_google_font(DEFAULT_FONT_FAMILY, text=None)
 
     # Save the SLD SVG with embedded font
     sld_drawing.save_svg(OUTPUT_SVG)
