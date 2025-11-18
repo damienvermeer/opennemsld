@@ -4606,7 +4606,7 @@ substations:
           2: VIC-66-HTS-TX-B2
           3: VIC-66-HTS-TX-B3
           4: HTS-66-3XN-BUS
-          5: VIC-66-EHN/KBH-HTS
+          5: VIC-66-EHN-HTS
           6: VIC-66-HTS-SR
           7: VIC-66-HTS-MR
           8: VIC-66-BR-HTS
