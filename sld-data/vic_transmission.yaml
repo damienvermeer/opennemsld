@@ -6524,19 +6524,19 @@ substations:
           3: VIC-66-TTS-TX-B3
           4: VIC-66-TTS-TX-B4
           5: VIC-66-TTS-TX-B5
-          6: VIC-66-TTS-EPN
-          7: VIC-66-TTS-NEI
-          8: VIC-66-TTS-TT1
+          6: VIC-66-EPN-TTS
+          7: VIC-66-NEI-TTS
+          8: VIC-66-TT-TTS1
           9: TTS-1XN-TIE
-          10: VIC-66-TTS-EP
+          10: VIC-66-EP-TTS
           11: VIC-66-TTS-WT
-          12: VIC-66-TTS-TT2
-          13: VIC-66-TTS-CS
-          16: VIC-66-TTS-COO
-          19: VIC-66-TTS-BMS
-          20: VIC-66-TTS-CN
+          12: VIC-66-TT-TTS2
+          13: VIC-66-CS-TTS
+          16: VIC-66-COO-TTS
+          19: VIC-66-BMS-TTS
+          20: VIC-66-CN-TTS
           21: TTS-1XN-TIE
-          22: VIC-66-TTS-BD
+          22: VIC-66-BD-TTS
           23: TTS-B5-TIE
         rel_x: -5
         rel_y: 30
