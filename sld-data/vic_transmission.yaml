@@ -4435,16 +4435,16 @@ substations:
           3: VIC-66-ERTS-B3
           4: VIC-66-ERTS-B4
           5: ERTS-66-1XN-BUS
-          6: VIC-66-ERTS-BGE
+          6: VIC-66-BGE-ERTS
           7: VIC-66-ERTS-MGE
           8: VIC-66-ERTS-FGY
           9: VIC-66-ERTS-LD
           10: VIC-66-ERTS-RVE1
-          11: VIC-66-ERTS-DSH
+          11: VIC-66-DSH-ERTS
           12: VIC-66-ERTS-HPK
-          13: VIC-66-ERTS-BWN/CBTS
-          14: VIC-66-ERTS-DVY
-          15: VIC-66-ERTS-DN
+          13: VIC-66-BWN/CBT-ERTSS
+          14: VIC-66-DVY-ERTS
+          15: VIC-66-DN-ERTS
           16: VIC-66-ERTS-HPK/DN
           17: VIC-66-ERTS-LYD/CBTS
           18: VIC-66-ERTS-CAP-1B
