@@ -4142,17 +4142,17 @@ substations:
           3: RWTS-B3-LV
           4: RWTS-B4-LV
           5: RWTS-1XN-BUS
-          6: VIC-66-RWTS-RWN
-          7: VIC-66-RWTS-NW
-          8: VIC-66-RWTS-CPK
-          9: VIC-66-RWTS-BH
-          10: VIC-66-RWTS-RWN/CPK
-          11: VIC-66-RWTS-LDL
+          6: VIC-66-RWN-RWTS
+          7: VIC-66-NW-RWTS
+          8: VIC-66-CPK-RWTS
+          9: VIC-66-BH-RWTS
+          10: VIC-66-RWN/CPK-RWTS
+          11: VIC-66-LDL-RWTS
           12: VIC-66-RWTS-SRR
-          13: VIC-66-RWTS-BRA
-          14: VIC-66-RWTS-CYN/BWR
-          15: VIC-66-RWTS-BWR
-          16: VIC-66-RWTS-CYN
+          13: VIC-66-BRA-RWTS
+          14: VIC-66-CYN/BWR-RWTS
+          15: VIC-66-BWR-RWTS
+          16: VIC-66-CYN-RWTS
           17: VIC-66-RWTS-CAP-2A
           18: VIC-66-RWTS-CAP-2B
         rel_x: -7
