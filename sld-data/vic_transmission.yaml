@@ -6434,18 +6434,18 @@ substations:
         rel_y: 19
         connections:
           1: VIC-66-TSTS-TX-B5
-          2: VIC-66-TSTS-DC1
-          3: VIC-66-TSTS-HB
+          2: VIC-66-DC-TSTS1
+          3: VIC-66-HB-TSTS
           4: TSTS-1XN-BUS
           5: VIC-66-TSTS-TX-B1
-          6: VIC-66-TSTS-L
-          7: VIC-66-TSTS-ELM2
+          6: VIC-66-L-TSTS
+          7: VIC-66-ELM-TSTS2
           8: VIC-66-TSTS-WD
-          9: VIC-66-TSTS-DC2
+          9: VIC-66-DC-TSTS2
           10: VIC-66-TSTS-TX-B4
-          11: VIC-66-TSTS-SLF
-          12: VIC-66-TSTS-ELM1
-          13: VIC-66-TSTS-BU
+          11: VIC-66-SLF-TSTS
+          12: VIC-66-ELM-TSTS1
+          13: VIC-66-BU-TSTS
           14: TSTS-1XN-BUS
         objects:
           - type: cap-u
