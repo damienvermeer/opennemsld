@@ -3696,17 +3696,17 @@ substations:
           2: VIC-66-RTS-TX-B1
           3: VIC-66-RTS-TX-B2
           4: RTS-1XN-66
-          5: VIC-66-RTS-AR
-          6: VIC-66-RTS-CL
-          7: VIC-66-RTS-NR
+          5: VIC-66-AR-RTS
+          6: VIC-66-CL-RTS
+          7: VIC-66-NR-RTS
           8: VIC-66-RTS-TK/BC
-          9: VIC-66-RTS-K
+          9: VIC-66-K-RTS
           10: VIC-66-RTS-TK
-          11: VIC-66-RTS-CW
-          13: VIC-66-RTS-FR1
+          11: VIC-66-CW-RTS
+          13: VIC-66-FR1-RTS
           14: VIC-66-RTS-SK
-          18: VIC-66-RTS-EW
-          19: VIC-66-RTS-FR3
+          18: VIC-66-EW-RTS
+          19: VIC-66-FR3-RTS
         objects:
           - type: cap-u
             metadata:
