@@ -2364,8 +2364,9 @@ substations:
             rel_x: -1
             rel_y: 3
       - def: |
-          9x||||x1
-          2x||||x3
+          x||||x9
+          2x||||x1
+          ||||x3
           t
           |||x4
           |||x5
@@ -2388,6 +2389,7 @@ substations:
           6: DPTS-B2-LV
           7: VIC-66-DPTS-TNA2
           8: VIC-66-DPTS-SU1
+          9: VIC-66-BMH-DPTS
     objects:
       - type: tx-ud # B2
         metadata:
@@ -2396,7 +2398,7 @@ substations:
         connections:
           1: DPTS-B2-HV
           2: DPTS-B2-LV
-        rel_x: 7
+        rel_x: 9
         rel_y: 12
       - type: tx-ud # B4
         metadata:
@@ -6524,7 +6526,7 @@ substations:
           3: VIC-66-TTS-TX-B3
           4: VIC-66-TTS-TX-B4
           5: VIC-66-TTS-TX-B5
-          6: VIC-66-EPN-TTS
+          6: VIC-66-PTN-TTS
           7: VIC-66-NEI-TTS
           8: VIC-66-TT-TTS1
           9: TTS-1XN-TIE
