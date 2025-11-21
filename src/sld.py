@@ -1873,7 +1873,7 @@ def draw_busbar_object(
     is_first_bay,
     params,
     colour,
-    previous_bay_elements=None,
+    previous_bay_elements=[],
     owner_id: str = "main",
 ):
     """Draw a busbar object at the specified position.
@@ -1900,18 +1900,29 @@ def draw_busbar_object(
 
     # Check if previous bay has a busbar at the same y position for continuity
     extend_left = False
-    if previous_bay_elements and not is_first_bay:
+    previous_bay_elements = (
+        [] if previous_bay_elements is None else previous_bay_elements
+    )
+    # todo fix terrible typing ^
+    previous_bay_only_busbars = [
+        x for x in previous_bay_elements if x["type"] == "busbar"
+    ]
+    if previous_bay_only_busbars and not is_first_bay:
         # Find if there's a busbar at the same relative position in the previous bay
+        # ... and (issue 35) stop drawing over cb/isols if multiple buses
         current_busbar_index = 0
-        for prev_element in previous_bay_elements:
-            if (
-                prev_element["type"] == "busbar"
-                and prev_element["subtype"] == "standard"
-            ):
-                if current_busbar_index == 0:  # This is the matching busbar position
-                    extend_left = True
-                    break
-                current_busbar_index += 1
+        for prev_element in previous_bay_only_busbars:
+            if prev_element.get("subtype", "") in [
+                "tie_cb",
+                "tie_cb_thin",
+                "tie_isol",
+                "tie_isol_thin",
+            ]:
+                break  # never extend on tie cb/isol
+            if current_busbar_index == 0:  # This is the matching busbar position
+                extend_left = True
+                break
+            current_busbar_index += 1
 
     if subtype == "standard":
         # Determine line start position
@@ -2859,7 +2870,6 @@ def _draw_internal_paths(drawing, substation, bbox, params):
         all_connection_nodes=all_connection_nodes,
         busbar_weight=BUSBAR_WEIGHT,
         substation_pairs=substation_pairs_info,
-        verbose=False,
     )
 
     # 4. Draw paths
@@ -3863,10 +3873,10 @@ def generate_output_files(
     """
     map_width, map_height = map_dims
     # Add Google font embedding for Roboto
-    # sld_drawing.embed_google_font(
-    #     DEFAULT_FONT_FAMILY, text=None
-    # )  # None means all characters
-    # state_drawing.embed_google_font(DEFAULT_FONT_FAMILY, text=None)
+    sld_drawing.embed_google_font(
+        DEFAULT_FONT_FAMILY, text=None
+    )  # None means all characters
+    state_drawing.embed_google_font(DEFAULT_FONT_FAMILY, text=None)
 
     # Save the SLD SVG with embedded font
     sld_drawing.save_svg(OUTPUT_SVG)
