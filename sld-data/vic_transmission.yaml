@@ -2653,11 +2653,11 @@ substations:
           14: VIC-66-KTS-TMA
           15: KTS-B2-LV
           16: VIC-66-KTS-NDT
-          17: VIC-66-KTS-BY
+          17: VIC-66-BY-KTS
           18: KTS-B1-LV
-          19: VIC-66-KTS-ES
+          19: VIC-66-ES-KTS
           20: VIC-66-KTS-SSE1
-          21: VIC-66-KTS-AW
+          21: VIC-66-AW-KTS
           22: KTS-4XN-66
           23: VIC-66-KTS-MAT
   - name: Altona (ATS)
@@ -3300,20 +3300,20 @@ substations:
           1: VIC-66-WMTS-TX-B1
           2: VIC-66-WMTS-TX-B2
           3: VIC-66-WMTS-TX-B3
-          4: VIC-66-WMTS-FT1
-          5: VIC-66-WMTS-FE
-          6: VIC-66-WMTS-VM1
-          7: VIC-66-WMTS-JA3
-          8: VIC-66-WMTS-WGT/FE2
-          9: VIC-66-WMTS-NC/WB
-          10: VIC-66-WMTS-VM3
-          11: VIC-66-WMTS-FT2
-          12: VIC-66-WMTS-DA3
-          13: VIC-66-WMTS-WISS1
-          14: VIC-66-WMTS-DA1
-          15: VIC-66-WMTS-VM2
-          16: VIC-66-WMTS-WISS2
-          17: VIC-66-WMTS-JA1
+          4: VIC-66-FT-WMTS1
+          5: VIC-66-FE-WMTS
+          6: VIC-66-VM-WMTS1
+          7: VIC-66-JA-WMTS3
+          8: VIC-66-WGT/FE-WMTS2
+          9: VIC-66-NC/WB-WMTS
+          10: VIC-66-VM-WMTS3
+          11: VIC-66-FT-WMTS2
+          12: VIC-66-DA-WMTS3
+          13: VIC-66-WISS-WMTS1
+          14: VIC-66-DA-WMTS1
+          15: VIC-66-VM-WMTS2
+          16: VIC-66-WISS-WMTS2
+          17: VIC-66-JA-WMTS1
           18: WMTS-66-1XN-CABLE
         rel_x: -6
         rel_y: 23
