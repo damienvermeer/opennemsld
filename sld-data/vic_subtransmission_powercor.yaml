@@ -1,2723 +1,583 @@
 substations:
-  - name: Wemen Solar Farm
-    lat: -34.7882127
-    long: 142.5414514
-    voltage_kv: 66
-    tags:
-      - wemen solar farm
-    def: |
-      1/|x
-      2/|
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-WETS-WSF
-      2: VIC-66-WMN-WSF
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 3
-        connections: {}
-      - type: gen
-        metadata:
-          voltage: 33
-          text: PV
-          info: |
-            Wemen Solar Farm
-            97.5 MW / 110 MWp
-        rel_x: 1
-        rel_y: 8
-        connections: {}
-  - name: Stawell (STL)
-    lat: -37.0582013
-    long: 142.7523823
-    voltage_kv: 66
-    tags:
-      - STL
-    def: |
-      1x|/
-      i
-      3x|
-      i
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HOTS-STL2
-      2: VIC-66-ART-STL
-      3: VIC-66-HOTS-STL1
-    child_definitions:
+- name: Sydenham (SHM)
+  lat: -37.67603131
+  long: 144.7533623
+  voltage_kv: 66
+  def: |
+    1|
+    t
+    |/
+    t
+    2|
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-SBY-SHM
+    2: VIC-66-KTS-SHM
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
     - def: |
-        |x
-        i
-        |
-        i
-        |x
-      buses:
-        1: ''
+        x|
+      voltage_kv: 22
+      rel_x: 4
+      rel_y: 10 
+- name: Braybrook (BY)
+  lat: -37.78244934
+  long: 144.874757
+  voltage_kv: 66
+  def: |
+    1/|
+    t
+    |/
+    t
+    2/|
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-BY-KTS
+    2: VIC-66-BY-ES
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+      voltage_kv: 22
+      rel_x: 4
+      rel_y: 10 
+- name: Tullamarine (TMA)
+  lat: -37.71156862
+  long: 144.8590456
+  voltage_kv: 66
+  def: |
+    1x|/
+    t
+    2x||/
+  buses:
+    1: '1'
+    2: '2'
+  connections:
+    1: VIC-66-KTS-TMA
+    2: VIC-66-MAT-TMA
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x||
       voltage_kv: 22
       rel_x: 0
-      rel_y: 7
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 1
       rel_y: 10
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 9
-      rel_y: 10
-  - name: Ararat (ART)
-    lat: -37.268485
-    long: 142.923999
-    voltage_kv: 66
-    tags:
-      - ART
-    def: |
-      1x|/
-      |
-      |
-      i
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-ART-STL
-      2: VIC-66-HOTS-STL1
-      2: VIC-66-ART-BGR
-    child_definitions:
-    - def: |
-        |
-        i
-        |
-        i
-        |x
       buses:
-        1: ''
+        1: '1'
+        2: '2'
+- name: Airport West (AW)
+  lat: -37.7150074
+  long: 144.8859059
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    2/||/
+    t
+    |||/
+    t
+    3/||||/
+  buses:
+    1: '4'
+    2: '1'
+    3: '2'
+    4: '3'
+  connections:
+    1: VIC-66-AW-NDT
+    2: VIC-66-AW-PV
+    3: VIC-66-AW-KTS
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 13
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        |
+        x|x
+        t
+        x||
+        i
+        x|||x
+      buses:
+        1: '1'
+        2: '2'
+        3: '3'
       voltage_kv: 22
       rel_x: 0
-      rel_y: 7
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 9
       rel_y: 10
-  - name: Buangor (BGR)
-    lat: -37.3592765
-    long: 143.1523484
-    voltage_kv: 66
-    tags:
-      - BGR
-    def: |
-      1/|xs/3
-      tEts
-      2/|xs/4
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-ART-BGR
-      2: VIC-66-BAN-BGR
-      3: VIC-66-CHWF1
-      4: VIC-66-CHWF2
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 6
-        connections:
-          1: VIC-66-CHWF1
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 5
-        rel_y: 6
-        connections:
-          1: VIC-66-CHWF2
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Challicum Hills Wind Farm
-            35x 1.5 = 52.5 MW
-        rel_x: 1
-        rel_y: 11
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Challicum Hills Wind Farm
-            35x 1.5 = 52.5 MW
-        rel_x: 5
-        rel_y: 11
-  - name: Ballarat North (BAN)
-    lat: -37.534507
-    long: 143.847329
-    voltage_kv: 66
-    tags:
-      - BAN
-    def: |
-      3x|
-      1x|x
-      |xs
-      NEs
-      ||xs
-      2x||x
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-BAN-BATS1
-      2: VIC-66-BAN-BATS2
-      3: VIC-66-BAN-BGR
-    objects:
-      - type: tx-ud # T1
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          2: VIC-22-BAN-T1
-        rel_x: 3
-        rel_y: 3
-      - type: tx-ud # T2
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          2: VIC-22-BAN-T2
-        rel_x: 7
-        rel_y: 3
-      - type: tx-ud # T3
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          2: VIC-22-BAN-T3
-        rel_x: 11
-        rel_y: 3
-    child_definitions:
-      - def: |
-          1x||x
-          t
-          2x|
-          t
-          3x|||
-        connections:
-          1: VIC-22-BAN-T2
-          2: VIC-22-BAN-T1
-          3: VIC-22-BAN-T3
-        voltage_kv: 22
-        rel_x: 2
-        rel_y: 13
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-  - name: Kiata Wind Farm (KWF)
-    lat: -36.3973561
-    long: 141.7477619
-    voltage_kv: 66
-    tags:
-      - KWF
-    def: |
-      2/|x
-      t
-      1/|x
-    buses:
-      1: '1'
-    connections:
-      1: VIC-66-HOTS-KWF
-      2: VIC-66-KWF-NHL
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 3
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Kiata Wind Farm
-            9 x 3.45 = 31.05 MW
-        rel_x: 1
-        rel_y: 8
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 5
-        rel_y: 3
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Kiata Wind Farm
-            9 x 3.45 = 31.05 MW
-        rel_x: 5
-        rel_y: 8
-  - name: Bannerton Solar Park (BSP)
-    lat: -34.6881867
-    long: 142.7807748
-    voltage_kv: 66
-    tags:
-      - BSP
-      - Bannerton Solar Park
-    def: |
-      E1sE3s
-      iEi
-      s/s/
-      iEs
-      2/sds/
-    buses:
-      1: ""
-    connections:
-      3: VIC-66-WETS-BSP
-      2: VIC-66-BBD-BSP
-      1: VIC-66-BSP-RVL
-    objects:
-      - type: gen
-        metadata:
-          voltage: 66
-          text: PV
-          info: |
-            Bannerton Solar Park
-            88 MW / 110 MWp
-        rel_x: 5
-        rel_y: 7
-      - type: gen
-        metadata:
-          voltage: 66
-          text: PV
-          info: |
-            Bannerton Solar Park
-            88 MW / 110 MWp
-        rel_x: 9
-        rel_y: 7
-  - name: Robinvale (RVL)
-    lat: -34.6217676
-    long: 142.7661335
-    voltage_kv: 66
-    tags:
-      - RVL
-    def: |
-      2dsxs
-      tsEts
-      1dsxs
-    buses:
-      1: 
-    connections:
-      1: VIC-66-BSP-RVL
-      2: VIC-66-KSF-RVL
-  - name: Karadoc Solar Farm (KSF)
-    lat: -34.4156052
-    long: 142.2520746
-    voltage_kv: 66
-    tags:
-      - KSF
-      - Karadoc Solar Farm
-    def: |
-      3/sx
-      sx1
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-KSF-RVL
-      3: VIC-66-KSF-RCTS
-    objects:
-      - type: gen
-        metadata:
-          voltage: 66
-          text: PV
-          info: |
-            Karadoc Solar Farm
-            90 MW / 112.5 MWp
-        rel_x: 1
-        rel_y: 4
-  - name: Gannawarra (GSF/GESS)
-    lat: -35.7330445
-    long: 143.7804412
-    voltage_kv: 66
-    tags:
-      - GSF
-      - Gannawarra Solar Farm
-    def: |
-      3xs
-      1/sx
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-KGTS-GSF/SHL
-      3: VIC-66-GSF-SHL
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 3
-        rel_y: 3
-    child_definitions:
-      - def: |
-          |x
-          |x
-        voltage_kv: 33
-        rel_x: 0
-        rel_y: 7
-        objects:
-          - type: gen
-            metadata:
-              voltage: 33
-              text: PV
-              info: |
-                Gannawarra Solar Farm
-                50 MW / 60 MWp
-            rel_x: 1
-            rel_y: 4
-          - type: gen
-            metadata:
-              voltage: 33
-              text: BES
-              info: |
-                Gannawarra BESS
-                25 MW / 50 MWh
-            rel_x: 3
-            rel_y: 4
-  - name: Cohuna (CHA)
-    lat: -35.8803326
-    long: 144.2189295
-    voltage_kv: 66
-    tags:
-      - Cohuna
-    def: |
-      1x|/3
-      i
-      |/2
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-CHA-KGTS
-      2: VIC-66-CHA-T2
-      3: VIC-66-CHA-T3
-    objects:
-    - type: tx-ud # T3
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 13
+          rel_y: 3
+- name: Sunbury (SBY)
+  lat: -37.58588252
+  long: 144.722174
+  voltage_kv: 66
+  def: |
+    1/|x|/2
+    tEt
+    3/|E|/
+    tEi
+    4/|E|/
+    tEi
+    5/|x|/
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-KTS-SBY1
+    2: VIC-66-GSB-SBY2
+    3: VIC-66-GSB-SBY1
+    4: VIC-66-SBY-SHM
+    5: VIC-66-KTS-SBY2
+  objects:
+    - type: tx-ud
       metadata:
         w1: 66
         w2: 22
-      rel_x: 1 
-      rel_y: 3
+      rel_x: 5
+      rel_y: 6
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 6
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 13
+      rel_y: 6
+  child_definitions:
+    - def: |
+        /|x1x2
+        i
+        /|
+        i
+        /|
       connections:
-        1: VIC-66-CHA-T3
-    - type: tx-ud # T2
+        1: VIC-22-SBY-CAP1A
+        2: VIC-22-SBY-CAP1B
+      voltage_kv: 22
+      rel_x: 4
+      rel_y: 13
+      objects:
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 3
+          connections:
+            1: VIC-22-SBY-CAP1A
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 6
+          connections:
+            1: VIC-22-SBY-CAP1B
+- name: Essendon (ES)
+  lat: -37.75405195
+  long: 144.8937925
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    2/||/
+  buses:
+    1: '2'
+    2: '1'
+  connections:
+    1: VIC-66-BY-ES
+    2: VIC-66-ES-KTS
+  objects:
+    - type: tx-ud
       metadata:
         w1: 66
         w2: 22
-      rel_x: 5 
+      rel_x: 1
       rel_y: 3
-      connections:
-        1: VIC-66-CHA-T2
-  - name: Hattah (HTH)
-    lat: -34.760228
-    long: 142.279427
-    voltage_kv: 66
-    def: |
-      1x|3
-      2x|
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-HTH-YSF
-      2: VIC-66-BPA-HTH
-      3: VIC-66-HTH-OYN
-  - name: Brownport Almonds (BPA)
-    lat: -34.789499
-    long: 142.4866
-    voltage_kv: 66
-    def: |
-      1/|
-      i
-      2/|/
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-BPA-HTH
-      2: VIC-66-BPA-WETS
-      3: VIC-66-BPA-HTH
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 3
-  - name: Yatpool Solar Farm (YSF)
-    lat: -34.394354
-    long: 142.185096
-    voltage_kv: 66
-    tags:
-      - YSF
-      - Yatpool Solar Farm
-    def: |
-      1/|x
-      |x2
-    buses:
-      1: ""
-    connections:
-      1: VIC-66-RCTS-YSF
-      2: VIC-66-HTH-YSF
-    objects:
-      - type: gen
-        metadata:
-          voltage: 66
-          text: PV
-          info: |
-            Yatpool Solar Farm
-            ?? MW / 106.5 MWp
-        rel_x: 1
-        rel_y: 4
-        connections: {}
-  - name: Oaklands Hill Wind Farm (OWF)
-    lat: -37.6814585
-    long: 142.5522663
-    voltage_kv: 66
-    def: |
-      |x1
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-NRB-OWF
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 33
-          w2: 66
-        rel_x: 1
-        rel_y: -4
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Oaklands Hill Wind Farm
-            31 x 2.1 = 65MW
-        rel_x: 1
-        rel_y: -5
-  - name: Mortons Lane Wind Farm (MWF)
-    lat: -37.83514393
-    long: 142.4662859
-    voltage_kv: 66
-    def: |
-      1x|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-MWF-NRB
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 0
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-           Mortons Lane Wind Farm
-            13 x 1.5 = 19.5MW
-        rel_x: 1
-        rel_y: 5
-  - name: Cobram East (CME)
-    lat: -35.97050805
-    long: 145.696566
-    voltage_kv: 66
-    def: |
-      1,2x|/
-      i
-      |/
-      i
-      2/|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-CME-NKA
-      2: CME-NKA-TIE
-
-    child_definitions:
-      - def: |
-          d|
-          |
-          d|
-          |
-          x|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-      - type: tx-ud #1
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-      - type: tx-ud #2
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 3
-      - type: tx-ud #3
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 3
-  - name: Numurkah (NKA)
-    lat: -36.0694341
-    long: 145.4509466
-    voltage_kv: 66
-    def: |
-      1d|xd||/
-      |EEi
-      |EE||/
-      iEEi
-      2d|x3x||/
-    buses:
-      1: ''
-      2: ''
-    connections:
-      1: VIC-66-NKA-WNS
-      2: VIC-66-NKA-NSF
-      3: VIC-66-CME-NKA
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-          |
-          |
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 13
-    objects:
-      - type: tx-ud #1
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 9
-      - type: tx-ud #2
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 9
-      - type: tx-ud #3
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 9
-  - name: Echuca (ECA)
-    lat: -36.14093204
-    long: 144.7643084
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      |/
-      i
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-ECA-KYM1
-      2: VIC-66-ECA-KYM2
-    child_definitions:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
     - def: |
-        |
-        |
-        |
-        |
-        |
+        1x|
+        1x|
+        t
+        2x|x
+        2x|
+      voltage_kv: 22
+      rel_x: -2
+      rel_y: 10
       buses:
-        1: ''
+        1: '2'
+        2: '1'
+      connections:
+        1: VIC-22-ES-TIE1
+        2: VIC-22-ES-TIE2
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 7
+          rel_y: 3
+- name: Melbourne Airport (MAT)
+  lat: -37.69278205
+  long: 144.8568186
+  voltage_kv: 66
+  def: |
+    1x|/
+    t
+    2x||/
+  buses:
+    1: '2'
+    2: '1'
+  connections:
+    1: VIC-66-MAT-TMA
+    2: VIC-66-KTS-MAT
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x|x
       voltage_kv: 22
       rel_x: 0
+      rel_y: 10
+      buses:
+        1: '2'
+        2: '1'
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+- name: Pascoe Vale (PV)
+  lat: -37.72235188
+  long: 144.932975
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||/
+    t
+    2/|||/
+  buses:
+    1: '1'
+    2: '2'
+    3: '3'
+  connections:
+    1: VIC-66-AW-PV
+    2: VIC-66-KTS-PV
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x||x
+        t
+        x|||
+      buses:
+        1: '1'
+        2: '2'
+        3: '3'
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+- name: Next DC Tullamarine (NDT)
+  lat: -37.709111
+  long: 144.874711
+  voltage_kv: 66
+  def: |
+    |/1/||
+    |/2/||
+    |/3/||
+    |/4/||
+    |/5/||
+  connections:
+    1: VIC-66-NDT-T1
+    2: VIC-66-NDT-L1
+    3: VIC-66-NDT-T2
+    4: VIC-66-NDT-L2
+    5: VIC-66-NDT-T3
+  buses:
+    1: '1'
+    2: '2'
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 2
+      rel_y: 10
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 6
+      rel_y: 10
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 10
+      rel_y: 10
+  child_definitions:
+    - def: |
+        N1x
+      voltage_kv: 66
+      rel_x: 1
       rel_y: 7
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
+      connections:
+        1: VIC-66-NDT-T1
+    - def: |
+        N1x
+      voltage_kv: 66
       rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Cohuna Solar Farm (CSF)
-    lat: -35.88024499
-    long: 144.2194626
-    voltage_kv: 66
-    def: ?|?
-    buses:
-      1: ''
-    connections: {}
-  - name: Swan Hill (SHL)
-    lat: -35.34537299
-    long: 143.5226966
-    voltage_kv: 66
-    def: |
-      1x|/2
-      i
-      |/3
-      i
-      4x|/5
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-KGTS-SHL
-      2: VIC-66-SHL-T3
-      3: VIC-66-SHL-T2
-      4: VIC-66-GSF-SHL
-      5: VIC-66-SHL-T1
-    objects:
-      - type: tx-ud # T3
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          1: VIC-66-SHL-T3
-        rel_x: 1 
-        rel_y: 3
-      - type: tx-ud # T2
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          1: VIC-66-SHL-T2
-        rel_x: 5 
-        rel_y: 3
-      - type: tx-ud # T1
-        metadata:
-          w1: 66
-          w2: 22
-        connections:
-          1: VIC-66-SHL-T1
-        rel_x: 9 
-        rel_y: 3
-  - name: Ouyen (OYN)
-    lat: -35.05864877
-    long: 142.3155978
-    voltage_kv: 66
-    def: |
-      1|x||/
-      |Ei
-      tE||/
-      |d||
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HTH-OYN
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6     
-  - name: Merbien (MBN)
-    lat: -34.17466176
-    long: 142.0795089
-    voltage_kv: 66
-    def: |
-      1/|d|
-      tEt
-      2/|E|/
-      tEi
-      3/sx|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-MBN-RCTS
-      2: VN-66-DTN-MBN
-      3: VIC-66-MBN-MDA
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-  - name: Mildura (MDA)
-    lat: -34.20758299
-    long: 142.1568655
-    voltage_kv: 66
-    def: |
-      1/sx|/2
-      sEt
-      sE|/
-      tEt
-      sE|/
-      3/sx|/4
-    buses:
-      1: ''
-    connections: 
-      1: VIC-66-MDA-RCTS1
-      2: VIC-66-MBN-MDA
-      3: VN-66-BNG-MDA
-      4: VIC-66-MDA-RCTS2
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-  - name: Wemen (WMN)
-    lat: -34.75381074
-    long: 142.6833884
-    voltage_kv: 66
-    def: 1x|/
-         i
-         |/
-    buses:
-      1: ''
-    connections: 
-      1: VIC-66-WMN-WSF
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 3
-  - name: Boundary Bend (BBD)
-    lat: -34.71275729
-    long: 143.0057241
-    voltage_kv: 66
-    def: |
-         1|/
-         |
-         |/
-    buses:
-      1: ''
-    connections: 
-      1: VIC-66-BBD-BSP
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 3
-  - name: Shepparton North (SHN)
-    lat: -36.35370514
-    long: 145.4113561
-    voltage_kv: 66
-    def: |
-      1/||/
-      t
-      2/|/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-SHN-SHTS1
-      2: VIC-66-SHN-SHTS2
-    child_definitions:
-      - def: |
-          |
-          t
-          ||
-  
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Shepparton (STN)
-    lat: -36.3841136
-    long: 145.4146537
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      ||/
-      t
-      2x|||/
-    buses:
-      1: '3'
-      2: '2'
-      3: '1'
-    connections:
-      2: VIC-66-SHTS-STN
-      1: VIC-66-MNA-STN
-    child_definitions:
-      - def: |
-          |
-          t
-          ||
-          ||
-          ||
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Mooroopna (MNA)
-    lat: -36.37557128
-    long: 145.349253
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-MNA-SHTS
-      1: VIC-66-MNA-STN
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Kyabram (KYM)
-    lat: -36.31314348
-    long: 145.0326675
-    voltage_kv: 66
-    def: |
-      1||x|2
-      tEt
-      3||E|/
-      ||Ei
-      tE|/
-      ||Ei
-      4||E|/
-      tEt
-      5||d|
-    buses:
-      1: ''
-      2: ''
-    connections:
-      1: VIC-66-ECA-KYM1
-      2: VIC-66-LSF-KYM
-      3: VIC-66-KYM-SHP
-      4: VIC-66-ECA-KYM2
-      5: VIC-66-KYM-SHTS2
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-          |
-          |
-        buses:
-          1: '1'
-        voltage_kv: 22
-        rel_x: 4
-        rel_y: 10
-    objects:
-      - type: tx-ud #1
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud #2
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-      - type: tx-ud #3
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 13
-        rel_y: 6
-  - name: Stanhope (SHP)
-    lat: -36.44537659
-    long: 144.995493
-    voltage_kv: 66
-    def: |
-      3x|
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-KYM-SHP
-      1: VIC-66-SHP-SHTS
-      3: VIC-66-GGS-SHP
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 3
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
+      rel_y: 7
+      connections:
+        1: VIC-66-NDT-T2
+    - def: |
+        N1x
+      voltage_kv: 66
       rel_x: 7
-      rel_y: 3
-    child_definitions:
-      - def: |
-          |
-          t
-          ||
-        buses:
-          1: '1'
-          2: '2'
-        voltage_kv: 22
-        rel_x: 2
-        rel_y: 7
-  - name: Numurkah Solar Farm (NSF)
-    lat: -36.159010
-    long: 145.473171
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      2/|x
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-NSF-SHTS
-      1: VIC-66-NKA-NSF
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 5
-      rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Numurkah Solar Farm
-          128 MW
-      rel_x: 1
-      rel_y: 8
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Numurkah Solar Farm
-          128 MW
-      rel_x: 5
-      rel_y: 8
-  - name: Wunghnu Solar Farm (WNS)
-    lat: -36.159010
-    long: 145.473171
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      2/|x
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-SHTS-WNS
-      1: VIC-66-NKA-WNS
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 5
-      rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Wunghnu Solar Farm
-          90 MW
-      rel_x: 1
-      rel_y: 8
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Wunghnu Solar Farm
-          90 MW
-      rel_x: 5
-      rel_y: 8
-  - name: Lancaster Solar Farm (LSF)
-    lat: -36.298242
-    long: 145.142130
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      2/|x
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-LSF-SHTS
-      1: VIC-66-LSF-KYM
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 5
-      rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Lancaster Solar Farm
-          100 MW
-      rel_x: 1
-      rel_y: 8
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Lancaster Solar Farm
-          100 MW
-      rel_x: 5
-      rel_y: 8
-  - name: Girgarre Solar Farm (GGS)
-    lat: -36.425634
-    long: 144.920896
-    voltage_kv: 66
-    def: |
-      1x|/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-GGS-SHP
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 1
-      rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: PV
-        info:
-          Girgarre Solar Farm
-          93 MW
-      rel_x: 1
-      rel_y: 8
-  - name: Inglewood Reg (IWD)
-    lat: -36.57894043
-    long: 143.8903796
-    voltage_kv: 66
-    def: |
-        1s/Ed/s2
-         s/ddds
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BETS-CTN-KTG
-      2: VIC-66-BETS-CTN-IWD
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 66
-        rel_x: 1
-        rel_y: 3
-  - name: Kurting Reg (KTG)
-    lat: -36.53938649
-    long: 143.8131414
-    voltage_kv: 66
-    def: |
-        1s/Ed/s2
-         s/ddds
-    buses:
-      1: ''
-    connections:
-      2: VIC-66-BETS-CTN-KTG
-      1: VIC-66-BETS-CTN
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 66
-        rel_x: 1
-        rel_y: 3
-  - name: Eaglehawk (EHK)
-    lat: -36.7359555
-    long: 144.2785602
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: ''
-      2: ''
-    connections:
-      1: VIC-66-BETS-EHK
-      2: VIC-66-BGO-EHK
-    child_definitions:
-      - def: |
-          /|
-          |
-          /|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Bendigo (BGO)
-    lat: -36.77048879
-    long: 144.2770084
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: ''
-      2: ''
-    connections:
-      2: VIC-66-BETS-BGO
-      1: VIC-66-BGO-EHK
-    child_definitions:
-      - def: |
-          /|
-          |
-          /|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Charlton (CTN)
-    lat: -36.27397727
-    long: 143.3632622
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      ||/
-      t
-      2x|||/
-    buses:
-      1: '3'
-      2: '2'
-      3: '1'
-    connections:
-      1: VIC-66-CBW-CTN
-      2: VIC-66-BETS-CTN
-    child_definitions:
-      - def: |
-          /|
-          |
-          /|
-          |
-          /|
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Coonooer Bridge (CBW)
-    lat: -36.41521498
-    long: 143.3801801
-    voltage_kv: 66
-    def: |
-      1xN
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-CBW-CTN
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 0
-      - type: gen
-        metadata:
-          voltage: 33
-          text: WF
-          info: |
-            Coonooer Bridge (CBW)
-            6 x 1.5 = 9MW
-        rel_x: 1
-        rel_y: 5
-  - name: Gisborne (GSB)
-    lat: -37.45347761
-    long: 144.5761974
-    voltage_kv: 66
-    def: |
-      1|d|
-      tEi
-      2|E|/
-      tEi
-      3|E|/
-      tE|
-      4|E|
-       iEi
-       |d|
-    connections:
-      1: VIC-66-GSB-SBY2
-      2: VIC-66-GSB-WND1
-      3: VIC-66-GSB-SBY1
-      4: VIC-66-GSB-WND2
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|x
-          i
-          /|
-        rel_x: 4
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-  - name: Woodend (WND)
-    lat: -37.33449958
-    long: 144.5177336
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-GSB-WND1
-      2: VIC-66-GSB-WND2
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Castlemaine (CMN)
-    lat: -37.07237605
-    long: 144.2066213
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-BETS-CMN
-      1: VIC-66-CMN-MRO
-    child_definitions:
-      - def: |
-          /|
-          |
-          /|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Maryborough (MRO)
-    lat: -37.04951545
-    long: 143.754704
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-BETS-MRO
-      2: VIC-66-CMN-MRO
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Horsham (HSM)
-    lat: -36.73492864
-    long: 142.2060392
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      |/
-      i
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HOTS-HSM2
-      2: VIC-66-HOTS-HSM1
-    child_definitions:
-    - def: |
-        |x
-        i
-        |
-        i
-        |x
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
       rel_y: 7
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 1
-      rel_y: 10
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 9
-      rel_y: 10
-  - name: Nhill (NHL)
-    lat: -36.35149183
-    long: 141.6330279
-    voltage_kv: 66
-    def: |
-      sx|/
-      sEi
-      1s/||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-KWF-NHL
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|
-          i
-          /|
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 13
-  - name: Charam (CHM)
-    lat: -36.99455491
-    long: 141.5494291
-    voltage_kv: 66
-    def: |
-      1Nx
-    connections:
-      1: VIC-66-CHM-HOTS 
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-    child_definitions:
-      - def: |
-         x|
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    buses:
-      1: ''
-  - name: Ballarat South (BAS)
-    lat: -37.575183
-    long: 143.8275003
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      |/
-      t
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BAE-BAS
-      2: VIC-66-BAS-BGF
-    child_definitions:
-    - def: |
-        x|x
-        t
-        x|
-        t
-        x|x
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 1
-      rel_y: 13
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 9
-      rel_y: 13
-  - name: Ballarat East (BAE)
-    lat: -37.568556
-    long: 143.872602
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BAE-BAS
-      2: VIC-66-BAE-BATS
-    child_definitions:
-    - def: |
-        x|
-        i
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud # 1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud # 2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Ballarat Gold Fields (BGF)
-    lat: -37.58370881
-    long: 143.863316
-    voltage_kv: 66
-    def: |
-      1|x
-      2| 
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BAS-BGF
-      2: VIC-66-BATS-BGF
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-  - name: Bungal (BGL)
-    lat: -37.6784616
-    long: 144.0752393
-    voltage_kv: 66
-    def: |
-      1/|xs/
-      2/|Es/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BATS-BGL
-      2: VIC-66-BGL-YSW
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 6
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 6
-        rel_x: 3
-        rel_y: 6
-  - name: Yaloak South Wind Farm (YSF)
-    lat: -37.72822833
-    long: 144.2406731
-    voltage_kv: 66
-    def: |
-      1x|x
-      2x|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BGL-YSW
-      2: VIC-66-BMH-YSW
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 33
-        rel_x: 1
-        rel_y: 3
-      - type: gen
-        metadata:
-          text: WF
-          info: |
-            Yalloak South Wind Farm
-            14 x 2.05 = 28.7MW
-        rel_x: 1
-        rel_y: 7
-  - name: Bacchus Marsh (BMH)
-    lat: -37.69956481
-    long: 144.4084799
-    voltage_kv: 66
-    def: |
-      1x|
-      i
-      |/
-      i
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BMH-YSW
-      2: VIC-66-BLTS-BMH
-    child_definitions:
-    - def: |
-        |x
-        i
-        |
-        i
-        |
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 7
-    objects:
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 1
-      rel_y: 10
-  - name: Codrington Wind Farm (CWF)
-    lat: -38.27294805
-    long: 141.9730843
-    voltage_kv: 66
-    def: |
-      1|
-      |x2
-      3|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-CWF-PLD
-      2: CWF-TX-HV
-      3: VIC-66-CWF-KRT
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 3
-      rel_y: 5
       connections:
-        1: CWF-TX-HV
-    - type: gen
-      metadata:
-        voltage: 33
-        text: WF
-        info: |
-          Codrington Wind Farm
-          14 x 1.3 = 18.2MW
-      rel_x: 3
-      rel_y: 10
-  - name: Yambuk Wind Farm (YWF)
-    lat: -38.29905858
-    long: 142.0268547
-    voltage_kv: 66
-    def: |
-      1|
-      |x2
-      3|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-PLD-YWF
-      2: YWF-TX-HV
-      3: VIC-66-KRT-YWF
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 3
-      rel_y: 5
+        1: VIC-66-NDT-T3
+    - def: |
+        N1x2
+      voltage_kv: 66
+      rel_x: 2
+      rel_y: -4
       connections:
-        1: YWF-TX-HV
-    - type: gen
-      metadata:
-        voltage: 33
-        text: WF
-        info: |
-          Yambuk Wind Farm
-          20 x 1.5 = 30MW
-      rel_x: 3
-      rel_y: 10
-  - name: Koroit (KRT)
-    lat: -38.31490588
-    long: 142.4294935
-    voltage_kv: 66
-    def: |
-      1|d|
-      tEt
-      2|E|/
-      tEi
-      3|E|/
-      |Ei
-      |E|/
-      tEt
-      4|d|5
-    connections:
-      1: VIC-66-KRT-WBL
-      2: VIC-66-KRT-CWFREG
-      3: VIC-66-KRT-TGTS1
-      4: VIC-66-KRT-YWFREG
-      5: VIC-66-KRT-TGTS2
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 13
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|x
-          i
-          /|
-          i
-          /|
-        rel_x: 4
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-      - def: |
-          1sEE4s2
-          s/ds
-        voltage_kv: 66
-        connections:
-          1: VIC-66-KRT-YWF
-          2: VIC-66-KRT-YWFREG
-          4: YWFREG
-        rel_x: 16
-        rel_y: -9
-        objects:
-          - type: tx-ud
-            metadata:
-              w1: 66
-              w2: 66
-            rel_x: 1
-            rel_y: 0
-            connections:
-              2: YWFREG
-      - def: |
-          s/ds
-          1sEE4s2
-        voltage_kv: 66
-        connections:
-          1: VIC-66-CWF-KRT
-          2: VIC-66-KRT-CWFREG
-          4: CWFREG
-        rel_x: 2
-        rel_y: -9
-        objects:
-          - type: tx-ud
-            metadata:
-              w1: 66
-              w2: 66
-            rel_x: 3
-            rel_y: 0
-            connections:
-              2: CWFREG
-    buses:
-      1: ''
-  - name: Warnambool (WBL)
-    lat: -38.37380577
-    long: 142.4910436
-    voltage_kv: 66
-    def: |
-      |d|/
-      tEi
-      2|E|/
-      tEi
-      |E|/
-      tEt
-      4|x|5
-    connections:
-      2: VIC-66-KRT-WBL
-      4: VIC-66-TRG-WBL2
-      5: VIC-66-TRG-WBL1
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          |x
-          /|x
-          i
-          /|
-          i
-          /|
-        rel_x: -2
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 3
-            rel_y: 3
-  - name: Terang (TRG)
-    lat: -38.237345
-    long: 142.929936
-    voltage_kv: 66
-    def: |
-      1|x|3
-      tEt
-      2|E|/
-      |Ei
-      |E|/
-      tE|
-      4|x|
-    connections:
-      1: VIC-66-TRG-WBL1
-      2: VIC-66-TRG-WBL2
-      3: VIC-66-TGTS-TRG2
-      4: VIC-66-TGTS-TRG1
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|
-          i
-          /|x
-        rel_x: 4
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-  - name: Hamilton (HTN)
-    lat: -37.75395255
-    long: 142.0093337
-    voltage_kv: 66
-    def: |
-      1x|/3
-      i
-      |/4
-      i
-      2x|/5
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HTN-NRB
-      2: VIC-66-HTN-TGTS
-      3: HTN-T1-HV
-      4: HTN-T2-HV
-      5: HTN-T3-HV
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-        connections:
-          1: HTN-T1-HV
-          2: HTN-T1-LV
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 3
-        connections:
-          1: HTN-T2-HV
-          2: HTN-T2-LV
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 3
-        connections:
-          1: HTN-T3-HV
-          2: HTN-T3-LV
-    child_definitions:
-      - def: |
-          1/|x
-          i
-          2/|
-          i
-          3/|x
-        voltage_kv: 22
-        connections:
-          1: HTN-T1-LV
-          2: HTN-T2-LV
-          3: HTN-T3-LV
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 13
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 9
-            rel_y: 13
-  - name: Portland (PLD)
-    lat: -38.332412
-    long: 141.588167
-    voltage_kv: 66
-    def: |
-      1x|/3
-      i
-      |
-      i
-      2x|/5
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-PLD-YWF
-      2: VIC-66-CWF-PLD
-      3: PLD-T1-HV
-      5: PLD-T3-HV
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 3
-        connections:
-          1: PLD-T1-HV
-          2: PLD-T1-LV
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 3
-        connections:
-          1: PLD-T3-HV
-          2: PLD-T3-LV
-    child_definitions:
-      - def: |
-          1/|x
-          i
-          |
-          i
-          3/|x
-        voltage_kv: 22
-        connections:
-          1: HTN-T1-LV
-          3: HTN-T3-LV
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 9
-            rel_y: 3
-  - name: Nareeb (NRB)
-    lat: -37.80497418
-    long: 142.4720609
-    voltage_kv: 66
-    def: |
-      1x|x||3
-      tEt
-      2x|||E||||
-      tE||||
-      ||||d||||4
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-NRB-OWF
-      2: VIC-66-MWF-NRB
-      3: VIC-66-HTN-NRB
-      4: VIC-66-NRB-TGTS
-  - name: Salt Creek Wind Farm (SCWF)
-    lat: -37.93067222
-    long: 142.7735477
-    voltage_kv: 66
-    def: |
-      xN1  
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-SCWF-TGTS
-    child_definitions:
-      - def: |
-          Nx
-        voltage_kv: 33
-        rel_x: 0
-        rel_y: -10
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 33
-          w2: 66
-
-        rel_x: 1
-        rel_y: -7
-      - type: gen
-        metadata:
-          text: WF
-          voltage: 33
-          info: |
-            Salt Creek Wind Farm
-            15 x 3.6 = 54MW
-        rel_x: 1
-        rel_y: -11
-  - name: Cobden (COB)
-    lat: -38.3415282
-    long: 143.05287
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-CDN-COB
-      1: VIC-66-COB-TGTS
-    child_definitions:
-      - def: |
-          /|
-          i
-          /|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
+        1: VIC-66-AW-NDT
+        2: VIC-66-NDT-L1
+    - def: |
+        N1x2
+      voltage_kv: 66
+      rel_x: 6
+      rel_y: -4
+      connections:
+        1: VIC-66-AW-NDT
+        2: VIC-66-KTS-NDT
+- name: Tottenham (TH)
+  lat: -37.8084435
+  long: 144.848489
+  voltage_kv: 66
+  def: |
+    1/|
+    i
+    ||/
+    t
+    2/|||/
+  buses:
+    1: '3'
+    2: '2'  
+    3: '1'  
+  connections:
+    1: VIC-66-BLTS-TH
+    2: VIC-66-BKN-TH
+  objects:
     - type: tx-ud
       metadata:
         w1: 66
         w2: 22
       rel_x: 5
       rel_y: 3
-  - name: Camperdown (CDN)
-    lat: -38.22689008
-    long: 143.1548429
-    voltage_kv: 66
-    def: |
-      |d|1
-      tEt
-      2|E|/
-      |Ei
-      |E|/
-      tEt
-      4|d|
-    connections:
-      1: VIC-66-CDN-COB
-      2: VIC-66-CDN-TGTS
-      4: VIC-66-CDN-CLC
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|
-          i
-          /|x
-        rel_x: 4
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-  - name: Colac (CLC)
-    lat: -38.34058922
-    long: 143.6063263
-    voltage_kv: 66
-    def: |
-      1|x|/
-      |Et
-      tE|/
-      |Ei
-      |E|/
-      tEt
-      2|d|
-    connections:
-      1: VIC-66-CDN-CLC
-      2: VIC-66-CLC-MGW
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|
-          i
-          /|
-          i
-          /|x
-        rel_x: 0
-        rel_y: 13
-        voltage_kv: 22
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 9
-            rel_y: 3
-    buses:
-      1: ''
-  - name: Mt Gellibrand Wind (MGW)
-    lat: -38.258734
-    long: 143.801944
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      2/||x
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-MGW-WIN
-      1: VIC-66-CLC-MGW
-    objects:
     - type: tx-ud
       metadata:
         w1: 66
-        w2: 33
-      rel_x: 1
+        w2: 22
+      rel_x: 9
       rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: WF
-        info: |
-          Mt Gellibrand Wind
-          44 x 3 = 132MW
-      rel_x: 1
-      rel_y: 8
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 33
-      rel_x: 5
-      rel_y: 3
-    - type: gen
-      metadata:
-        voltage: 33
-        text: WF
-        info: |
-          Mt Gellibrand Wind
-          44 x 3 = 132MW
-      rel_x: 5
-      rel_y: 8
-  - name: Winchelsea (WIN)
-    lat: -38.23611241
-    long: 144.002835
-    voltage_kv: 66
-    def: |
-      sd1|
-      sEt
-      sE|/
-      isEi
-      sE|/
-      sEt
-      sd2|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-MGW-WIN
-      2: VIC-66-BCG-WIN
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-    child_definitions:
-      - def: |
-          /|
-          i|
-          /|
-        voltage_kv: 22
-        rel_x: 4
-        rel_y: 13 
-  - name: Waurn Ponds (WPD)
-    lat: -38.21574876
-    long: 144.3003849
-    voltage_kv: 66
-    def: |
-      |d|4
-      tEt
-      1|E|/
-      tEi
-      3|E|/
-      tEi
-      2|x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BCG-WPD
-      2: VIC-66-GTS-WPD
-      3: VIC-66-TQY-WPD2
-      4: VIC-66-TQY-WPD1
-    child_definitions:
+  child_definitions:
     - def: |
         x|x
         t
-        x|
-        t
-        x|x
+        x||x
       buses:
-        1: ''
+        1: '2'
+        2: '1'
       voltage_kv: 22
       rel_x: 4
-      rel_y: 13
-    objects:
-    - type: tx-ud #1
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 11
+          rel_x: 1
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 11
+          rel_x: 5
+          rel_y: 3
+- name: Brooklyn (BKN)
+  lat: -37.818214
+  long: 144.841928
+  voltage_kv: 66
+  def: |
+    1x|/
+    t
+    2x||/
+  buses:
+    1: '1'
+    2: '2'  
+  connections:
+    1: VIC-66-BKN-BLTS
+    2: VIC-66-BKN-TH
+  objects:
+    - type: tx-ud
       metadata:
         w1: 66
-        w2: 22
+        w2: 11
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 11
       rel_x: 5
-      rel_y: 6
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 6
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 13
-      rel_y: 6
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 5
-      rel_y: 16
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 13
-      rel_y: 16
-  - name: Blue Circle Geelong (BCG)
-    lat: -38.21377224
-    long: 144.2830931
-    voltage_kv: 66
-    def: |
-      N1/|
-      2/|x|xs
-      tEtEs3
-      4/|x|xs
-      N5/| 
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-BCG-WIN
-      2: VIC-66-BCG-GHP
-      3: VIC-66-ACF-BCG
-      4: VIC-66-BCG-GTS
-      5: VIC-66-BCG-WPD
-  - name: Drysdale (DDL)
-    lat: -38.18257928
-    long: 144.5642412
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-DDL-GLE1
-      1: VIC-66-DDL-GLE2
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|x
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-    objects:
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|x
+        t
+        x||x
+      buses:
+        1: '1'
+        2: '2'
+      voltage_kv: 11
+      rel_x: 0
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 11
+          rel_x: 1
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 11
+          rel_x: 5
+          rel_y: 3
+      
+- name: Footscray West (FW)
+  lat: -37.81514568
+  long: 144.8728556
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||/
+    t
+    2/|||/
+  buses:
+    1: '3'
+    2: '2'  
+    3: '1'  
+  connections:
+    1: VIC-66-BLTS-FW1
+    2: VIC-66-BLTS-FW2
+  objects:
     - type: tx-ud
       metadata:
         w1: 66
@@ -2730,99 +590,188 @@ substations:
         w2: 22
       rel_x: 5
       rel_y: 3
-  - name: Geelong East (GLE)
-    lat: -38.17964623
-    long: 144.381427
-    voltage_kv: 66
-    def: |
-      1/|x|/4
-      |Et
-      |E|/
-      tEi
-      |E|/
-      |Ei
-      |E|/
-      |Et
-      2/|x|/3
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-DDL-GLE2
-      2: VIC-66-GLE-GTS1
-      3: VIC-66-DDL-GLE1
-      4: VIC-66-GLE-GTS2
-    child_definitions:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
     - def: |
-        x|x
+        x|x1x2
         t
-        x|
-        t
-        x|x
+        x||x3x4
       buses:
-        1: ''
+        1: '3'
+        2: '2'
+        3: '1'
       voltage_kv: 22
-      rel_x: 4
-      rel_y: 13
-    objects:
-    - type: tx-ud #1
+      rel_x: 0
+      rel_y: 10
+      connections:
+        1: VIC-22-FW-CAP3A
+        2: VIC-22-FW-CAP3B
+        3: VIC-22-FW-CAP1A
+        4: VIC-22-FW-CAP1B
+      objects:
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 3
+          connections:
+            1: VIC-22-FW-CAP3A
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 6
+          connections:
+            1: VIC-22-FW-CAP3B
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 4
+          rel_y: 3
+          connections:
+            1: VIC-22-FW-CAP1A
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 4
+          rel_y: 6
+          connections:
+            1: VIC-22-FW-CAP1B
+- name: Footscray East (FE)
+  lat: -37.81343499
+  long: 144.8964355
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||/
+    t
+    2/|||
+  buses:
+    1: '1'
+    2: '2'  
+    3: '3'  
+  connections:
+    1: VIC-66-FE-WMTS1
+    2: VIC-66-FE-WMTS2
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
       metadata:
         w1: 66
         w2: 22
       rel_x: 5
-      rel_y: 6
-    - type: tx-ud #2
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x||x1x2
+      buses:
+        1: '3'
+        2: '2'
+        3: '1'
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      connections:
+        1: VIC-22-FE-CAP2A
+        2: VIC-22-FE-CAP2B
+      objects:
+        - type: cap-l
+          metadata:
+            voltage: 11
+          rel_x: 4
+          rel_y: 3
+          connections:
+            1: VIC-22-FE-CAP2A
+        - type: cap-l
+          metadata:
+            voltage: 11
+          rel_x: 4
+          rel_y: 6
+          connections:
+            1: VIC-22-FE-CAP2B
+- name: Yarraville (YVE)
+  lat: -37.82284101
+  long: 144.893705
+  voltage_kv: 66
+  def: |
+    1x|/
+    i
+    ||/
+    t
+    2x|||/
+  buses:
+    1: '3'
+    2: '2'  
+    3: '1'  
+  connections:
+    1: VIC-66-NT-YVE
+    2: VIC-66-BLTS-YVE
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
       metadata:
         w1: 66
         w2: 22
       rel_x: 9
-      rel_y: 6
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 13
-      rel_y: 6
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 5
-      rel_y: 16
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 13
-      rel_y: 16
-  - name: Geelong City (GCY)
-    lat: -38.1523519
-    long: 144.3572851
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2/||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-GCY-GL
-      1: VIC-66-GCY-GTS
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|x
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-    objects:
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|d1
+        N
+        x||
+        t
+        x|||x1
+      buses:
+        1: '3'
+        2: '2'
+        3: '1'
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      connections:
+        1: VIC-22-NT-TIE
+- name: Newport NT
+  lat: -37.83981821
+  long: 144.8937532
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||
+    i
+    2/|||/
+  buses:
+    1: '3'
+    2: '2'  
+    3: '1'  
+  connections:
+    1: VIC-66-BLTS-NT
+    2: VIC-66-NT-YVE
+  objects:
     - type: tx-ud
       metadata:
         w1: 66
@@ -2833,81 +782,117 @@ substations:
       metadata:
         w1: 66
         w2: 22
-      rel_x: 5
+      rel_x: 9
       rel_y: 3
-  - name: Geelong (GL)
-    lat: -38.12867175
-    long: 144.3403652
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-GB-GL
-      1: VIC-66-GCY-GL
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|x
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Geelong B (GB)
-    lat: -38.11720712
-    long: 144.3572381
-    voltage_kv: 66
-    def: |
-      1/|/
-      t
-      |
-      |/
-      |
-      t
-      2/|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-GB-GTS
-      2: VIC-66-GB-GL
-    child_definitions:
+  child_definitions:
     - def: |
         x|
-        |
-        1x|
-         i
-        1x|
-        |
-        x|
+        t
+        ||
+        t
+        x|||
       buses:
-        1: ''
-      connections:
-        1: VIC-22-GB-TIE
+        1: '3'
+        2: '2'
+        3: '1'
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+- name: Broadmeadows South (BMS)
+  lat: -37.68660471
+  long: 144.9415059
+  voltage_kv: 66
+  def: |
+    1/|
+    i
+    ||/
+    t
+    2/|||/
+  buses:
+    1: '3'
+    2: '2'
+    3: '1'
+  connections:
+    1: VIC-66-BD-BMS
+    2: VIC-66-BMS-TTS
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
+    - def: |
+        |
+        t
+        x||
+        t
+        x|||
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+- name: Broadmeadows (BD)
+  lat: -37.66529364
+  long: 144.9430959
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    3x||/
+    t
+    |||/
+    t
+    2/||||/
+  buses:
+    1: '3'
+    2: '1'
+    3: '2'
+    4: '4'
+  connections:
+    1: VIC-66-BD-BMS
+    3: VIC-66-BD-TTS
+    2: VIC-66-BD-VCO
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 13
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|x
+        i
+        x||
+        t
+        x|||
+        |||
+        x|||x
       voltage_kv: 22
       rel_x: 0
       rel_y: 10
@@ -2922,1034 +907,581 @@ substations:
             voltage: 22
           rel_x: 13
           rel_y: 3
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 7
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 13
-      rel_y: 3
-  - name: Ford Norlane (FDN)
-    lat: -38.10256244
-    long: 144.3610483
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      2/|x
-    buses:
-      1: ''
-    connections:
-      2: VIC-66-CRO-FDN
-      1: VIC-66-FDN-GTS
-    child_definitions:
-    - def: |
-        x|
-        i
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud # 1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud # 2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Corio (CRO)
-    lat: -38.09439709
-    long: 144.3697176
-    voltage_kv: 66
-    def: |
-      1x|
-      i
-      |/
-      t
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-CRO-GTS
-      2: VIC-66-CRO-FDN
-    child_definitions:
-    - def: |
-        |x
-        i
-        x|
-        t
-        x|x
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 1
-      rel_y: 13
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 9
-      rel_y: 13
-  - name: Ford North Shore (FNS)
-    lat: -38.08668632
-    long: 144.3723691
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      |x
-      t
-      2/|x
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-FNS-GTS
-      2: VIC-66-FNS-SRC
-    child_definitions:
-    - def: |
-        x|
-        t
-        x|
-        t
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Shell Refinery Corio (SRC)
-    lat: -38.08344651
-    long: 144.380878
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      |x
-      t
-      2/|x
-    buses:
-      1: ''
-    connections:
-      2: VIC-66-GTS-SRC
-      1: VIC-66-FNS-SRC
-    child_definitions:
-    - def: |
-        x|
-        |
-        x|
-        |
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Melton (MLN)
-    lat: -37.6872604
-    long: 144.585926
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      1: VIC-66-DPTS-MLN1
-      2: VIC-66-DPTS-MLN2 
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|x
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 5
-            rel_y: 3
-    objects:
+- name: Visy Coolaroo (VCO)
+  lat: -37.65020407
+  long: 144.9367097
+  voltage_kv: 66
+  def: |
+    1/|x
+    t
+    2/||x
+  buses:
+    1: '1'
+    2: '2'
+  connections:
+    1: VIC-66-BD-VCO
+    2: VIC-66-COO-VCO
+  objects:
     - type: tx-ud
       metadata:
         w1: 66
-        w2: 22
+        w2: 11
       rel_x: 1
       rel_y: 3
     - type: tx-ud
       metadata:
         w1: 66
-        w2: 22
+        w2: 11
       rel_x: 5
       rel_y: 3
-  - name: Werribee (WBE)
-    lat: -37.89047363
-    long: 144.6627961
-    voltage_kv: 66
-    def: |
-      1x|/
-      i
-      2x||/
-    buses:
-      1: ''
-      2: ''
-    connections:
-      2: VIC-66-HCP-WBE
-      1: VIC-66-ATS-WBE
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Hoppers Crossing (HCP)
-    lat: -37.88938014
-    long: 144.7033077
-    voltage_kv: 66
-    def: |
-      1/|/
-      i
-      2/||/
-    buses:
-      1: ''
-      2: ''
-    connections:
-      2: VIC-66-HCP-WBE
-      1: VIC-66-ATS-HCP
-    child_definitions:
-      - def: |
-          |
-          |
-          |
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 7
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Laverton (LV)
-    lat: -37.85178696
-    long: 144.7276359
-    voltage_kv: 66
-    def: |
-      1/|x|/4
-      |Et
-      |E|/
-      tEt
-      |E|/
-      |Et
-      |E|/
-      |Et
-      2/|x|/3
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HKT-LV
-      3: VIC-66-ATS-LV
-    child_definitions:
-    - def: |
-        x|x
-        t
-        x|
-        t
-        x|x
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 4
-      rel_y: 13
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 6
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 6
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 13
-      rel_y: 6
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 5
-      rel_y: 16
-    - type: cap-d
-      metadata:
-        voltage: 22
-      rel_x: 13
-      rel_y: 16
-  - name: Compol (CPL)
-    lat: -37.84759436
-    long: 144.8088652
-    voltage_kv: 66
-    def: |
-      1/|
-      i
-      |/
-      t
-      2/|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-AC-CPL
-      2: VIC-66-AL-CPL
-    child_definitions:
+  child_definitions:
     - def: |
         |
         t
-        x|x
-        t
-        x|x
-      buses:
-        1: ''
+        x||
       voltage_kv: 11
       rel_x: 0
       rel_y: 10
-      objects:
-        - type: cap-d
-          metadata:
-            voltage: 11
-          rel_x: 5
-          rel_y: 3
-      objects:
-        - type: cap-d
-          metadata:
-            voltage: 11
-          rel_x: 9
-          rel_y: 3
-    objects:
-    - type: tx-ud #1
+- name: Coolaroo (COO)
+  lat: -37.64207229
+  long: 144.933898
+  voltage_kv: 66
+  def: |
+    1x|
+    i
+    2x||/
+  buses:
+    1: '2'
+    2: '1'
+  connections:
+    1: VIC-66-COO-VCO
+    2: VIC-66-COO-TTS
+  objects:
+    - type: tx-ud
       metadata:
         w1: 66
         w2: 22
       rel_x: 5
       rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Hickory Truganinna (HKT)
-    lat: -37.820241
-    long: 144.748873
-    voltage_kv: 66
-    def: |
-      1x|
-      i
-      |/
-      t
-      2x|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-HKT-LV
-      2: VIC-66-ATS-HKT1
-    child_definitions:
+  child_definitions:
     - def: |
         |
-        i
-        x|
-        t
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Altona (AL)
-    lat: -37.84759436
-    long: 144.8088652
-    voltage_kv: 66
-    def: |
-      1/|
-      t
-      |/
-      t
-      2/|
-    connections:
-      1: VIC-66-AL-CPL
-      2: VIC-66-AL-BLTS
-    buses:
-      1: ''
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 11
-        rel_x: 5
-        rel_y: 3
-    child_definitions:
-      - def: |
-          |x
-          t
-          1x|x
-          1x|
-          t
-          |x
-        voltage_kv: 11
-        rel_x: 0
-        rel_y: 10
-        connections:
-          1: VIC-11-AL-TIE
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 11
-            rel_x: 1
-            rel_y: 3
-          - type: cap-d
-            metadata:
-              voltage: 11
-            rel_x: 5
-            rel_y: 3
-          - type: cap-d
-            metadata:
-              voltage: 11
-            rel_x: 11
-            rel_y: 3
-  - name: Altona Chemical (AC)
-    lat: -37.8453773
-    long: 144.8005873
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      |x
-      i
-      2/|
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-AC-ATS
-      2: VIC-66-AC-CPL
-    child_definitions:
-    - def: |
-        x|
         t
         x|x1x2
-        t
-        |
-      buses:
-        1: ''
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
       connections:
-        1: VIC-22-AC-CAP2A
-        2: VIC-22-AC-CAP2B
+        1: VIC-22-COO-CAP1A
+        2: VIC-22-COO-CAP1B
+      objects:
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 4
+          rel_y: 3
+          connections:
+            1: VIC-22-COO-CAP1A
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 4
+          rel_y: 6
+          connections:
+            1: VIC-22-COO-CAP1B
+- name: Flemington (FT)
+  lat: -37.7916363
+  long: 144.9320098
+  voltage_kv: 66
+  def: |
+    1/|/
+    N
+    ||/
+    i
+    2/|||
+  buses:
+    1: '1'
+    2: '2'  
+    3: '3'  
+  connections:
+    1: VIC-66-FT-WMTS1
+    2: VIC-66-FT-WMTS2
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|x
+        t
+        x||x2
+      buses:
+        1: '1'
+        2: '2'
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 1
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+- name: Coburg South (CS)
+  lat: -37.74250551
+  long: 144.9626084
+  voltage_kv: 66
+  def: |
+    1/|
+    i
+    ||/
+    t
+    2x|||/
+  buses:
+    1: '3'
+    2: '2'
+    3: '1'
+  connections:
+    1: VIC-66-CN-CS
+    2: VIC-66-CS-TTS
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
+    - def: |
+        |
+        t
+        x||x
+        t
+        x|||
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+- name: Coburg North (CN)
+  lat: -37.72093432
+  long: 144.9778783
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||/
+    t
+    2x|||/
+  buses:
+    1: '3'
+    2: '2'
+    3: '1'
+  connections:
+    1: VIC-66-CN-TTS
+    2: VIC-66-CN-CS
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|x1x2
+        t
+        x||x
+        t
+        x|||x
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      connections:
+        1: VIC-22-CN-CAP3A
+        2: VIC-22-CN-CAP3B
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 9
+          rel_y: 3
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 3
+          connections:
+            1: VIC-22-CN-CAP3A
+        - type: cap-l
+          metadata:
+            voltage: 22
+          rel_x: 0
+          rel_y: 6
+          connections:
+            1: VIC-22-CN-CAP3B
+- name: Preston (PTN)
+  lat: -37.73695628
+  long: 145.0006137
+  voltage_kv: 66
+  def: |
+    1x|/
+    t
+    2x||/
+  buses:
+    1: ''
+  connections:
+    1: VIC-66-PTN-TTS
+    2: VIC-66-EPN-PTN
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x|
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+- name: East Preston (EP/EPN)
+  lat: -37.74531729
+  long: 145.0327274
+  voltage_kv: 66
+  def: |
+    1/|/
+    |
+    |/
+    t
+    ||
+    ||/
+    ||
+    t
+    |||
+    |||/
+    t
+    i
+    ||||
+    t
+    2x|||||/
+  buses:
+    1: '3'
+    2: '2'
+    3: '1'
+    4: ''
+    5: '2'
+  connections:
+    1: VIC-66-EP-TTS
+    2: VIC-66-EPN-PTN
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 6.6
+      rel_x: 1
+      rel_y: 3
+      connections:
+        2: VIC-6.6-EP-TR4
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 6.6
+      rel_x: 5
+      rel_y: 3
+      connections:
+        2: VIC-6.6-EP-TR3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 6.6
+      rel_x: 11
+      rel_y: 3
+      connections:
+        2: VIC-6.6-EP-TR2
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 6.6
+      rel_x: 19
+      rel_y: 3
+      connections:
+        2: VIC-6.6-EP-TR1
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 29
+      rel_y: 3
+      connections:
+        2: VIC-22-EPN-TR3
+  child_definitions:
+    - def: |
+        5,4dx|x
+        t
+        E6,1x||
+        E1x||
+        t
+        E7,2x|||x
+        N
+        E2x||||x
+        t
+        E8,3x|||||
+        E3x|||||
+        t
+        4dx||||||x
+      voltage_kv: 6.6
+      rel_x: 0
+      rel_y: 15
+      connections:
+        1: VIC-6.6-EP-TIE1
+        2: VIC-6.6-EP-TIE2
+        3: VIC-6.6-EP-TIE3
+        4: VIC-6.6-EP-TIE4
+        5: VIC-6.6-EP-TR4
+        6: VIC-6.6-EP-TR3
+        7: VIC-6.6-EP-TR2
+        8: VIC-6.6-EP-TR1
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 6.6
+          rel_x: 1
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 6.6
+          rel_x: 11
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 6.6
+          rel_x: 15
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 6.6
+          rel_x: 25
+          rel_y: 3
+    - def: |
+        1x|x
+      voltage_kv: 22
+      rel_x: 28
+      rel_y: 15
+      connections:
+        1: VIC-22-EPN-TR3
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 1
+          rel_y: 3
+- name: Nilsen Electrical (NEI)
+  lat: -37.73222517
+  long: 145.0430013
+  voltage_kv: 66
+  def: |
+    1,2Nx
+  connections:
+    1: VIC-66-NEI-NH
+    2: VIC-66-NEI-TTS
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+- name: North Heidelberg (NH)
+  lat: -37.72952915
+  long: 145.067981
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||/
+    t
+    2/|||/
+  buses:
+    1: '1'
+    2: '2'
+    3: '3'
+  connections:
+    1: VIC-66-NEL-NH
+    2: VIC-66-NEI-NH
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 9
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|x
+        t
+        x||x
+        t
+        x|||
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+      objects:
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 1
+          rel_y: 3
+        - type: cap-d
+          metadata:
+            voltage: 22
+          rel_x: 5
+          rel_y: 3
+- name: North East Link (NEL)
+  lat: -37.72263259
+  long: 145.081814
+  voltage_kv: 66
+  def: |
+    1x|/
+    t
+    2x||/
+  buses:
+    1: ''
+    2: ''
+  connections:
+    1: VIC-66-NEL-NH
+    2: VIC-66-NEL-WT
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 22
+      rel_x: 5
+      rel_y: 3
+  child_definitions:
+    - def: |
+        x|
+        t
+        x||
+      voltage_kv: 22
+      rel_x: 0
+      rel_y: 10
+- name: Heidelberg (HB)
+  lat: -37.75904825
+  long: 145.070189
+  voltage_kv: 66
+  def: |
+    1/|/
+    t
+    ||
+    ||
+    i
+    2/|||/
+  buses:
+    1: '1'
+    2: '2'
+    3: '3'
+  connections:
+    1: VIC-66-HB-TSTS
+    2: VIC-66-HB-Q
+  objects:
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 11
+      rel_x: 1
+      rel_y: 3
+    - type: tx-ud
+      metadata:
+        w1: 66
+        w2: 11
+      rel_x: 11
+      rel_y: 3
+  child_definitions:
+    - def: |
+        1x|
+        t
+        1x||
+        2x||
+        t
+        2x|||
       voltage_kv: 11
       rel_x: 0
       rel_y: 10
-      objects:
-        - type: cap-r
-          metadata:
-            voltage: 11
-          rel_x: 6
-          rel_y: 3
-          connections:
-            1: VIC-22-AC-CAP2A
-        - type: cap-r
-          metadata:
-            voltage: 11
-          rel_x: 6
-          rel_y: 6
-          connections:
-            1: VIC-22-AC-CAP2B
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Toyota Altona (TYA)
-    lat: -37.83622569
-    long: 144.8271447
-    voltage_kv: 66
-    def: |
-      1/|x
-      |
-      t
-      |
-      2/|x
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-ATS-TYA
-      2: VIC-66-BLTS-TYA
-    child_definitions:
-    - def: |
-        x|x
-        t
-        |
-        t
-        x|x
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-      objects:
-        - type: cap-d
-          metadata:
-            voltage: 22
-          rel_x: 1
-          rel_y: 3
-        - type: cap-d
-          metadata:
-            voltage: 22
-          rel_x: 1
-          rel_y: 11
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: One Steel Altona (SCI)
-    lat: -37.83323774
-    long: 144.788739
-    voltage_kv: 66
-    def: |
-      1/|dx
-      i
-      |/|x
-      |E|
-      2/|E|x
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-ATS-SCI
-      2: VIC-66-BLTS-SCI
-    objects:
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 1
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 5
-        rel_y: 6
-      - type: tx-ud
-        metadata:
-          w1: 66
-          w2: 22
-        rel_x: 9
-        rel_y: 6
-  - name: Laverton North (LVN)
-    lat: -37.8275097
-    long: 144.7862718
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      /||
-      t
-      2x|||/
-    buses:
-      1: '3'
-      2: '2'
-      3: '1'
-    connections:
-      2: VIC-66-ATS-LVN
-      1: VIC-66-BLTS-LVN
-    child_definitions:
-      - def: |
-          x|
-          |
-          |
-          |
-          x|
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-      - def: |
-          |x
-        voltage_kv: 11
-        rel_x: 4
-        rel_y: -10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 11
-        w2: 66
-      rel_x: 5
-      rel_y: -7
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Truganina (TNA)
-    lat: -37.80595298
-    long: 144.7523532
-    voltage_kv: 66
-    def: |
-      1/|/
-      t
-      ||/
-      t
-      2/|||/
-    buses:
-      1: ''
-      2: ''
-      3: ''
-    connections:
-      1: VIC-66-DPTS-TNA1
-      2: VIC-66-DPTS-TNA2
-    child_definitions:
-      - def: |
-          x|
-          t
-          x||
-          t
-          x|||
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Air Trunk Data (ATD)
-    lat: -37.80092261
-    long: 144.7726846
-    voltage_kv: 66
-    def: |
-      1/|x
-      |
-      t
-      |
-      2/|x
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-ATD-ATS
-      2: VIC-66-ATD-BLTS
-    child_definitions:
-    - def: |
-        x|
-        t
-        |
-        t
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Sunshine (SU)
-    lat: -37.78310013
-    long: 144.808977
-    voltage_kv: 66
-    def: |
-      1/|x
-      t
-      |x
-      t
-      2/|x
-    buses:
-      1: ''
-    connections:
-      2: VIC-66-DPTS-SU1
-      1: VIC-66-DPTS-SU2
-    child_definitions:
-    - def: |
-        x|
-        |
-        x|
-        |
-        x|
-      buses:
-        1: ''
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: St Albans (SA)
-    lat: -37.7400708
-    long: 144.8253157
-    voltage_kv: 66
-    def: |
-      1/|/
-      t
-      ||/
-      t
-      2/|||/
-    buses:
-      1: '1'
-      2: '2'
-      3: '3'
-    connections:
-      2: VIC-66-KTS-SA1
-      1: VIC-66-KTS-SA2
-    child_definitions:
-      - def: |
-          x|x
-          t
-          x|
-          t
-          x|
-        buses:
-          1: ''
-          2: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-        objects:
-          - type: cap-d
-            metadata:
-              voltage: 22
-            rel_x: 1
-            rel_y: 3
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 9
-      rel_y: 3
-  - name: Sunshine East (SSE)
-    lat: -37.77941613
-    long: 144.8280052
-    voltage_kv: 66
-    def: |
-      1/|/
-      t
-      |
-      |/
-      |
-      t
-      2/|/
-    buses:
-      1: ''
-    connections:
-      1: VIC-66-KTS-SSE1
-      2: VIC-66-KTS-SSE2
-    child_definitions:
-    - def: |
-        x|
-        |
-        1x|
-         i
-        1x|
-        |
-        x|
-      buses:
-        1: ''
       connections:
-        1: VIC-22-SSE-TIE
-      voltage_kv: 22
-      rel_x: 0
-      rel_y: 10
-    objects:
-    - type: tx-ud #1
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud #2
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 7
-      rel_y: 3
-    - type: tx-ud #3
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 13
-      rel_y: 3
-  - name: Torquay (TQY)
-    lat: -38.312163
-    long: 144.280904
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-TQY-WPD1
-      1: VIC-66-TQY-WPD2
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-  - name: Geringhap (GHP)
-    lat: -38.081754
-    long: 144.240620
-    voltage_kv: 66
-    def: |
-      1x|/
-      t
-      2x||/
-    buses:
-      1: '1'
-      2: '2'
-    connections:
-      2: VIC-66-GHP-GTS
-      1: VIC-66-BCG-GHP
-    child_definitions:
-      - def: |
-          x|
-          t
-          x|
-        buses:
-          1: ''
-        voltage_kv: 22
-        rel_x: 0
-        rel_y: 10
-    objects:
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 1
-      rel_y: 3
-    - type: tx-ud
-      metadata:
-        w1: 66
-        w2: 22
-      rel_x: 5
-      rel_y: 3
-      
+        1: VIC-11-HB-TIE1
+        2: VIC-11-HB-TIE2
