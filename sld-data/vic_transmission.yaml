@@ -2606,13 +2606,13 @@ substations:
             rel_y: 3
       - def: |
           ||||/d3
-          ||||x1
+          ||||xdd1
           ||||x4
           E2x||||x5
           t
           E6x|||x7
           |||x8
-          |||x9
+          |||xdd1,9
           10/11x|||
           N
           E11x|||||x12
@@ -2637,7 +2637,7 @@ substations:
         rel_x: -13
         rel_y: 46
         connections:
-          1: VIC-66-KTS-SBY2-T
+          1: VIC-66-KTS-SBY2T
           2: KTS-B4-LV
           3: KTS-4XN-66
           4: VIC-66-KTS-SBY1
@@ -3301,10 +3301,10 @@ substations:
           2: VIC-66-WMTS-TX-B2
           3: VIC-66-WMTS-TX-B3
           4: VIC-66-FT-WMTS1
-          5: VIC-66-FE-WMTS
+          5: VIC-66-FE-WMTS1
           6: VIC-66-VM-WMTS1
           7: VIC-66-JA-WMTS3
-          8: VIC-66-WGT/FE-WMTS2
+          8: VIC-66-FE-WMTS2
           9: VIC-66-NC/WB-WMTS
           10: VIC-66-VM-WMTS3
           11: VIC-66-FT-WMTS2
@@ -3465,14 +3465,14 @@ substations:
           1: VIC-66-BTS-TX-B1
           2: VIC-66-BTS-TX-B2
           3: VIC-66-BTS-TX-B3
-          4: VIC-66-BTS-BQ1
+          4: VIC-66-BQ-BTS1
           5: VIC-66-BTS-WP1
           6: VIC-66-BTS-CW
           7: VIC-66-BTS-RTS
           8: VIC-66-BTS-VM
           9: VIC-66-BTS-WP2
           10: VIC-66-BTS-WB
-          11: VIC-66-BTS-BQ3
+          11: VIC-66-BQ-BTS3
           12: VIC-66-BTS-NC
           13: BTS-66-1XN-BUS
           14: VIC-66-BTS-CAP-1
