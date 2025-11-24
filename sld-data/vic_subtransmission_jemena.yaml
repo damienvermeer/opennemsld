@@ -438,14 +438,14 @@ substations:
     - def: |
         N1x
       voltage_kv: 66
-      rel_x: 7
+      rel_x: 9
       rel_y: 7
       connections:
         1: VIC-66-NDT-T3
     - def: |
         N1x2
       voltage_kv: 66
-      rel_x: 2
+      rel_x: 3
       rel_y: -4
       connections:
         1: VIC-66-AW-NDT
@@ -453,11 +453,11 @@ substations:
     - def: |
         N1x2
       voltage_kv: 66
-      rel_x: 6
+      rel_x: 7
       rel_y: -4
       connections:
-        1: VIC-66-AW-NDT
-        2: VIC-66-KTS-NDT
+        1: VIC-66-KTS-NDT
+        2: VIC-66-NDT-L2
 - name: Tottenham (TH)
   lat: -37.8084435
   long: 144.848489
