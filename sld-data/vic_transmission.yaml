@@ -3877,6 +3877,7 @@ substations:
       |xd7x||
       |x1x2x||
       |x3x4x||
+      |x11EE||
       |x9xd||
       
     buses:
@@ -3893,16 +3894,26 @@ substations:
       8: VIC-220-CBTS-TX-B1
       9: VIC-220-CBTS-TX-A1
       10: VIC-220-CBTS-RBES
+      11: VIC-220-CBTS-TX-B4
     objects:
       - type: tx-lr # a1
         metadata:
           w1: 220
           w2: 500
-        rel_x: 13
+        rel_x: 15
         rel_y: 3
         connections:
           1: VIC-220-CBTS-TX-A1
           2: VIC-500-CBTS-TX-A1
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 13
+        rel_y: 14
+        connections:
+          1: VIC-220-CBTS-TX-B4
+          2: VIC-66-CBTS-TX-B4
       - type: tx-ud # b3 tx
         metadata:
           w1: 220
@@ -3954,7 +3965,7 @@ substations:
         buses:
           1: "1"
         voltage_kv: 500
-        rel_x: 16
+        rel_x: 18
         rel_y: 0
         connections:
           1: VIC-500-CBTS-TX-A1
@@ -3978,7 +3989,7 @@ substations:
           t
           3x|||x10
           |||x11
-          |||x12
+          13x|||x12
         buses:
           1: "1"
           2: "2"
@@ -3999,6 +4010,7 @@ substations:
           10: VIC-66-CBTS-FTS1
           11: VIC-66-CBTS-CRE3
           12: VIC-66-CBTS-CLN1
+          13: VIC-66-CBTS-TX-B4
   - name: Ringwood (RWTS)
     lat: -37.821359
     long: 145.21517
