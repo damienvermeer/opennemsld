@@ -274,14 +274,14 @@ substations:
           2: '2'
         voltage_kv: 66
         connections:
-          1: VIC-66-BATS-BAE
-          2: VIC-66-BATS-BAN-1
+          1: VIC-66-BAE-BATS
+          2: VIC-66-BAN-BATS1
           3: BATS-B1-LV
-          4: VIC-66-BATS-BGL/YSW
+          4: VIC-66-BATS-BGL
           5: BATS-B2-LV
-          6: VIC-66-BATS-BAN-2
+          6: VIC-66-BAN-BATS2
           7: VIC-66-BATS-YDW
-          8: VIC-66-BATS-BAS/BGF
+          8: VIC-66-BATS-BGF
         rel_x: 2
         rel_y: 20
         objects:
@@ -419,12 +419,11 @@ substations:
       |x4E||
       |x3x||
       |x2x||
-      NEE||x1
+      NEE||x
     buses:
       1: "2"
       2: "1"
     connections:
-      1: HOTS-B2-TX-220
       2: VIC-220-BGTS-HOTS
       3: VIC-220-MRTS-HOTS
       4: HOTS-B3-TX-220
@@ -478,7 +477,7 @@ substations:
           4: VIC-66-HOTS-HSM2
           5: VIC-66-HOTS-STL2
           6: VIC-66-HOTS-HSM1
-          7: VIC-66-HOTS-CHM
+          7: VIC-66-CHM-HOTS
           8: VIC-66-HOTS-STL1
           9: VIC-66-HOTS-CAP-1A
           10: VIC-66-HOTS-CAP-1B
@@ -493,14 +492,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-HOTS-CAP-1A
-            rel_x: 14
+            rel_x: 15
             rel_y: -3
           - type: cap-r
             metadata:
               voltage: 66
             connections:
               1: VIC-66-HOTS-CAP-1B
-            rel_x: 14
+            rel_x: 15
             rel_y: -6
           - type: reac-u
             metadata:
@@ -635,11 +634,11 @@ substations:
           1: VIC-66-RCTS-TX3
           2: VIC-66-RCTS-TX2B
           3: VIC-66-RCTS-TX1B
-          4: VIC-66-RCTS-KSF
+          4: VIC-66-KSF-RCTS
           5: VIC-66-RCTS-YSF
-          6: VIC-66-RCTS-MDA2
-          7: VIC-66-RCTS-MDA1
-          8: VIC-66-RCTS-MBN
+          6: VIC-66-MDA-RCTS2
+          7: VIC-66-MDA-RCTS1
+          8: VIC-66-MBN-RCTS
         objects:
           - type: reac-u
             metadata:
@@ -737,9 +736,9 @@ substations:
         rel_x: 0
         rel_y: 9
         connections:
-          2: VIC-66-WEMENSF
-          1: VIC-66-WETS-BSP
-          3: VIC-66-HTH-WETS
+          2: VIC-66-WETS-WSF
+          1: VIC-66-BSP-WETS
+          3: VIC-66-BPA-WETS
 
   - name: Carwarp (CPTS)
     lat: -34.499106
@@ -837,7 +836,7 @@ substations:
           3: VIC-66-KGTS-TX3
           4: VIC-66-KGTS-GSF/SHL
           5: VIC-66-KGTS-SHL
-          6: VIC-66-KGTS-CHA
+          6: VIC-66-CHA-KGTS
           7: VIC-66-KGTS-TX2
         objects:
           - type: reac-u
@@ -972,7 +971,7 @@ substations:
           5: VIC-66-BETS-MRO
           6: VIC-66-BETS-EHK
           8: VIC-66-BETS-CMN
-          9: VIC-66-BETS-DSF
+          9: VIC-66-BETS-CTN-IWD
         voltage_kv: 66
         rel_x: 6
         rel_y: 14
@@ -1125,28 +1124,28 @@ substations:
         - type: cap-l # 3A
           metadata:
            voltage: 66
-          rel_x: 6
+          rel_x: 5
           rel_y: -3
           connections:
             1: VIC-66-SHTS-CAP3A
         - type: cap-l # 3B
           metadata:
            voltage: 66
-          rel_x: 6
+          rel_x: 5
           rel_y: -6
           connections:
             1: VIC-66-SHTS-CAP3B
         - type: cap-l # 2A
           metadata:
            voltage: 66
-          rel_x: 24
+          rel_x: 23
           rel_y: -3
           connections:
             1: VIC-66-SHTS-CAP2A
         - type: cap-l # 2B
           metadata:
            voltage: 66
-          rel_x: 24
+          rel_x: 23
           rel_y: -6
           connections:
             1: VIC-66-SHTS-CAP2B
@@ -1849,15 +1848,15 @@ substations:
         rel_x: -6
         rel_y: 18
         connections:
-          1: VIC-66-TGTS-CDN
-          2: VIC-66-TGTS-HTN
-          3: VIC-66-TGTS-KRT2
-          4: VIC-66-TGTS-TRG
-          5: VIC-66-TGTS-SCWF
-          6: VIC-66-TGTS-KRT1
+          1: VIC-66-CDN-TGTS
+          2: VIC-66-HTN-TGTS
+          3: VIC-66-KRT-TGTS2
+          4: VIC-66-TGTS-TRG2
+          5: VIC-66-SCWF-TGTS
+          6: VIC-66-KRT-TGTS1
           7: VIC-66-TGTS-TRG1
-          8: VIC-66-TGTS-COB
-          9: VIC-66-TGTS-NRB
+          8: VIC-66-COB-TGTS
+          9: VIC-66-NRB-TGTS
           10: TGTS-B2-LV
           11: TGTS-B1-LV
   - name: Elaine (ELTS)
@@ -2035,16 +2034,16 @@ substations:
         rel_x: -13
         rel_y: 19
         connections:
-          2: VIC-66-GTS-GLE-2
-          3: VIC-66-GTS-GCY
-          4: VIC-66-GTS-FDN
-          6: VIC-66-GTS-GLE-1
-          7: VIC-66-GTS-GB
-          9: VIC-66-GTS-CRO
-          10: VIC-66-GTS-FNS
+          2: VIC-66-GLE-GTS2
+          3: VIC-66-GCY-GTS
+          4: VIC-66-FDN-GTS
+          6: VIC-66-GLE-GTS1
+          7: VIC-66-GB-GTS
+          9: VIC-66-CRO-GTS
+          10: VIC-66-FNS-GTS
           13: VIC-66-GTS-SRC
-          14: VIC-66-GTS-BCG
-          15: VIC-66-GTS-GHP
+          14: VIC-66-BCG-GTS
+          15: VIC-66-GHP-GTS
           16: VIC-66-GTS-5BUS
           21: VIC-66-GTS-TX-B1
           22: VIC-66-GTS-TX-B2
@@ -2342,7 +2341,7 @@ substations:
       4: DPTS-B4-HV
     child_definitions:
       - def: |
-          1nx2 
+          1Nx2 
         connections:
           1: DPTS-66-CAPB
           2: DPTS-66-CAPA
@@ -2355,18 +2354,19 @@ substations:
               voltage: 66
             connections:
               1: DPTS-66-CAPB
-            rel_x: 0
+            rel_x: -1
             rel_y: 0
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: DPTS-66-CAPA
-            rel_x: 0
+            rel_x: -1
             rel_y: 3
       - def: |
-          9x||||x1
-          2x||||x3
+          x||||x9
+          2x||||x1
+          ||||x3
           t
           |||x4
           |||x5
@@ -2389,6 +2389,7 @@ substations:
           6: DPTS-B2-LV
           7: VIC-66-DPTS-TNA2
           8: VIC-66-DPTS-SU1
+          9: VIC-66-BMH-DPTS
     objects:
       - type: tx-ud # B2
         metadata:
@@ -2397,7 +2398,7 @@ substations:
         connections:
           1: DPTS-B2-HV
           2: DPTS-B2-LV
-        rel_x: 7
+        rel_x: 9
         rel_y: 12
       - type: tx-ud # B4
         metadata:
@@ -2581,7 +2582,7 @@ substations:
             rel_x: 17
             rel_y: 6
       - def: |
-          1nx2 
+          1Nx2 
         connections:
           1: KTS-66-CAPB
           2: KTS-66-CAPA
@@ -2594,24 +2595,24 @@ substations:
               voltage: 66
             connections:
               1: KTS-66-CAPB
-            rel_x: 3
+            rel_x: 4
             rel_y: 0
           - type: cap-r
             metadata:
               voltage: 66
             connections:
               1: KTS-66-CAPA
-            rel_x: 3
+            rel_x: 4
             rel_y: 3
       - def: |
           ||||/d3
-          ||||x1
+          ||||xdd1
           ||||x4
           E2x||||x5
           t
           E6x|||x7
           |||x8
-          |||x9
+          |||xdd1,9
           10/11x|||
           N
           E11x|||||x12
@@ -2636,7 +2637,7 @@ substations:
         rel_x: -13
         rel_y: 46
         connections:
-          1: VIC-66-KTS-SBY2-T
+          1: VIC-66-KTS-SBY2T
           2: KTS-B4-LV
           3: KTS-4XN-66
           4: VIC-66-KTS-SBY1
@@ -2652,11 +2653,11 @@ substations:
           14: VIC-66-KTS-TMA
           15: KTS-B2-LV
           16: VIC-66-KTS-NDT
-          17: VIC-66-KTS-BY
+          17: VIC-66-BY-KTS
           18: KTS-B1-LV
-          19: VIC-66-KTS-ES
+          19: VIC-66-ES-KTS
           20: VIC-66-KTS-SSE1
-          21: VIC-66-KTS-AW
+          21: VIC-66-AW-KTS
           22: KTS-4XN-66
           23: VIC-66-KTS-MAT
   - name: Altona (ATS)
@@ -2734,7 +2735,7 @@ substations:
           7: VIC-66-ATS-TYA
           8: VIC-66-AC-ATS
           9: VIC-66-ATS-SCI
-          10: VIC-66-ATS-HKT2
+          10: VIC-66-ATS-LV
           11: VIC-66-ATS-HCP
           12: VIC-66-ALQ-ATS
           13: VIC-66-ATS-AWT
@@ -2974,16 +2975,16 @@ substations:
           1: VIC-66-BLTS-TX-B1
           2: VIC-66-BLTS-TX-B3
           3: VIC-66-BLTS-TH
-          4: VIC-66-BLTS-ATD
+          4: VIC-66-ATD-BLTS
           5: VIC-66-BLTS-BMH
           6: VIC-66-BLTS-LVN
           7: BLTS-66-4XN-BUS
-          8: VIC-66-BLTS-BKN
+          8: VIC-66-BKN-BLTS
           9: VIC-66-BLTS-SCI
           10: VIC-66-BLTS-TYA
           11: VIC-66-BLTS-NT
           12: VIC-66-BLTS-FW1
-          14: VIC-66-BLTS-AL
+          14: VIC-66-AL-BLTS
           15: VIC-66-BLTS-FW2
           16: VIC-66-BLTS-YVE
           17: VIC-66-BLTS-TX-B5
@@ -3299,20 +3300,20 @@ substations:
           1: VIC-66-WMTS-TX-B1
           2: VIC-66-WMTS-TX-B2
           3: VIC-66-WMTS-TX-B3
-          4: VIC-66-WMTS-FT1
-          5: VIC-66-WMTS-FE
-          6: VIC-66-WMTS-VM1
-          7: VIC-66-WMTS-JA3
-          8: VIC-66-WMTS-WGT/FE2
-          9: VIC-66-WMTS-NC/WB
-          10: VIC-66-WMTS-VM3
-          11: VIC-66-WMTS-FT2
-          12: VIC-66-WMTS-DA3
-          13: VIC-66-WMTS-WISS1
-          14: VIC-66-WMTS-DA1
-          15: VIC-66-WMTS-VM2
-          16: VIC-66-WMTS-WISS2
-          17: VIC-66-WMTS-JA1
+          4: VIC-66-FT-WMTS1
+          5: VIC-66-FE-WMTS1
+          6: VIC-66-VM-WMTS1
+          7: VIC-66-JA-WMTS3
+          8: VIC-66-FE-WMTS2
+          9: VIC-66-NC/WB-WMTS
+          10: VIC-66-VM-WMTS3
+          11: VIC-66-FT-WMTS2
+          12: VIC-66-DA-WMTS3
+          13: VIC-66-WISS-WMTS1
+          14: VIC-66-DA-WMTS1
+          15: VIC-66-VM-WMTS2
+          16: VIC-66-WISS-WMTS2
+          17: VIC-66-JA-WMTS1
           18: WMTS-66-1XN-CABLE
         rel_x: -6
         rel_y: 23
@@ -3464,14 +3465,14 @@ substations:
           1: VIC-66-BTS-TX-B1
           2: VIC-66-BTS-TX-B2
           3: VIC-66-BTS-TX-B3
-          4: VIC-66-BTS-BQ1
+          4: VIC-66-BQ-BTS1
           5: VIC-66-BTS-WP1
           6: VIC-66-BTS-CW
           7: VIC-66-BTS-RTS
           8: VIC-66-BTS-VM
           9: VIC-66-BTS-WP2
           10: VIC-66-BTS-WB
-          11: VIC-66-BTS-BQ3
+          11: VIC-66-BQ-BTS3
           12: VIC-66-BTS-NC
           13: BTS-66-1XN-BUS
           14: VIC-66-BTS-CAP-1
@@ -3697,17 +3698,17 @@ substations:
           2: VIC-66-RTS-TX-B1
           3: VIC-66-RTS-TX-B2
           4: RTS-1XN-66
-          5: VIC-66-RTS-AR
-          6: VIC-66-RTS-CL
-          7: VIC-66-RTS-NR
+          5: VIC-66-AR-RTS
+          6: VIC-66-CL-RTS
+          7: VIC-66-NR-RTS
           8: VIC-66-RTS-TK/BC
-          9: VIC-66-RTS-K
+          9: VIC-66-K-RTS
           10: VIC-66-RTS-TK
-          11: VIC-66-RTS-CW
-          13: VIC-66-RTS-FR1
+          11: VIC-66-CW-RTS
+          13: VIC-66-FR1-RTS
           14: VIC-66-RTS-SK
-          18: VIC-66-RTS-EW
-          19: VIC-66-RTS-FR3
+          18: VIC-66-EW-RTS
+          19: VIC-66-FR3-RTS
         objects:
           - type: cap-u
             metadata:
@@ -3788,8 +3789,8 @@ substations:
       |x1x2x||
       |/3x4/||
     buses:
-      1: "?"
-      2: "?"
+      1: "1"
+      2: "2"
     connections:
       1: VIC-220-BBTS-TGTS
       2: VIC-220-BBWF1-TX
@@ -3849,9 +3850,9 @@ substations:
       2: '2'
     connections: 
       1: VIC-66-FTS-LWN
-      2: VIC-66-FTS-FSH
-      3: VIC-66-TBTS-FTS
-      4: VIC-66-FTS-FTN
+      2: VIC-66-FSH-FTS
+      3: VIC-66-FTS-TBTS
+      4: VIC-66-FTN-FTS
       5: VIC-66-CBTS-FTS1
       6: VIC-66-CBTS-FTS2
     child_definitions:
@@ -3876,6 +3877,7 @@ substations:
       |xd7x||
       |x1x2x||
       |x3x4x||
+      |x11EE||
       |x9xd||
       
     buses:
@@ -3892,16 +3894,26 @@ substations:
       8: VIC-220-CBTS-TX-B1
       9: VIC-220-CBTS-TX-A1
       10: VIC-220-CBTS-RBES
+      11: VIC-220-CBTS-TX-B4
     objects:
       - type: tx-lr # a1
         metadata:
           w1: 220
           w2: 500
-        rel_x: 13
+        rel_x: 15
         rel_y: 3
         connections:
           1: VIC-220-CBTS-TX-A1
           2: VIC-500-CBTS-TX-A1
+      - type: tx-ud # b4 tx
+        metadata:
+          w1: 220
+          w2: 66
+        rel_x: 13
+        rel_y: 14
+        connections:
+          1: VIC-220-CBTS-TX-B4
+          2: VIC-66-CBTS-TX-B4
       - type: tx-ud # b3 tx
         metadata:
           w1: 220
@@ -3953,7 +3965,7 @@ substations:
         buses:
           1: "1"
         voltage_kv: 500
-        rel_x: 16
+        rel_x: 18
         rel_y: 0
         connections:
           1: VIC-500-CBTS-TX-A1
@@ -3977,7 +3989,7 @@ substations:
           t
           3x|||x10
           |||x11
-          |||x12
+          13x|||x12
         buses:
           1: "1"
           2: "2"
@@ -3998,6 +4010,7 @@ substations:
           10: VIC-66-CBTS-FTS1
           11: VIC-66-CBTS-CRE3
           12: VIC-66-CBTS-CLN1
+          13: VIC-66-CBTS-TX-B4
   - name: Ringwood (RWTS)
     lat: -37.821359
     long: 145.21517
@@ -4143,17 +4156,17 @@ substations:
           3: RWTS-B3-LV
           4: RWTS-B4-LV
           5: RWTS-1XN-BUS
-          6: VIC-66-RWTS-RWN
-          7: VIC-66-RWTS-NW
-          8: VIC-66-RWTS-CPK
-          9: VIC-66-RWTS-BH
-          10: VIC-66-RWTS-RWN/CPK
-          11: VIC-66-RWTS-LDL
+          6: VIC-66-RWN-RWTS
+          7: VIC-66-NW-RWTS
+          8: VIC-66-CPK-RWTS
+          9: VIC-66-BH-RWTS
+          10: VIC-66-RWN/CPK-RWTS
+          11: VIC-66-LDL-RWTS
           12: VIC-66-RWTS-SRR
-          13: VIC-66-RWTS-BRA
-          14: VIC-66-RWTS-CYN/BWR
-          15: VIC-66-RWTS-BWR
-          16: VIC-66-RWTS-CYN
+          13: VIC-66-BRA-RWTS
+          14: VIC-66-CYN/BWR-RWTS
+          15: VIC-66-BWR-RWTS
+          16: VIC-66-CYN-RWTS
           17: VIC-66-RWTS-CAP-2A
           18: VIC-66-RWTS-CAP-2B
         rel_x: -7
@@ -4436,16 +4449,16 @@ substations:
           3: VIC-66-ERTS-B3
           4: VIC-66-ERTS-B4
           5: ERTS-66-1XN-BUS
-          6: VIC-66-ERTS-BGE
+          6: VIC-66-BGE-ERTS
           7: VIC-66-ERTS-MGE
           8: VIC-66-ERTS-FGY
           9: VIC-66-ERTS-LD
           10: VIC-66-ERTS-RVE1
-          11: VIC-66-ERTS-DSH
+          11: VIC-66-DSH-ERTS
           12: VIC-66-ERTS-HPK
-          13: VIC-66-ERTS-BWN/CBTS
-          14: VIC-66-ERTS-DVY
-          15: VIC-66-ERTS-DN
+          13: VIC-66-BWN/CBT-ERTSS
+          14: VIC-66-DVY-ERTS
+          15: VIC-66-DN-ERTS
           16: VIC-66-ERTS-HPK/DN
           17: VIC-66-ERTS-LYD/CBTS
           18: VIC-66-ERTS-CAP-1B
@@ -4607,10 +4620,10 @@ substations:
           2: VIC-66-HTS-TX-B2
           3: VIC-66-HTS-TX-B3
           4: HTS-66-3XN-BUS
-          5: VIC-66-EHN/KBH-HTS
+          5: VIC-66-EHN-HTS
           6: VIC-66-HTS-SR
           7: VIC-66-HTS-MR
-          8: VIC-66-HTS-BR
+          8: VIC-66-BR-HTS
           9: VIC-66-HTS-M2
           10: VIC-66-HTS-M1
           11: VIC-66-HT-HTS
@@ -4623,14 +4636,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-HTS-CAP-1A
-            rel_x: 22
+            rel_x: 21
             rel_y: -3
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: VIC-66-HTS-CAP-1B
-            rel_x: 22
+            rel_x: 21
             rel_y: -6
   - name: Hazelwood Power (HWPS)
     lat: -38.273103
@@ -5423,13 +5436,13 @@ substations:
         connections:
           1: VIC-66-MTS-TX-B1
           2: VIC-66-MTS-TX-B3
-          3: VIC-66-MTS-EM
+          3: VIC-66-EM-MTS
           4: VIC-66-MTS-OR
           5: VIC-66-MTS-TX-U1
           6: VIC-66-MTS-TX-U2
-          7: VIC-66-MTS-EM/EL
+          7: VIC-66-EM/E-MTSL
           8: VIC-66-MTS-OAK
-          9: VIC-66-MTS-CFD
+          9: VIC-66-CFD-MTS
         objects:
           - type: tx-ud # U1
             metadata:
@@ -6207,14 +6220,14 @@ substations:
               voltage: 66
             connections:
               1: VIC-66-SVTS-CAP-4A
-            rel_x: 2
+            rel_x: 1
             rel_y: -3
           - type: cap-l
             metadata:
               voltage: 66
             connections:
               1: VIC-66-SVTS-CAP-4B
-            rel_x: 2
+            rel_x: 1
             rel_y: -6
           - type: cap-u
             metadata:
@@ -6227,7 +6240,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: -1
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B4
           2: VIC-66-SVTS-TX-B4
@@ -6236,7 +6249,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 4
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B3
           2: VIC-66-SVTS-TX-B3
@@ -6245,7 +6258,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 9
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B2
           2: VIC-66-SVTS-TX-B2
@@ -6254,7 +6267,7 @@ substations:
           w1: 220
           w2: 66
         rel_x: 15
-        rel_y: 13
+        rel_y: 12
         connections:
           1: VIC-220-SVTS-TX-B1
           2: VIC-66-SVTS-TX-B1
@@ -6306,7 +6319,7 @@ substations:
           2: VIC-66-HGS-TBTS2
           3: VIC-66-DMA-TBTS
           4: VIC-66-HGS-TBTS1
-          5: VIC-66-TBTS-FTS
+          5: VIC-66-FTS-TBTS
           6: VIC-66-MTN-TBTS2
           10: VIC-66-TBTS-TX-B1
           11: VIC-66-TBTS-TX-B2
@@ -6435,18 +6448,18 @@ substations:
         rel_y: 19
         connections:
           1: VIC-66-TSTS-TX-B5
-          2: VIC-66-TSTS-DC1
-          3: VIC-66-TSTS-HB
+          2: VIC-66-DC-TSTS1
+          3: VIC-66-HB-TSTS
           4: TSTS-1XN-BUS
           5: VIC-66-TSTS-TX-B1
-          6: VIC-66-TSTS-L
-          7: VIC-66-TSTS-ELM2
+          6: VIC-66-L-TSTS
+          7: VIC-66-ELM-TSTS2
           8: VIC-66-TSTS-WD
-          9: VIC-66-TSTS-DC2
+          9: VIC-66-DC-TSTS2
           10: VIC-66-TSTS-TX-B4
-          11: VIC-66-TSTS-SLF
-          12: VIC-66-TSTS-ELM1
-          13: VIC-66-TSTS-BU
+          11: VIC-66-SLF-TSTS
+          12: VIC-66-ELM-TSTS1
+          13: VIC-66-BU-TSTS
           14: TSTS-1XN-BUS
         objects:
           - type: cap-u
@@ -6525,19 +6538,19 @@ substations:
           3: VIC-66-TTS-TX-B3
           4: VIC-66-TTS-TX-B4
           5: VIC-66-TTS-TX-B5
-          6: VIC-66-TTS-EPN
-          7: VIC-66-TTS-NEI
-          8: VIC-66-TTS-TT1
+          6: VIC-66-PTN-TTS
+          7: VIC-66-NEI-TTS
+          8: VIC-66-TT-TTS1
           9: TTS-1XN-TIE
-          10: VIC-66-TTS-EP
+          10: VIC-66-EP-TTS
           11: VIC-66-TTS-WT
-          12: VIC-66-TTS-TT2
-          13: VIC-66-TTS-CS
-          16: VIC-66-TTS-COO
-          19: VIC-66-TTS-BMS
-          20: VIC-66-TTS-CN
+          12: VIC-66-TT-TTS2
+          13: VIC-66-CS-TTS
+          16: VIC-66-COO-TTS
+          19: VIC-66-BMS-TTS
+          20: VIC-66-CN-TTS
           21: TTS-1XN-TIE
-          22: VIC-66-TTS-BD
+          22: VIC-66-BD-TTS
           23: TTS-B5-TIE
         rel_x: -5
         rel_y: 30
@@ -6720,7 +6733,7 @@ substations:
       17: VIC-220-HWPS-YPS2
     child_definitions:
       - def: |
-          1n
+          1N
         connections:
           1: VIC-220-HWPS-YPS2 
         voltage_kv: 220
