@@ -43,7 +43,7 @@ SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "8"
+VERSION = "9"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
