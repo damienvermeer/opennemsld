@@ -19,9 +19,11 @@ from shapely.geometry import MultiPoint, Polygon
 import findpath
 from rectangle_spacing import space_rectangles
 
+from objects.tx_3w import draw_3w_tx_up_down, draw_3w_tx_left_right
+
 # --- Constants ---
-BASE_MAP_DIMS_EAST_WEST = 45000  # Base dimensions, will be expanded as needed
-BASE_MAP_DIMS_NORTH_SOUTH = 75000
+BASE_MAP_DIMS_EAST_WEST = 56250  # Base dimensions, will be expanded as needed
+BASE_MAP_DIMS_NORTH_SOUTH = 93750
 BUS_LABEL_FONT_SIZE = 15
 TITLE_MAX_SEARCH_RADIUS_PX = 300
 TITLE_FONT_SIZE = 20
@@ -30,7 +32,7 @@ NEAR_SUB_WEIGHT = 4
 ELEMENT_WEIGHT = 50000
 GRID_STEP = 25
 PATHFINDING_ITERATIONS = 5
-CONGESTION_PENALTY = 19
+CONGESTION_PENALTY = 3
 # Default font family to use for all text
 DEFAULT_FONT_FAMILY = "Roboto"
 import pathlib
@@ -41,7 +43,7 @@ SLD_DATA_DIR = PARENT_DIR / "sld-data"
 TEMPLATE_FILE = SCRIPT_DIR / "index.template.html"
 OUTPUT_SVG = "sld.svg"  # Temporary file, not the final output
 OUTPUT_HTML = "index.html"
-VERSION = "5"
+VERSION = "9"
 
 # below colours from AEMO NEM SLD pdf for consistency
 COLOUR_MAP = {
@@ -76,6 +78,7 @@ HOVER_HIGHLIGHT_PATH_STROKE_WIDTH = 15
 HOVER_HIGHLIGHT_PATH_OPACITY = 0.3
 HOVER_HIGHLIGHT_PATH_HIT_WIDTH = 50
 
+
 # --- Enums and Dataclasses ---
 @dataclass
 class DrawingParams:
@@ -91,6 +94,8 @@ class SwitchType(Enum):
     CB = auto()
     ISOL = auto()
     UNKNOWN = auto()
+    CAP = auto()
+    REAC = auto
 
 
 @dataclass
@@ -133,7 +138,7 @@ class Substation:
         This method iterates through a list of object definitions, draws them
         onto the provided parent group, and marks their positions on the
         substation's pathfinding grid. It handles various object types like
-        transformers and generators.
+        transformers, generators, capacitors, reactors & DC convertors.
 
         Args:
             parent_group: The `draw.Group` to which the objects will be added.
@@ -161,6 +166,50 @@ class Substation:
 
             # Create a group for this object
             obj_group = draw.Group()
+
+            if obj["type"].startswith("3tx"):
+                conn_points = {}
+                winding_voltages = tuple(obj["metadata"].values())
+                if obj["type"] == "3tx-ud":
+                    obj_group, new_connections, grid_points_to_mark = (
+                        draw_3w_tx_up_down(
+                            obj_x,
+                            obj_y,
+                            params.grid_step,
+                            COLOUR_MAP,
+                            winding_voltages,
+                        )
+                    )
+                elif obj["type"] == "3tx-lr":
+                    obj_group, new_connections, grid_points_to_mark = (
+                        draw_3w_tx_left_right(
+                            obj_x,
+                            obj_y,
+                            params.grid_step,
+                            COLOUR_MAP,
+                            winding_voltages,
+                        )
+                    )
+                else:
+                    raise ValueError(
+                        f"Unknown 3-winding transformer type: {obj['type']}"
+                    )
+                # Store connection points
+                for key, val in new_connections.items():
+                    # look up connection in obj dict
+                    conn_name = obj["connections"][key]
+                    # add owner id
+                    val["owner"] = owner_id
+                    conn_points[conn_name] = val
+                # mark grid points
+                for grid_point in grid_points_to_mark:
+                    mark_grid_point(
+                        self,
+                        grid_point[0],
+                        grid_point[1],
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
 
             if obj["type"] == "tx-ud":
                 # Draw up-down transformer. Winding 1 is at the top.
@@ -416,6 +465,582 @@ class Substation:
                                 "owner": owner_id,
                             }
 
+            elif obj["type"] in ["dc-r", "dc-l", "dc-u", "dc-d"]:
+                AC_voltage = obj.get("metadata", {}).get("AC_kv")
+                DC_voltage = obj.get("metadata", {}).get("DC_kv")
+                colour1 = COLOUR_MAP.get(AC_voltage, "black")
+                colour2 = COLOUR_MAP.get(DC_voltage, "black")
+
+                # Symbol is rectangle with diode symbol inside a 2*grid_step space.
+                if obj["type"] == "dc-r":
+                    Line1_start_x = obj_x + 3 * params.grid_step / 2
+                    Line1_start_y = obj_y - params.grid_step / 2
+                    Line1_end_x = obj_x + 3 * params.grid_step / 2
+                    Line1_end_y = obj_y + params.grid_step / 2
+                    Line2_start_x = obj_x + 5 * params.grid_step / 2
+                    Line2_start_y = obj_y - params.grid_step / 2
+                    Line2_end_x = obj_x + 5 * params.grid_step / 2
+                    Line2_end_y = obj_y + params.grid_step / 2
+                    ACTerm_start_x = obj_x
+                    ACterm_start_y = obj_y
+                    ACTerm_end_x = obj_x + params.grid_step
+                    ACterm_end_y = obj_y
+                    DCTerm_start_x = obj_x + 3 * params.grid_step
+                    DCterm_start_y = obj_y
+                    DCTerm_end_x = obj_x + 4 * params.grid_step
+                    DCterm_end_y = obj_y
+                    Diag_end_x = obj_x + 5 * params.grid_step / 2
+                    Diag_end_y = obj_y
+                    DCbox_top = obj_y - params.grid_step
+                    DCbox_left = obj_x + params.grid_step
+                    DCbox_width = 2 * params.grid_step
+                    DCbox_height = 2 * params.grid_step
+                elif obj["type"] == "dc-l":
+                    Line1_start_x = obj_x - 3 * params.grid_step / 2
+                    Line1_start_y = obj_y - params.grid_step / 2
+                    Line1_end_x = obj_x - 3 * params.grid_step / 2
+                    Line1_end_y = obj_y + params.grid_step / 2
+                    Line2_start_x = obj_x - 5 * params.grid_step / 2
+                    Line2_start_y = obj_y - params.grid_step / 2
+                    Line2_end_x = obj_x - 5 * params.grid_step / 2
+                    Line2_end_y = obj_y + params.grid_step / 2
+                    ACTerm_start_x = obj_x
+                    ACterm_start_y = obj_y
+                    ACTerm_end_x = obj_x - params.grid_step
+                    ACterm_end_y = obj_y
+                    DCTerm_start_x = obj_x - 3 * params.grid_step
+                    DCterm_start_y = obj_y
+                    DCTerm_end_x = obj_x - 4 * params.grid_step
+                    DCterm_end_y = obj_y
+                    Diag_end_x = obj_x - 5 * params.grid_step / 2
+                    Diag_end_y = obj_y
+                    DCbox_top = obj_y - params.grid_step
+                    DCbox_left = obj_x - 3 * params.grid_step
+                    DCbox_width = 2 * params.grid_step
+                    DCbox_height = 2 * params.grid_step
+                elif obj["type"] == "dc-u":
+                    Line1_start_x = obj_x - params.grid_step / 2
+                    Line1_start_y = obj_y - 3 * params.grid_step / 2
+                    Line1_end_x = obj_x + params.grid_step / 2
+                    Line1_end_y = obj_y - 3 * params.grid_step / 2
+                    Line2_start_x = obj_x - params.grid_step / 2
+                    Line2_start_y = obj_y - 5 * params.grid_step / 2
+                    Line2_end_x = obj_x + params.grid_step / 2
+                    Line2_end_y = obj_y - 5 * params.grid_step / 2
+                    ACTerm_start_x = obj_x
+                    ACterm_start_y = obj_y
+                    ACTerm_end_x = obj_x
+                    ACterm_end_y = obj_y - params.grid_step
+                    DCTerm_start_x = obj_x
+                    DCterm_start_y = obj_y - 3 * params.grid_step
+                    DCTerm_end_x = obj_x
+                    DCterm_end_y = obj_y - 4 * params.grid_step
+                    Diag_end_x = obj_x
+                    Diag_end_y = obj_y - 5 * params.grid_step / 2
+                    DCbox_top = obj_y - 3 * params.grid_step
+                    DCbox_left = obj_x - params.grid_step
+                    DCbox_width = 2 * params.grid_step
+                    DCbox_height = 2 * params.grid_step
+                elif obj["type"] == "dc-d":
+                    Line1_start_x = obj_x - params.grid_step / 2
+                    Line1_start_y = obj_y + 3 * params.grid_step / 2
+                    Line1_end_x = obj_x + params.grid_step / 2
+                    Line1_end_y = obj_y + 3 * params.grid_step / 2
+                    Line2_start_x = obj_x - params.grid_step / 2
+                    Line2_start_y = obj_y + 5 * params.grid_step / 2
+                    Line2_end_x = obj_x + params.grid_step / 2
+                    Line2_end_y = obj_y + 5 * params.grid_step / 2
+                    ACTerm_start_x = obj_x
+                    ACterm_start_y = obj_y
+                    ACTerm_end_x = obj_x
+                    ACterm_end_y = obj_y + params.grid_step
+                    DCTerm_start_x = obj_x
+                    DCterm_start_y = obj_y + 3 * params.grid_step
+                    DCTerm_end_x = obj_x
+                    DCterm_end_y = obj_y + 4 * params.grid_step
+                    Diag_end_x = obj_x
+                    Diag_end_y = obj_y + 5 * params.grid_step / 2
+                    DCbox_top = obj_y + params.grid_step
+                    DCbox_left = obj_x - params.grid_step
+                    DCbox_width = 2 * params.grid_step
+                    DCbox_height = 2 * params.grid_step
+
+                # --- AC Terminal Line ---
+                AC_line = draw.Line(
+                    ACTerm_start_x,
+                    ACterm_start_y,
+                    ACTerm_end_x,
+                    ACterm_end_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(AC_line)
+
+                # --- Bounding Box ---
+
+                b_box = draw.Rectangle(
+                    DCbox_left,
+                    DCbox_top,
+                    DCbox_width,
+                    DCbox_height,
+                    fill="transparent",
+                    stroke=colour1,
+                    stroke_width=3,
+                )
+                obj_group.append(b_box)
+
+                # --- Diode symbol first bar ---
+                Line1 = draw.Line(
+                    Line1_start_x,
+                    Line1_start_y,
+                    Line1_end_x,
+                    Line1_end_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(Line1)
+
+                # --- Diode symbol second bar ---
+                Line2 = draw.Line(
+                    Line2_start_x,
+                    Line2_start_y,
+                    Line2_end_x,
+                    Line2_end_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(Line2)
+
+                # --- Diode diagonal 1 ---
+                diag1 = draw.Line(
+                    Line1_start_x,
+                    Line1_start_y,
+                    Diag_end_x,
+                    Diag_end_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(diag1)
+
+                # --- Diode diagonal 2 ---
+                diag2 = draw.Line(
+                    Line1_end_x,
+                    Line1_end_y,
+                    Diag_end_x,
+                    Diag_end_y,
+                    stroke=colour1,
+                    stroke_width=2,
+                )
+                obj_group.append(diag2)
+
+                # --- DC Terminal Line ---
+                DC_line = draw.Line(
+                    DCTerm_start_x,
+                    DCterm_start_y,
+                    DCTerm_end_x,
+                    DCterm_end_y,
+                    stroke=colour2,
+                    stroke_width=2,
+                )
+                obj_group.append(DC_line)
+
+                if obj["type"] == "dc-r":
+                    # Mark grid points for dc-r converter elements
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x + params.grid_step,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x + params.grid_step * 2,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x + params.grid_step * 3,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x + params.grid_step * 4,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                elif obj["type"] == "dc-d":
+                    # Mark grid points for dc-d converter elements
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y + params.grid_step,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y + params.grid_step * 2,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y + params.grid_step * 3,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y + params.grid_step * 4,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                elif obj["type"] == "dc-l":
+                    # Mark grid points for dc-l converter elements
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x - params.grid_step,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x - params.grid_step * 2,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x - params.grid_step * 3,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x - params.grid_step * 4,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                elif obj["type"] == "dc-u":
+                    # Mark grid points for dc-u converter elements
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y - params.grid_step,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y - params.grid_step * 2,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y - params.grid_step * 3,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+                    mark_grid_point(
+                        self,
+                        obj_x,
+                        obj_y - params.grid_step * 4,
+                        weight=ELEMENT_WEIGHT,
+                        owner_id=owner_id,
+                    )
+
+                # Store connection points
+                conn_points = {}
+                if "connections" in obj:
+                    for terminal_num, conn_name in obj["connections"].items():
+                        coords = None
+                        voltage = None
+                        if terminal_num == 1:  # AC terminal
+                            coords = (ACTerm_start_x, ACterm_start_y)
+                            voltage = AC_voltage
+                        elif terminal_num == 2:  # DC terminal
+                            coords = (DCTerm_end_x, DCterm_end_y)
+                            voltage = DC_voltage
+                        if coords:
+                            conn_points[conn_name] = {
+                                "coords": coords,
+                                "voltage": voltage,
+                                "owner": owner_id,
+                            }
+
+            elif obj["type"] in ["cap-u", "cap-d", "cap-l", "cap-r"]:
+                # Draw cap a horizontal cap "cap-r"
+                # use rotation to render all other variants
+                # connection #1 at (obj_x, obj_y) is the connection point
+
+                # Get colour from metadata
+                voltage1 = obj.get("metadata", {}).get("voltage")
+                colour = COLOUR_MAP.get(voltage1, "black")
+                Tstartx = obj_x
+                Tstarty = obj_y
+
+                if obj["type"] == "cap-u":
+                    Tendx = obj_x
+                    Tendy = obj_y - params.grid_step / 4
+                    C1startx = obj_x - params.grid_step / 2
+                    C1starty = obj_y - params.grid_step / 4
+                    C1endx = obj_x + params.grid_step / 2
+                    C1endy = obj_y - params.grid_step / 4
+                    C2startx = obj_x - params.grid_step / 2
+                    C2starty = obj_y - params.grid_step * 3 / 4
+                    C2endx = obj_x + params.grid_step / 2
+                    C2endy = obj_y - params.grid_step * 3 / 4
+                elif obj["type"] == "cap-d":
+                    Tendx = obj_x
+                    Tendy = obj_y + params.grid_step / 4
+                    C1startx = obj_x - params.grid_step / 2
+                    C1starty = obj_y + params.grid_step / 4
+                    C1endx = obj_x + params.grid_step / 2
+                    C1endy = obj_y + params.grid_step / 4
+                    C2startx = obj_x - params.grid_step / 2
+                    C2starty = obj_y + params.grid_step * 3 / 4
+                    C2endx = obj_x + params.grid_step / 2
+                    C2endy = obj_y + params.grid_step * 3 / 4
+                elif obj["type"] == "cap-l":
+                    Tendx = obj_x - params.grid_step / 4
+                    Tendy = obj_y
+                    C1startx = obj_x - params.grid_step / 4
+                    C1starty = obj_y + params.grid_step / 2
+                    C1endx = obj_x - params.grid_step / 4
+                    C1endy = obj_y - params.grid_step / 2
+                    C2startx = obj_x - params.grid_step * 3 / 4
+                    C2starty = obj_y + params.grid_step / 2
+                    C2endx = obj_x - params.grid_step * 3 / 4
+                    C2endy = obj_y - params.grid_step / 2
+                elif obj["type"] == "cap-r":
+                    Tendx = obj_x + params.grid_step / 4
+                    Tendy = obj_y
+                    C1startx = obj_x + params.grid_step / 4
+                    C1starty = obj_y + params.grid_step / 2
+                    C1endx = obj_x + params.grid_step / 4
+                    C1endy = obj_y - params.grid_step / 2
+                    C2startx = obj_x + params.grid_step * 3 / 4
+                    C2starty = obj_y + params.grid_step / 2
+                    C2endx = obj_x + params.grid_step * 3 / 4
+                    C2endy = obj_y - params.grid_step / 2
+
+                # --- Terminal Line ---
+                T_line = draw.Line(
+                    Tstartx,
+                    Tstarty,
+                    Tendx,
+                    Tendy,
+                    stroke=colour,
+                    stroke_width=2,
+                )
+                obj_group.append(T_line)
+
+                # --- First Cap Line ---
+                C1_line = draw.Line(
+                    C1startx,
+                    C1starty,
+                    C1endx,
+                    C1endy,
+                    stroke=colour,
+                    stroke_width=2,
+                )
+                obj_group.append(C1_line)
+
+                # --- Second Cap Line ---
+                C2_line = draw.Line(
+                    C2startx,
+                    C2starty,
+                    C2endx,
+                    C2endy,
+                    stroke=colour,
+                    stroke_width=2,
+                )
+                obj_group.append(C2_line)
+
+                # Mark grid point for the cap element
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+
+                # Store connection points
+                conn_points = {}
+                if "connections" in obj:
+                    for terminal_num, conn_name in obj["connections"].items():
+                        coords = None
+                        voltage = None
+                        if terminal_num == 1:
+                            coords = (obj_x, obj_y)
+                            voltage = voltage1
+                        if coords:
+                            conn_points[conn_name] = {
+                                "coords": coords,
+                                "voltage": voltage,
+                                "owner": owner_id,
+                            }
+
+            elif obj["type"] in ["reac-u", "reac-d", "reac-l", "reac-r"]:
+                # Draw cap.
+                # (obj_x, obj_y) is the connection point
+
+                # Get colour from metadata
+                voltage1 = obj.get("metadata", {}).get("voltage")
+                colour = COLOUR_MAP.get(voltage1, "black")
+                if obj["type"] == "reac-d":
+                    L1startx = obj_x
+                    L1starty = obj_y + params.grid_step
+                    L2startx = obj_x
+                    L2starty = obj_y + params.grid_step / 2
+                    L2endx = obj_x + params.grid_step / 2
+                    L2endy = obj_y + params.grid_step / 2
+                    ArcCtrx = obj_x
+                    ArcCtry = obj_y + params.grid_step / 2
+                    ArcRad = params.grid_step / 2
+                    ArcStAng = 270
+                    ArcEndAng = 0
+                elif obj["type"] == "reac-l":
+                    L1startx = obj_x - params.grid_step
+                    L1starty = obj_y
+                    L2startx = obj_x - params.grid_step / 2
+                    L2starty = obj_y
+                    L2endx = obj_x - params.grid_step / 2
+                    L2endy = obj_y + params.grid_step / 2
+                    ArcCtrx = obj_x - params.grid_step / 2
+                    ArcCtry = obj_y
+                    ArcRad = params.grid_step / 2
+                    ArcStAng = 0
+                    ArcEndAng = 90
+                elif obj["type"] == "reac-u":
+                    L1startx = obj_x
+                    L1starty = obj_y - params.grid_step
+                    L2startx = obj_x
+                    L2starty = obj_y - params.grid_step / 2
+                    L2endx = obj_x - params.grid_step / 2
+                    L2endy = obj_y - params.grid_step / 2
+                    ArcCtrx = obj_x
+                    ArcCtry = obj_y - params.grid_step / 2
+                    ArcRad = params.grid_step / 2
+                    ArcStAng = 90
+                    ArcEndAng = 180
+                elif obj["type"] == "reac-r":
+                    L1startx = obj_x + params.grid_step
+                    L1starty = obj_y
+                    L2startx = obj_x + params.grid_step / 2
+                    L2starty = obj_y
+                    L2endx = obj_x + params.grid_step / 2
+                    L2endy = obj_y - params.grid_step / 2
+                    ArcCtrx = obj_x + params.grid_step / 2
+                    ArcCtry = obj_y
+                    ArcRad = params.grid_step / 2
+                    ArcStAng = 180
+                    ArcEndAng = 270
+
+                # --- First Reac Line ---
+                L1_line = draw.Line(
+                    L1startx,
+                    L1starty,
+                    L2startx,
+                    L2starty,
+                    stroke=colour,
+                    stroke_width=2,
+                )
+                obj_group.append(L1_line)
+
+                # --- Second Reac Line ---
+                L2_line = draw.Line(
+                    L2startx,
+                    L2starty,
+                    L2endx,
+                    L2endy,
+                    stroke=colour,
+                    stroke_width=2,
+                )
+                obj_group.append(L2_line)
+                # --- Second Reac Line ---
+                LArc = draw.Arc(
+                    ArcCtrx,
+                    ArcCtry,
+                    ArcRad,
+                    ArcStAng,
+                    ArcEndAng,
+                    stroke=colour,
+                    stroke_width=2,
+                    fill="transparent",
+                )
+                obj_group.append(LArc)
+
+                # Mark grid point for the cap element
+                mark_grid_point(
+                    self,
+                    obj_x,
+                    obj_y,
+                    weight=ELEMENT_WEIGHT,
+                    owner_id=owner_id,
+                )
+
+                # Store connection points
+                conn_points = {}
+                if "connections" in obj:
+                    for terminal_num, conn_name in obj["connections"].items():
+                        coords = None
+                        voltage = None
+                        if terminal_num == 1:
+                            coords = (obj_x, obj_y)
+                            voltage = voltage1
+                        if coords:
+                            conn_points[conn_name] = {
+                                "coords": coords,
+                                "voltage": voltage,
+                                "owner": owner_id,
+                            }
+
             elif obj["type"] == "gen":
                 # Generator is a circle. The reference point (obj_x, obj_y) is the center.
                 voltage = obj.get("metadata", {}).get("voltage")
@@ -486,7 +1111,8 @@ class Substation:
                 # Apply the same rotation to the connection points
                 if "connections" in obj:
                     rotation_rad = math.radians(rotation)
-                    for conn_id, (px, py) in conn_points.items():
+                    for conn_id, data in conn_points.items():
+                        px, py = data["coords"]
                         # Translate to origin
                         tx = px - obj_x
                         ty = py - obj_y
@@ -497,8 +1123,10 @@ class Substation:
                         rotated_x = rx + obj_x
                         rotated_y = ry + obj_y
                         # Update the connection point with rotated coordinates
+                        rotated_data = data.copy()
+                        rotated_data["coords"] = (rotated_x, rotated_y)
                         self.connection_points.setdefault(conn_id, []).append(
-                            (rotated_x, rotated_y)
+                            rotated_data
                         )
 
                         # The grid point was already marked with local coordinates.
@@ -1116,7 +1744,7 @@ def _draw_standard_element_symbol(
 
     Args:
         parent_group: The `draw.Group` to draw on.
-        subtype: The subtype of the element ('cb', 'isolator', 'unknown').
+        subtype: The subtype of the element ('cb', 'isolator', 'unknown', 'cap' , 'reac').
         xoff: The x-coordinate for the element.
         y_pos: The starting y-coordinate for the element.
         colour: The stroke colour for the symbol.
@@ -1160,6 +1788,80 @@ def _draw_standard_element_symbol(
                 stroke_width=2,
             )
         )
+    elif subtype == "cap":
+        parent_group.append(
+            draw.Line(
+                xoff,
+                symbol_center_y - params.grid_step / 2,
+                xoff,
+                symbol_center_y - params.grid_step / 4,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        parent_group.append(
+            draw.Line(
+                xoff - params.grid_step / 2,
+                symbol_center_y - params.grid_step / 4,
+                xoff + params.grid_step / 2,
+                symbol_center_y - params.grid_step / 4,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        parent_group.append(
+            draw.Line(
+                xoff - params.grid_step / 2,
+                symbol_center_y + params.grid_step / 4,
+                xoff + params.grid_step / 2,
+                symbol_center_y + params.grid_step / 4,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        parent_group.append(
+            draw.Line(
+                xoff,
+                symbol_center_y + params.grid_step / 4,
+                xoff,
+                symbol_center_y + params.grid_step / 2,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+    elif subtype == "reac":
+        parent_group.append(
+            draw.Line(
+                xoff,
+                symbol_center_y,
+                xoff,
+                symbol_center_y + params.grid_step / 2,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        parent_group.append(
+            draw.Line(
+                xoff,
+                symbol_center_y,
+                xoff + params.grid_step / 2,
+                symbol_center_y,
+                stroke=colour,
+                stroke_width=2,
+            )
+        )
+        parent_group.append(
+            draw.Arc(
+                xoff,
+                symbol_center_y,
+                params.grid_step / 2,
+                270,
+                0,
+                stroke=colour,
+                stroke_width=2,
+                fill="transparent",
+            )
+        )
 
 
 def draw_busbar_object(
@@ -1171,7 +1873,7 @@ def draw_busbar_object(
     is_first_bay,
     params,
     colour,
-    previous_bay_elements=None,
+    previous_bay_elements=[],
     owner_id: str = "main",
 ):
     """Draw a busbar object at the specified position.
@@ -1198,18 +1900,29 @@ def draw_busbar_object(
 
     # Check if previous bay has a busbar at the same y position for continuity
     extend_left = False
-    if previous_bay_elements and not is_first_bay:
+    previous_bay_elements = (
+        [] if previous_bay_elements is None else previous_bay_elements
+    )
+    # todo fix terrible typing ^
+    previous_bay_only_busbars = [
+        x for x in previous_bay_elements if x["type"] == "busbar"
+    ]
+    if previous_bay_only_busbars and not is_first_bay:
         # Find if there's a busbar at the same relative position in the previous bay
+        # ... and (issue 35) stop drawing over cb/isols if multiple buses
         current_busbar_index = 0
-        for prev_element in previous_bay_elements:
-            if (
-                prev_element["type"] == "busbar"
-                and prev_element["subtype"] == "standard"
-            ):
-                if current_busbar_index == 0:  # This is the matching busbar position
-                    extend_left = True
-                    break
-                current_busbar_index += 1
+        for prev_element in previous_bay_only_busbars:
+            if prev_element.get("subtype", "") in [
+                "tie_cb",
+                "tie_cb_thin",
+                "tie_isol",
+                "tie_isol_thin",
+            ]:
+                break  # never extend on tie cb/isol
+            if current_busbar_index == 0:  # This is the matching busbar position
+                extend_left = True
+                break
+            current_busbar_index += 1
 
     if subtype == "standard":
         # Determine line start position
@@ -1405,7 +2118,7 @@ def draw_element_object(
     """
     subtype = element["subtype"]
 
-    if subtype in ["cb", "unknown", "isolator"]:
+    if subtype in ["cb", "unknown", "isolator", "cap", "reac"]:
         _draw_standard_element_frame(parent_group, xoff, y_pos, colour, params)
         _draw_standard_element_symbol(
             parent_group, subtype, xoff, y_pos, colour, params
@@ -1517,6 +2230,14 @@ def parse_bay_elements(bay_def: str) -> list:
 
         elif char == "E":
             elements.append({"type": "element", "subtype": "empty"})
+            char_index += 1
+
+        elif char == "c":
+            elements.append({"type": "element", "subtype": "cap"})
+            char_index += 1
+
+        elif char == "r":
+            elements.append({"type": "element", "subtype": "reac"})
             char_index += 1
 
         # Handle connection objects
@@ -2032,6 +2753,170 @@ def _simple_pathfinding(path_requests: list, points: list[list]) -> list:
     return all_paths
 
 
+def _create_local_pathfinding_grid(
+    substation: Substation,
+    bbox: tuple[float, float, float, float],
+    params: DrawingParams,
+) -> tuple[list[list[int]], list[list[tuple[str, str]]], tuple[float, float]]:
+    """Creates a local pathfinding grid for a single substation."""
+    min_x, min_y, max_x, max_y = bbox
+    padding = 2 * params.grid_step
+
+    origin_x = min_x - padding
+    origin_y = min_y - padding
+
+    grid_width = (max_x - min_x) + 2 * padding
+    grid_height = (max_y - min_y) + 2 * padding
+
+    num_steps_x = int(grid_width // params.grid_step) + 1
+    num_steps_y = int(grid_height // params.grid_step) + 1
+
+    points = [[0 for _ in range(num_steps_x)] for _ in range(num_steps_y)]
+    grid_owners = [[None for _ in range(num_steps_x)] for _ in range(num_steps_y)]
+
+    # Populate grid with substation's grid points (these are unrotated)
+    for (local_x, local_y), (weight, owner_id) in substation.grid_points.items():
+        grid_x = int(round((local_x - origin_x) / params.grid_step))
+        grid_y = int(round((local_y - origin_y) / params.grid_step))
+
+        if 0 <= grid_y < num_steps_y and 0 <= grid_x < num_steps_x:
+            points[grid_y][grid_x] = weight
+            grid_owners[grid_y][grid_x] = (substation.name, owner_id)
+
+    return points, grid_owners, (origin_x, origin_y)
+
+
+def _draw_internal_paths(drawing, substation, bbox, params):
+    """Finds and draws internal connections within a single substation."""
+    min_x, min_y, max_x, max_y = bbox
+
+    # 1. Create local pathfinding grid
+    (
+        local_points,
+        local_grid_owners,
+        (
+            origin_x,
+            origin_y,
+        ),
+    ) = _create_local_pathfinding_grid(substation, bbox, params)
+
+    # 2. Create path requests from internal connections
+    path_requests = []
+    path_metadata = []
+    all_connection_nodes = set()
+
+    internal_connections = {
+        k: v for k, v in substation.connection_points.items() if len(v) == 2
+    }
+
+    for conn_name, conn_points_data in internal_connections.items():
+        p1_data = conn_points_data[0]
+        p2_data = conn_points_data[1]
+
+        start_coord_px = p1_data["coords"]
+        end_coord_px = p2_data["coords"]
+
+        start_grid_x = int(round((start_coord_px[0] - origin_x) / params.grid_step))
+        start_grid_y = int(round((start_coord_px[1] - origin_y) / params.grid_step))
+        end_grid_x = int(round((end_coord_px[0] - origin_x) / params.grid_step))
+        end_grid_y = int(round((end_coord_px[1] - origin_y) / params.grid_step))
+
+        start_node = (start_grid_y, start_grid_x)
+        end_node = (end_grid_y, end_grid_x)
+
+        all_connection_nodes.add(start_node)
+        all_connection_nodes.add(end_node)
+
+        if 0 <= start_node[0] < len(local_points) and 0 <= start_node[1] < len(
+            local_points[0]
+        ):
+            local_points[start_node[0]][start_node[1]] = 0
+        if 0 <= end_node[0] < len(local_points) and 0 <= end_node[1] < len(
+            local_points[0]
+        ):
+            local_points[end_node[0]][end_node[1]] = 0
+
+        request = {
+            "start": start_node,
+            "end": end_node,
+            "substations": {substation.name},
+            "start_owner": (substation.name, p1_data.get("owner", "main")),
+            "end_owner": (substation.name, p2_data.get("owner", "main")),
+        }
+        path_requests.append(request)
+
+        voltage = p1_data["voltage"]
+        colour = COLOUR_MAP.get(voltage, "black")
+        scale_factor = LINE_WIDTH_SCALE.get(voltage, 1.0)
+        line_width = 2 * scale_factor
+
+        path_metadata.append(
+            {
+                "colour": colour,
+                "line_width": line_width,
+                "substation_pair": tuple(sorted([substation.name, substation.name])),
+            }
+        )
+
+    if not path_requests:
+        return
+
+    # 3. Run pathfinding
+    substation_pairs_info = [meta["substation_pair"] for meta in path_metadata]
+    all_paths = findpath.run_all_gridsearches(
+        path_requests=path_requests,
+        points=local_points,
+        grid_owners=local_grid_owners,
+        all_connection_nodes=all_connection_nodes,
+        busbar_weight=BUSBAR_WEIGHT,
+        substation_pairs=substation_pairs_info,
+    )
+
+    # 4. Draw paths
+    rotation_rad = math.radians(substation.rotation)
+    center_x = (min_x + max_x) / 2
+    center_y = (min_y + max_y) / 2
+
+    for i, path in enumerate(all_paths):
+        if len(path) > 1:
+            colour = path_metadata[i]["colour"]
+            line_width = path_metadata[i]["line_width"]
+
+            path_data = ""
+            for j, (row, col) in enumerate(path):
+                # Convert grid coords back to local unrotated pixel coords
+                px_x = col * params.grid_step + origin_x
+                px_y = row * params.grid_step + origin_y
+
+                # Rotate point
+                rel_x = px_x - center_x
+                rel_y = px_y - center_y
+                rotated_x = rel_x * math.cos(rotation_rad) + rel_y * math.sin(
+                    rotation_rad
+                )
+                rotated_y = -rel_x * math.sin(rotation_rad) + rel_y * math.cos(
+                    rotation_rad
+                )
+                rotated_local_x = rotated_x + center_x
+                rotated_local_y = rotated_y + center_y
+
+                # Translate to final SVG position
+                global_x = substation.use_x + rotated_local_x
+                global_y = substation.use_y + rotated_local_y
+
+                if j == 0:
+                    path_data += f"M {global_x:.1f} {global_y:.1f}"
+                else:
+                    path_data += f" L {global_x:.1f} {global_y:.1f}"
+
+            if path_data:
+                path_element = draw.Path(
+                    d=path_data,
+                    fill="none",
+                    stroke=colour,
+                    stroke_width=line_width,
+                )
+                drawing.append(path_element)
 
 
 def draw_state_boundaries(
@@ -2083,12 +2968,14 @@ def draw_state_boundaries(
             bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y = rotated_bbox
 
             # Global coordinates of the bbox corners
-            points.extend([
-                (sub.use_x + bbox_min_x, sub.use_y + bbox_min_y),
-                (sub.use_x + bbox_max_x, sub.use_y + bbox_min_y),
-                (sub.use_x + bbox_max_x, sub.use_y + bbox_max_y),
-                (sub.use_x + bbox_min_x, sub.use_y + bbox_max_y),
-            ])
+            points.extend(
+                [
+                    (sub.use_x + bbox_min_x, sub.use_y + bbox_min_y),
+                    (sub.use_x + bbox_max_x, sub.use_y + bbox_min_y),
+                    (sub.use_x + bbox_max_x, sub.use_y + bbox_max_y),
+                    (sub.use_x + bbox_min_x, sub.use_y + bbox_max_y),
+                ]
+            )
         state_points[state] = points
 
     # Calculate centroids of original points for each state
@@ -2115,7 +3002,28 @@ def draw_state_boundaries(
 
         # Use shapely to get the convex hull and buffer it
         hull = MultiPoint(points).convex_hull
-        state_polygons[state] = hull.buffer(padding, join_style=2)  # Mitered corners
+        buffered_poly = hull.buffer(padding, join_style=2)  # Mitered corners
+
+        # Clean the geometry to fix any topology issues
+        if not buffered_poly.is_valid:
+            buffered_poly = buffered_poly.buffer(
+                0
+            )  # This often fixes invalid geometries
+
+        # If still invalid, use a simple bounding box as fallback
+        if not buffered_poly.is_valid:
+            print(
+                f"Warning: Could not create valid polygon for state {state}, using bounding box"
+            )
+            min_x = min(p[0] for p in points) - padding
+            min_y = min(p[1] for p in points) - padding
+            max_x = max(p[0] for p in points) + padding
+            max_y = max(p[1] for p in points) + padding
+            buffered_poly = Polygon(
+                [(min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, max_y)]
+            )
+
+        state_polygons[state] = buffered_poly
 
     # Iteratively resolve overlaps between state polygons
     states = list(state_polygons.keys())
@@ -2125,21 +3033,46 @@ def draw_state_boundaries(
             poly1 = state_polygons[state1]
             poly2 = state_polygons[state2]
 
-            if not poly1.intersects(poly2):
+            # Validate geometries before intersection check
+            if not poly1.is_valid:
+                poly1 = poly1.buffer(0)
+                state_polygons[state1] = poly1
+            if not poly2.is_valid:
+                poly2 = poly2.buffer(0)
+                state_polygons[state2] = poly2
+
+            # Skip if either polygon is still invalid
+            if not poly1.is_valid or not poly2.is_valid:
+                print(
+                    f"Warning: Skipping intersection check for {state1}-{state2} due to invalid geometry"
+                )
+                continue
+
+            try:
+                if not poly1.intersects(poly2):
+                    continue
+            except Exception as e:
+                print(
+                    f"Warning: Error checking intersection for {state1}-{state2}: {e}"
+                )
                 continue
 
             changed_in_pass = True
             intersection = poly1.intersection(poly2)
-            if (
-                intersection.is_empty
-                or not isinstance(intersection, shapely.geometry.base.BaseGeometry)
+            if intersection.is_empty or not isinstance(
+                intersection, shapely.geometry.base.BaseGeometry
             ):
                 continue
 
             # Handle GeometryCollection by extracting only polygonal components
-            if intersection.geom_type == 'GeometryCollection':
+            if intersection.geom_type == "GeometryCollection":
                 from shapely.ops import unary_union
-                polygons = [geom for geom in intersection.geoms if geom.geom_type in ('Polygon', 'MultiPolygon')]
+
+                polygons = [
+                    geom
+                    for geom in intersection.geoms
+                    if geom.geom_type in ("Polygon", "MultiPolygon")
+                ]
                 if not polygons:
                     # If no polygons in intersection, treat as no overlap for splitting purposes
                     state_polygons[state1] = poly1.difference(poly2)
@@ -2192,11 +3125,20 @@ def draw_state_boundaries(
             def assign_part(part_geom, s1_subs, s2_subs, c1, c2):
                 """Analyzes a piece of an intersection and assigns it to a state."""
                 from shapely.ops import unary_union
+
                 if part_geom.is_empty:
                     return Polygon(), Polygon()
 
-                s1_subs_in_part = [s for s in s1_subs if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))]
-                s2_subs_in_part = [s for s in s2_subs if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))]
+                s1_subs_in_part = [
+                    s
+                    for s in s1_subs
+                    if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))
+                ]
+                s2_subs_in_part = [
+                    s
+                    for s in s2_subs
+                    if part_geom.contains(shapely.geometry.Point(s.use_x, s.use_y))
+                ]
 
                 # Case 1: Part contains subs from only one state
                 if s1_subs_in_part and not s2_subs_in_part:
@@ -2206,16 +3148,25 @@ def draw_state_boundaries(
 
                 # Case 2: Part is empty of substations - assign to closest state
                 if not s1_subs_in_part and not s2_subs_in_part:
-                    if c1.distance(part_geom.centroid) < c2.distance(part_geom.centroid):
+                    if c1.distance(part_geom.centroid) < c2.distance(
+                        part_geom.centroid
+                    ):
                         return part_geom, Polygon()
                     else:
                         return Polygon(), part_geom
 
                 # Case 3: Part is contested (subs from both states) - we must split it
-                local_c1 = MultiPoint([(s.use_x, s.use_y) for s in s1_subs_in_part]).centroid
-                local_c2 = MultiPoint([(s.use_x, s.use_y) for s in s2_subs_in_part]).centroid
+                local_c1 = MultiPoint(
+                    [(s.use_x, s.use_y) for s in s1_subs_in_part]
+                ).centroid
+                local_c2 = MultiPoint(
+                    [(s.use_x, s.use_y) for s in s2_subs_in_part]
+                ).centroid
 
-                mid_x, mid_y = (local_c1.x + local_c2.x) / 2, (local_c1.y + local_c2.y) / 2
+                mid_x, mid_y = (
+                    (local_c1.x + local_c2.x) / 2,
+                    (local_c1.y + local_c2.y) / 2,
+                )
                 dx, dy = local_c2.x - local_c1.x, local_c2.y - local_c1.y
                 perp_dx, perp_dy = -dy, dx
 
@@ -2241,8 +3192,12 @@ def draw_state_boundaries(
 
                 line_dx = p2_local[0] - p1_local[0]
                 line_dy = p2_local[1] - p1_local[1]
-                side_local_c1 = line_dx * (local_c1.y - p1_local[1]) - line_dy * (local_c1.x - p1_local[0])
-                side_sub_part1 = line_dx * (sub_part1.centroid.y - p1_local[1]) - line_dy * (sub_part1.centroid.x - p1_local[0])
+                side_local_c1 = line_dx * (local_c1.y - p1_local[1]) - line_dy * (
+                    local_c1.x - p1_local[0]
+                )
+                side_sub_part1 = line_dx * (
+                    sub_part1.centroid.y - p1_local[1]
+                ) - line_dy * (sub_part1.centroid.x - p1_local[0])
 
                 if (side_local_c1 * side_sub_part1) > 0:
                     return sub_part1, sub_part2
@@ -2255,6 +3210,7 @@ def draw_state_boundaries(
 
             # Combine the shares from both parts
             from shapely.ops import unary_union
+
             p1_total_share = unary_union([p1_share_a, p1_share_b])
             p2_total_share = unary_union([p2_share_a, p2_share_b])
 
@@ -2266,7 +3222,6 @@ def draw_state_boundaries(
         if not changed_in_pass:
             break  # No overlaps found in a full pass, so we're done.
 
-
     # Draw the final polygons
     for state, poly in state_polygons.items():
         if poly.is_empty:
@@ -2274,15 +3229,15 @@ def draw_state_boundaries(
 
         # Handle GeometryCollection by extracting all polygons
         polygons_to_draw = []
-        if poly.geom_type == 'Polygon':
+        if poly.geom_type == "Polygon":
             polygons_to_draw.append(poly)
-        elif poly.geom_type == 'MultiPolygon':
+        elif poly.geom_type == "MultiPolygon":
             polygons_to_draw.extend(list(poly.geoms))
-        elif poly.geom_type == 'GeometryCollection':
+        elif poly.geom_type == "GeometryCollection":
             for geom in poly.geoms:
-                if geom.geom_type == 'Polygon':
+                if geom.geom_type == "Polygon":
                     polygons_to_draw.append(geom)
-                elif geom.geom_type == 'MultiPolygon':
+                elif geom.geom_type == "MultiPolygon":
                     polygons_to_draw.extend(list(geom.geoms))
 
         if not polygons_to_draw:
@@ -2292,9 +3247,17 @@ def draw_state_boundaries(
         for p in polygons_to_draw:
             if p.is_empty:
                 continue
-            path_data += "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in p.exterior.coords) + " Z "
+            path_data += (
+                "M "
+                + " L ".join(f"{x:.1f} {y:.1f}" for x, y in p.exterior.coords)
+                + " Z "
+            )
             for interior in p.interiors:
-                path_data += "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in interior.coords) + " Z "
+                path_data += (
+                    "M "
+                    + " L ".join(f"{x:.1f} {y:.1f}" for x, y in interior.coords)
+                    + " Z "
+                )
 
         if not path_data:
             continue
@@ -2346,6 +3309,9 @@ def draw_state_boundaries(
             font_family=DEFAULT_FONT_FAMILY,
         )
         drawing.append(state_text)
+
+
+import json
 
 
 def draw_connections(
@@ -2487,13 +3453,15 @@ def draw_connections(
         pair_key = tuple(sorted([sub1_name, sub2_name]))
 
         path_requests.append(request)
-        path_metadata.append({
-            "colour": colour,
-            "line_width": line_width,
-            "substation_pair": pair_key,
-            "connection_name": connection_name,
-            "voltage": str(voltage1) if voltage1 == voltage2 else 'inconsistent'
-        })
+        path_metadata.append(
+            {
+                "colour": colour,
+                "line_width": line_width,
+                "substation_pair": pair_key,
+                "connection_name": connection_name,
+                "voltage": str(voltage1) if voltage1 == voltage2 else "inconsistent",
+            }
+        )
 
     print(f"Step 5.1: Finding {len(path_requests)} paths...")
     try:
@@ -2510,7 +3478,6 @@ def draw_connections(
                 busbar_weight=BUSBAR_WEIGHT,
                 busbar_crossing_penalty=100000,
                 substation_pairs=substation_pairs_info,
-                iterations=PATHFINDING_ITERATIONS,
             )
         else:
             print("  Using simple breadth-first search for debugging...")
@@ -2534,6 +3501,8 @@ def draw_connections(
 
         paths_drawn = 0
         paths_failed = 0
+
+        paths_dict = {}
 
         for i, path in enumerate(all_paths):
             if len(path) > 1:
@@ -2582,31 +3551,40 @@ def draw_connections(
 
                 # Create a single, consolidated path element.
                 path = draw.Path(
-                        d=path_data,
-                        fill="none",
-                    )
-                
-                connection_name = path_metadata[i]['connection_name']
-                connection_voltage = path_metadata[i]['voltage']
-                connection_ss_pair = path_metadata[i]['substation_pair']
+                    d=path_data,
+                    fill="none",
+                )
+
+                connection_name = path_metadata[i]["connection_name"]
+                paths_dict[connection_name] = path
+                connection_voltage = path_metadata[i]["voltage"]
+                connection_ss_pair = path_metadata[i]["substation_pair"]
                 connection_ss_pair = " &#8596; ".join(set(connection_ss_pair))
                 drawing.append(
                     draw.Group(
                         [
-                            draw.Use(path, x=0, y=0, stroke=colour, stroke_width=line_width),
-                            draw.Use(path, x=0, y=0, stroke=colour, 
-                                    stroke_width=HOVER_HIGHLIGHT_PATH_STROKE_WIDTH, opacity=0),
                             draw.Use(
-                                path, 
-                                x=0, 
-                                y=0, 
+                                path, x=0, y=0, stroke=colour, stroke_width=line_width
+                            ),
+                            draw.Use(
+                                path,
+                                x=0,
+                                y=0,
                                 stroke=colour,
-                                stroke_width=HOVER_HIGHLIGHT_PATH_HIT_WIDTH, 
-                                opacity=0, 
+                                stroke_width=HOVER_HIGHLIGHT_PATH_STROKE_WIDTH,
+                                opacity=0,
+                            ),
+                            draw.Use(
+                                path,
+                                x=0,
+                                y=0,
+                                stroke=colour,
+                                stroke_width=HOVER_HIGHLIGHT_PATH_HIT_WIDTH,
+                                opacity=0,
                                 data_connection_name=connection_name,
                                 data_substation_pair=connection_ss_pair,
                                 data_voltage=connection_voltage,
-                                class_='hover-path',
+                                class_="hover-path",
                             ),
                         ],
                     )
@@ -2627,12 +3605,68 @@ def draw_connections(
                 print(f"    End: grid {request['end']} -> px {end_px}")
                 print(f"    Substations: {request.get('substations', 'unknown')}")
                 paths_failed += 1
+        if False:  # generate paths dict for debugging
+            with open("paths.json", "w") as f:
+                json.dump(paths_dict, f, indent=4)
 
         print(
             f"  Pathfinding complete: {paths_drawn} paths drawn, {paths_failed} paths failed"
         )
     except Exception as e:
         print(f"Error finding paths: {e}")
+
+
+def render_substation_with_connection_status(
+    substation: Substation,
+    all_substations: dict[str, Substation] = None,
+    params: DrawingParams = None,
+    filename: str = None,
+) -> tuple:
+    """Renders a single substation SVG, adding status dots for connections.
+
+    This function calculates whether each connection is found in other substations
+    and passes this status to the main SVG rendering function to draw colored dots.
+
+    Args:
+        substation: The `Substation` object to render.
+        all_substations: Dictionary of all substations for connection checking.
+        params: Drawing parameters. If None, defaults are used.
+        filename: If provided, the SVG is saved to this path.
+
+    Returns:
+        A tuple containing:
+        - The SVG content as a string.
+        - A dictionary with the connection status.
+        - The full path to the saved file, or None.
+    """
+    if params is None:
+        params = DrawingParams()
+
+    connection_status = {}
+    if all_substations and hasattr(substation, "connections"):
+        for conn_id, conn_name in substation.connections.items():
+            if not conn_name:
+                continue
+
+            found = False
+            found_in = None
+            for sub_name, sub in all_substations.items():
+                if sub_name == substation.name:
+                    continue
+                if (
+                    hasattr(sub, "connections")
+                    and conn_name in sub.connections.values()
+                ):
+                    found = True
+                    found_in = sub_name
+                    break
+            connection_status[conn_name] = (found, found_in)
+
+    svg_content = render_substation_svg(substation, params, filename)
+
+    full_file_path = os.path.abspath(filename) if filename else None
+
+    return svg_content, connection_status, full_file_path
 
 
 def render_substation_svg(
@@ -2642,12 +3676,13 @@ def render_substation_svg(
 
     This is primarily used for generating documentation images. It calculates
     the required SVG dimensions, centers the substation, adds a title, and
-    optionally saves it to a file.
+    optionally saves it to a file. It can also draw connection status dots.
 
     Args:
         substation: The `Substation` object to render.
         params: Drawing parameters. If None, defaults are used.
         filename: If provided, the SVG is saved to this path.
+        connection_status: If provided, draws status dots for each connection.
 
     Returns:
         The SVG content as a string.
@@ -2699,6 +3734,9 @@ def render_substation_svg(
 
     # Add the substation to the drawing
     drawing.append(draw.Use(substation_group, temp_sub.use_x, temp_sub.use_y))
+
+    # Draw internal paths
+    _draw_internal_paths(drawing, temp_sub, bbox, params)
 
     # Add a title
     title_x = svg_width / 2
@@ -2770,7 +3808,7 @@ def render_substation_svg(
     if filename:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(svg_content)
-        print(f"Saved substation SVG to {filename}")
+        # print(f"Saved substation SVG to {filename}") # Reduce console noise
 
     return svg_content
 
@@ -3015,7 +4053,7 @@ def _prepare_substation_layout(
 
     print("Step 2.1: Calculating substation bounding boxes...")
     sub_bboxes = {}
-    for sub in substations:
+    for i, sub in enumerate(substations):
         try:
             min_x, min_y, max_x, max_y = get_substation_bbox_from_svg(sub, params)
             min_x = round(min_x / params.grid_step) * params.grid_step
@@ -3023,7 +4061,9 @@ def _prepare_substation_layout(
             max_x = round(max_x / params.grid_step) * params.grid_step
             max_y = round(max_y / params.grid_step) * params.grid_step
             sub_bboxes[sub.name] = (min_x, min_y, max_x, max_y)
-            print(f"  {sub.name}: bbox = ({min_x}, {min_y}, {max_x}, {max_y})")
+            if i % 30 == 0:
+                progress = i / len(substations)
+                print(f"  Calculating bounding boxes: {progress * 100:.2f}%")
         except Exception as e:
             print(f"  ERROR calculating bbox for {sub.name}: {e}")
             # Use a default bbox if calculation fails
@@ -3037,7 +4077,7 @@ def _prepare_substation_layout(
         )
 
     MIN_PADDING_STEPS = 6
-    PADDING_RATIO = 13
+    PADDING_RATIO = 25
     paddings_in_steps = []
     for sub in substations:
         min_x, min_y, max_x, max_y = rotated_sub_bboxes[sub.name]
@@ -3048,7 +4088,6 @@ def _prepare_substation_layout(
         area_grid_steps = width_grid_steps * height_grid_steps
         padding = max(MIN_PADDING_STEPS, round(area_grid_steps / PADDING_RATIO))
         paddings_in_steps.append(padding)
-    print(f"Step 2.2: Calculated dynamic padding: {paddings_in_steps}")
 
     initial_rects = []
     for sub in substations:
@@ -3060,13 +4099,12 @@ def _prepare_substation_layout(
         x2 = sub.scaled_x + width / 2
         y2 = sub.scaled_y + height / 2
         initial_rects.append((x1, y1, x2, y2))
-        print(f"  {sub.name}: initial rect = ({x1:.1f}, {y1:.1f}, {x2:.1f}, {y2:.1f})")
 
     print("Step 2.3: Spacing rectangles to avoid overlap...")
     shifts = space_rectangles(
         rectangles=initial_rects,
         grid_size=params.grid_step,
-        debug_images=True,
+        debug_images=False,
         padding_steps=paddings_in_steps,
         map_bounds=(
             BASE_MAP_DIMS_EAST_WEST * 2,
@@ -3082,9 +4120,6 @@ def _prepare_substation_layout(
         )
         sub.use_y = (
             round((sub.scaled_y + shift_y) / params.grid_step) * params.grid_step
-        )
-        print(
-            f"  {sub.name}: final position = ({sub.use_x:.1f}, {sub.use_y:.1f}), shift = ({shift_x:.1f}, {shift_y:.1f})"
         )
 
     # Calculate required SVG dimensions based on actual substation positions
@@ -3249,8 +4284,7 @@ def main():
     map_width, map_height = map_dims
     sld_drawing = draw.Drawing(map_width, map_height, origin=(0, 0))
     sld_drawing.append(draw.Rectangle(0, 0, map_width, map_height, fill="transparent"))
-    for sub in substations:
-        print(f"  Drawing {sub.name} at ({sub.use_x}, {sub.use_y})")
+    for i, sub in enumerate(substations):
         sld_drawing.append(draw.Use(substation_groups[sub.name], sub.use_x, sub.use_y))
 
     # 4. Prepare for and draw connections
@@ -3294,7 +4328,9 @@ def main():
     print("Step 6: Generating output files...")
     # Create state-level drawing
     state_drawing = draw.Drawing(map_width, map_height, origin=(0, 0))
-    state_drawing.append(draw.Rectangle(0, 0, map_width, map_height, fill="transparent"))
+    state_drawing.append(
+        draw.Rectangle(0, 0, map_width, map_height, fill="transparent")
+    )
     print("  Generating state-level SVG...")
     draw_state_boundaries(
         drawing=state_drawing,
@@ -3313,4 +4349,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # import cProfile
+
+    # with cProfile.Profile() as pr:
     main()
+
+    # pr.dump_stats("profile_output.prof")
