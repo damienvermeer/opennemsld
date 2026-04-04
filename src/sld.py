@@ -1403,7 +1403,11 @@ def _load_single_yaml_file(filename) -> dict[str, Substation]:
                 connections=sub_data.get("connections", {}),
                 child_definitions=sub_data.get("child_definitions", []),
                 state_location=state_location,
+                horizontal = True,
             )
+            if substation.definition == "":
+                substation.definition = sub_data.get("defv", "")
+                substation.horizontal = False
 
             # Add objects to the substation if present in the data
             if "objects" in sub_data:
@@ -1692,7 +1696,7 @@ def _mark_busbar_grid_points(
         sub: The `Substation` object.
         xoff: The central x-offset of the busbar segment.
         y_pos: The y-position of the busbar.
-        extend_left: Whether the busbar should extend further to the left or up.
+        extend_prev: Whether the busbar should extend further to the left or up.
         weight: The pathfinding weight to assign to the grid points.
         owner_id: The owner identifier for the grid points.
         params: Drawing parameters.
@@ -1711,10 +1715,10 @@ def _mark_busbar_grid_points(
             mark_grid_point(sub, x, elem_pos, weight=weight, owner_id=owner_id)
     else:
         y_positions = [ 
-        bayoff - params.grid_step, 
-        bayoff, 
-        bayoff + params.grid_step,
-      ] 
+            bayoff - params.grid_step, 
+            bayoff, 
+            bayoff + params.grid_step,
+        ] 
         if extend_prev: 
             y_positions.insert(0, bayoff - 2* params.grid_step) 
         for y in y_positions: 
@@ -2013,12 +2017,8 @@ def draw_busbar_object(
             )
         )
         # Mark grid points with BUSBAR_WEIGHT
-        if horizontal: 
-            _mark_busbar_grid_points(
-                sub, bayoff, elem_pos, extend_prev, BUSBAR_WEIGHT, owner_id, params) 
-        else: 
-            _mark_busbar_grid_points(
-                sub, elem_pos, bayoff, extend_prev, BUSBAR_WEIGHT, owner_id, params) 
+        _mark_busbar_grid_points(
+            sub, bayoff, elem_pos, extend_prev, BUSBAR_WEIGHT, owner_id, params, horizontal) 
 
         # Add text label if first bay
         if subtype == "standard":
@@ -2040,12 +2040,9 @@ def draw_busbar_object(
 
     elif subtype == "null":
         # No line drawn, but mark grid points spanning 3*GRID_STEP (or 4*GRID_STEP if extending)
-        if horizontal: 
-            _mark_busbar_grid_points(
-                sub, bayoff, elem_pos, extend_prev, BUSBAR_WEIGHT, owner_id, params 
-                )
-        else: 
-            _mark_busbar_grid_points(sub, elem_pos, bayoff, extend_prev, BUSBAR_WEIGHT, owner_id, params) 
+        _mark_busbar_grid_points(
+            sub, bayoff, elem_pos, extend_prev, BUSBAR_WEIGHT, owner_id, params, horizontal 
+            )
 
     elif subtype in ["tie_cb", "tie_cb_thin", "tie_isol", "tie_isol_thin"]:
         # Draw busbar with tie CB or Isol
@@ -2126,11 +2123,6 @@ def draw_busbar_object(
                         )    
                     ) 
                 
-        # Mark grid points with ELEMENT_WEIGHT
-        _mark_busbar_grid_points(
-            sub, bayoff, elem_pos, extend_prev, ELEMENT_WEIGHT, owner_id, params
-        )
-
         if subtype in ["tie_isol", "tie_isol_thin"]:
         # 45-degree isolator line (25px wide)
             isolator_half_size = params.grid_step / 2
@@ -2158,13 +2150,9 @@ def draw_busbar_object(
                     ) 
 
         # Mark grid points with ELEMENT_WEIGHT
-        if horizontal: 
-            _mark_busbar_grid_points( 
-                sub, bayoff, elem_pos, extend_prev, ELEMENT_WEIGHT, owner_id, params 
-                ) 
-        else: 
-            _mark_busbar_grid_points(sub, elem_pos, bayoff, extend_prev, ELEMENT_WEIGHT, owner_id, params
-                ) 
+        _mark_busbar_grid_points( 
+            sub, bayoff, elem_pos, extend_prev, ELEMENT_WEIGHT, owner_id, params, horizontal 
+            ) 
 
     return elem_pos 
 
@@ -3646,6 +3634,7 @@ def draw_connections(
                     p_curr = path[j]
                     p_prev = path[j - 1]
                     is_vertical = p_curr[1] == p_prev[1]
+                    is_horizontal = p_curr[0] == p_prev[0]
 
                     # A barrier is a busbar or another path that is horizontal.
                     # Vertical paths should break when crossing a horizontal barrier.
@@ -3673,7 +3662,18 @@ def draw_connections(
                         direction = p_curr[0] - p_prev[0]
                         path_data += f" M {p_prev[1] * step} {p_prev[0] * step + (7 * direction)}"
                         path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
-                    else:
+                     elif is_horizontal and p_curr_is_barrier and not p_prev_is_barrier:
+                        # Path is entering a barrier node from a non-barrier node.
+                        # Shorten the line to create a gap before the barrier.
+                        direction = p_curr[1] - p_prev[1]
+                        path_data += f" L {p_curr[1] * step - (7 * direction)} {p_curr[0] * step}"
+                    elif is_horizontal and not p_curr_is_barrier and p_prev_is_barrier:
+                        # Path is leaving a barrier node to a non-barrier node.
+                        # Shorten the line to create a gap after the barrier.
+                        direction = p_curr[1] - p_prev[1]
+                        path_data += f" M {p_prev[1] * step + (7 * direction)} {p_prev[0] * step}"
+                        path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
+                   else:
                         # Default behavior: draw a continuous line segment.
                         path_data += f" L {p_curr[1] * step} {p_curr[0] * step}"
 
